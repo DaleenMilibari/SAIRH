@@ -299,6 +299,7 @@ ul#mainmenu.ar-menu-list li a.active::after {
                 });
             });
         </script>
+        <script src="<%= ResolveUrl("~/Scripts/scroll-reveal.js") %>"></script>
     </form>
 </body>
 </html>

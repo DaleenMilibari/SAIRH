@@ -71,12 +71,12 @@ p, span, a, li, input, button, textarea, select, label, table, th, td,
   font-family: var(--sairh-font-arabic) !important;
 }
 
-/* Simpler, Refined Dark Background for Main Page & Sections */
+/* Refined Dark Glass & Fluted Wave Background for Hero & Main Sections */
 .fluted-wave-bg,
 .simpler-main-bg,
 .hero-section-bg {
   background-color: var(--sairh-bg);
-  background-image: url('../images/background/modern-dark-bg.svg');
+  background-image: url('../images/background/fluted-wave-bg.svg');
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
@@ -1359,13 +1359,217 @@ footer .social-icons a:hover {
     color: #38bdf8;
 }
 
-@media (max-width: 768px) {
-    .agenda-session-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    .agenda-time-box {
-        min-width: unset;
-    }
 }
+
+/* ==========================================================================
+   Scroll Reveal Animation System (Triggers Once)
+   ========================================================================== */
+.reveal-on-scroll,
+section:not(.hero-no-reveal),
+.glass-card,
+.vision-pillar-card,
+.venue-showcase-card,
+.qr-pass-container,
+.hub-track-card,
+.sairh-live-widget,
+.de-team-list {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-revealed,
+section.is-revealed,
+.glass-card.is-revealed,
+.vision-pillar-card.is-revealed,
+.venue-showcase-card.is-revealed,
+.qr-pass-container.is-revealed,
+.hub-track-card.is-revealed,
+.sairh-live-widget.is-revealed,
+.de-team-list.is-revealed {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+/* Staggered delay for child cards inside revealed containers */
+.is-revealed .vision-pillar-card:nth-child(1) { transition-delay: 0.08s; }
+.is-revealed .vision-pillar-card:nth-child(2) { transition-delay: 0.16s; }
+.is-revealed .vision-pillar-card:nth-child(3) { transition-delay: 0.24s; }
+.is-revealed .vision-pillar-card:nth-child(4) { transition-delay: 0.32s; }
+.is-revealed .vision-pillar-card:nth-child(5) { transition-delay: 0.40s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on-scroll,
+  section,
+  .glass-card,
+  .vision-pillar-card,
+  .venue-showcase-card,
+  .qr-pass-container,
+  .hub-track-card,
+  .sairh-live-widget,
+  .de-team-list {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ==========================================================================
+   Universal Glass Forms, Cards, Tables, Subheaders & Controls
+   ========================================================================== */
+
+/* Subheader overrides for sub-pages */
+#subheader,
+.subheader-glass {
+  background: var(--sairh-bg);
+  background-image: url('../images/background/fluted-wave-bg.svg') !important;
+  background-size: cover !important;
+  background-position: center top !important;
+  border-bottom: 1px solid var(--sairh-glass-border) !important;
+  padding: 60px 0 40px !important;
+  text-align: center;
+}
+
+#subheader h1,
+.subheader-glass h1 {
+  font-size: clamp(2rem, 3.5vw, 3rem) !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  margin-bottom: 8px !important;
+  letter-spacing: -0.5px;
+}
+
+#subheader p,
+.subheader-glass p {
+  color: var(--sairh-text-secondary) !important;
+  font-size: 1.1rem !important;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* Universal Form Control Dark Glass Theme */
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  background: rgba(4, 8, 22, 0.65) !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  padding: 12px 18px !important;
+  font-size: 0.98rem !important;
+  line-height: 1.5 !important;
+  transition: all 0.25s ease !important;
+}
+
+.form-control:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--sairh-cyan) !important;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3) !important;
+  outline: none !important;
+}
+
+.form-control::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: var(--sairh-text-muted) !important;
+  opacity: 0.8;
+}
+
+label, .field-set label {
+  color: var(--sairh-text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 0.92rem !important;
+  margin-bottom: 6px !important;
+  display: block;
+}
+
+/* Radio Button Lists & Checkboxes */
+.form-control.radio-list,
+.dxeRadioButtonList,
+.dxeCheckBoxList {
+  background: transparent !important;
+  border: none !important;
+  color: var(--sairh-text-secondary) !important;
+}
+
+/* Card & Box Component Overrides */
+.card,
+.form-border,
+.contact_form,
+#contact_form,
+#contact_form1 {
+  background: rgba(14, 28, 66, 0.5) !important;
+  border: 1px solid rgba(56, 189, 248, 0.2) !important;
+  border-radius: 20px !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: var(--sairh-card-shadow) !important;
+}
+
+.card-header {
+  background: rgba(10, 20, 48, 0.75) !important;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 1.15rem !important;
+  padding: 16px 24px !important;
+  border-top-left-radius: 20px !important;
+  border-top-right-radius: 20px !important;
+}
+
+.card-body {
+  padding: 28px !important;
+  color: var(--sairh-text-secondary) !important;
+}
+
+/* Glass Buttons */
+.btn-secondary,
+.btn-outline-info {
+  background: rgba(14, 28, 66, 0.5) !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  transition: all 0.25s ease !important;
+}
+
+.btn-secondary:hover,
+.btn-outline-info:hover {
+  background: rgba(56, 189, 248, 0.2) !important;
+  border-color: var(--sairh-cyan) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3) !important;
+}
+
+.cyan-glow-btn,
+.btn-primary,
+input[type="submit"].btn,
+.btn-main {
+  background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important;
+  border: 1px solid var(--sairh-cyan) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: 9999px !important;
+  padding: 12px 28px !important;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.35) !important;
+  transition: all 0.3s ease !important;
+}
+
+.cyan-glow-btn:hover,
+.btn-primary:hover,
+input[type="submit"].btn:hover,
+.btn-main:hover {
+  background: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%) !important;
+  box-shadow: 0 0 35px rgba(56, 189, 248, 0.55) !important;
+  transform: translateY(-2px);
+}
+
+

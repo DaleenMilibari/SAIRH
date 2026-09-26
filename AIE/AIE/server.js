@@ -101,11 +101,12 @@ function parseAspx(aspxPath, relativeUrl) {
     let pb = (attrs.match(/PostBackUrl=["']([^"']+)["']/i) || [])[1] || '#';
     pb = pb.replace('~/', '/');
 
+    const isAr = relativeUrl.toLowerCase().includes('/ar_sa');
     if (id === 'BtnToAr') pb = '/Ar_Sa/';
     else if (id === 'BtnToEn') pb = '/';
-    else if (id === 'BtnDashboard') pb = '/Dashboard';
-    else if (id === 'BtnProfile') pb = '/Profile';
-    else if (id === 'BtnSignOut') pb = '/Login';
+    else if (id === 'BtnDashboard') pb = isAr ? '/Ar_Sa/Dashboard' : '/Dashboard';
+    else if (id === 'BtnProfile') pb = isAr ? '/Ar_Sa/Profile' : '/Profile';
+    else if (id === 'BtnSignOut') pb = isAr ? '/Ar_Sa/Login' : '/Login';
 
     return `<a href="${pb}" id="${id}" class="${cls}">${body}</a>`;
   });
