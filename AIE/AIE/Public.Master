@@ -1,181 +1,30 @@
 <%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Public.master.cs" Inherits="AIE.Public" %>
-
-
 <!DOCTYPE html>
-<html lang="zxx">
+<html lang="en" dir="ltr">
 <head runat="server">
     <meta charset="utf-8" />
-    <title>Saudi First AI Summit in Radiology and Health InnovationAnnual Innovation Event</title>
+    <title>Saudi First AI Summit in Radiology and Health Innovation (SAIRH)</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <meta content="Saudi First AI Summit in Radiology and Health Innovation" name="description" />
-    <meta content="" name="keywords" />
-    <meta content="" name="author" />
+    <meta content="SAIRH, AI, Radiology, Health Innovation, Saudi Arabia, 2026" name="keywords" />
+    <meta content="SAIRH" name="author" />
 
-    <link id="bootstrap" href="Content/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link id="bootstrapgrid" href="Content/css/bootstrap-grid.min.css" rel="stylesheet" type="text/css" />
-    <link id="bootstrapreboot" href="Content/css/bootstrap-reboot.min.css" rel="stylesheet" type="text/css" />
-    <link href="Content/css/animate.css" rel="stylesheet" type="text/css" />
-    <link href="Content/css/owl.carousel.css" rel="stylesheet" type="text/css" />
-    <link href="Content/css/owl.theme.css" rel="stylesheet" type="text/css" />
-    <link href="Content/css/owl.transitions.css" rel="stylesheet" type="text/css" />
-    <link href="Content/css/magnific-popup.css" rel="stylesheet" type="text/css" />
-    <link href="Content/css/jquery.countdown.css" rel="stylesheet" type="text/css" />
-    <link href="Content/css/font/font.css" rel="stylesheet" />
-    <!-- color scheme -->
-    <link id="colors" href="Content/css/colors/scheme-01.css" rel="stylesheet" type="text/css" />
-    <link href="Content/css/coloring.css" rel="stylesheet" type="text/css" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" type="text/css" />
-    <link href="Content/css/style.css" rel="stylesheet" type="text/css" />
-    <link href="<%= ResolveUrl("~/Content/css/modern-dark-theme.css") %>" rel="stylesheet" type="text/css" />
+    <!-- Core Stylesheets -->
+    <link id="bootstrap" href="<%= ResolveUrl("~/Content/css/bootstrap.min.css") %>" rel="stylesheet" type="text/css" />
+    <link id="bootstrapgrid" href="<%= ResolveUrl("~/Content/css/bootstrap-grid.min.css") %>" rel="stylesheet" type="text/css" />
+    <link id="bootstrapreboot" href="<%= ResolveUrl("~/Content/css/bootstrap-reboot.min.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/animate.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/owl.carousel.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/owl.theme.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/owl.transitions.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/magnific-popup.css") %>" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+    <link href="<%= ResolveUrl("~/Content/css/style.css") %>" rel="stylesheet" type="text/css" />
     <link href="<%= ResolveUrl("~/Content/css/live-dashboard.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/liquid-glass-theme.css?v=20260930_no_overlap") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/images/logo.jpg") %>" rel="icon" />
 
-    <link href="Content\images\logo.jpg" rel="icon" />
-   <style>
-    /* 1. Flexbox & Alignment Utilities */
-    .de-flex-col {
-        display: flex;
-        align-items: center; /* Ensures vertical alignment of child elements */
-    }
-
-    #logo {
-        display: flex;
-        align-items: center; /* Ensures the logo is vertically aligned */
-    }
-
-    #logo img {
-        max-height: 100%; /* Prevents image overflow */
-        height: auto; /* Ensures responsiveness */
-    }
-
-    /* 2. Hero Background Image Styling (Main Banner) */
-    .bg-image {
-        height: 200px; /* Height adjusts based on content */
-        min-height: 50vh; /* Ensures a minimum height of 50% screen height */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding-top: 20%; /* Space at the top */
-        padding-bottom: 20%; /* Space at the bottom */
-        background-size: cover; /* Crops to fill container */
-        background-position: center; /* Centers image */
-        background-repeat: no-repeat; /* Prevents tiling */
-    }
-
-    /* 3. Small Background Image Styling (Sub-pages) */
-    .bg-image-small {
-        height: 200px;
-        min-height: 40vh; /* Minimum height of 40% screen height */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-    }
-
-    /* 4. Navigation & Links */
-    .active {
-        text-decoration: underline;
-        font-weight: bold;
-    }
-
-    /* 5. Topbar & Menu Layout */
-    #topbar {
-        padding: 4px 0 !important;
-    }
-
-    .menu-bar-container {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        width: 100%;
-        padding: 4px 0 !important;
-        direction: rtl;
-    }
-
-    .menu-logo-box {
-        flex: 0 0 220px;
-        display: flex;
-        align-items: center;
-    }
-
-    .menu-logo-box img {
-        height: 50px !important;
-        width: auto;
-    }
-
-    .menu-spacer {
-        flex: 0 0 220px;
-    }
-
-    ul#mainmenu.ar-menu-list {
-        flex: 1;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        gap: 22px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        list-style: none !important;
-    }
-
-    ul#mainmenu.ar-menu-list li {
-        white-space: nowrap !important;
-        margin: 0 !important;
-    }
-
-    ul#mainmenu.ar-menu-list li a {
-        font-size: 0.95rem;
-        font-weight: 600;
-        text-decoration: none;
-        padding: 6px 2px;
-        position: relative;
-        display: inline-block;
-        color: #333333;
-    }
-
-    ul#mainmenu.ar-menu-list li a::after {
-        content: '';
-        position: absolute;
-        width: 0;
-        height: 2px;
-        bottom: 0;
-        right: 0;
-        background-color: #000000;
-        transition: width 0.3s ease-in-out;
-    }
-
-    ul#mainmenu.ar-menu-list li a:hover::after,
-    ul#mainmenu.ar-menu-list li a.active::after {
-        width: 100%;
-    }
-
-    /* 6. Media Queries for Responsiveness */
-    @media (min-width: 768px) and (max-width: 1024px) {
-        #logo {
-            margin: 0 auto;
-            padding: 0;
-        }
-    }
-
-    @media (max-width: 992px) {
-        .menu-bar-container {
-            flex-wrap: wrap;
-        }
-        .menu-spacer {
-            display: none;
-        }
-    }
-
-    @media (max-width: 768px) {
-        ul#mainmenu li a.active {
-            text-decoration: underline !important;
-            font-weight: bold;
-        }
-    }
-</style>
-    
-   
     <asp:ContentPlaceHolder ID="head" runat="server">
     </asp:ContentPlaceHolder>
 </head>
@@ -183,119 +32,176 @@
 <body>
     <form id="form1" runat="server">
         <div id="wrapper">
-            <div id="topbar" class="text-white bg-color">
-                <div class="container">
-
-
-                    <div class="topbar-right">
-                        <span class="topbar-widget" runat="server" id="liProfile">
-                            <asp:LinkButton ID="BtnProfile" runat="server" PostBackUrl="~/Profile.aspx" CssClass="text-white"><i class="fa fa-user-circle-o"></i>Profile</asp:LinkButton>
-                        </span>
-                        <span class="topbar-widget" runat="server" id="liDashboard">
-                            <asp:LinkButton ID="BtnDashboard" runat="server" PostBackUrl="~/Dashboard.aspx" CssClass="text-white"><i class="fa fa-dashboard"></i>Dashboard</asp:LinkButton>
-                        </span>
-                        <span class="topbar-widget" runat="server" id="liLogOut">
-                            <asp:LinkButton ID="BtnSignOut" runat="server" OnClick="BtnSignOut_Click" CssClass="text-white"><i class="fa fa-key"></i>Sign out</asp:LinkButton>
-                        </span>
-                        <span class="topbar-widget" runat="server" id="liLogin">
-                            <a href="Login"><i class=" icon_lock-open"></i>Sign in</a>
-                        </span>
-                        <span class="topbar-widget">
-                            <asp:LinkButton ID="BtnToAr" runat="server" CssClass="text-white lang-switcher-btn" OnClick="BtnToAr_Click"><i class="fa fa-language"></i> العربية</asp:LinkButton>
-                        </span>
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
-            </div>
-
-            <!-- header begin -->
+            <!-- Merged Sticky Liquid Glass Header (Unified Navbar with Icons & Actions) -->
             <header class="header-dark">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="de-flex sm-pt10">
-                                <div class="de-flex-col">
-                                    <!-- logo begin -->
-                                   <div class="nav-wrapper">
-    <!-- 1. Logo Section -->
-    <div id="logo">
-        <a href="~/" runat="server">
-            <img alt="SAIRH Logo" class="logo" src="Content/images/background/SAIRH_logo_transparent.svg" style="width: 260px; height: auto;" />
-        </a>
-    </div>
+                <div class="container">
+                    <div class="header-inner">
+                        <!-- Logo -->
+                        <div id="logo">
+                            <a href="~/" runat="server">
+                                <img alt="SAIRH Logo" class="logo" src="<%= ResolveUrl("~/Content/images/background/SAIRH_logo_transparent.svg") %>" />
+                            </a>
+                        </div>
 
-    <!-- 2. Centered Menu -->
-    <ul id="mainmenu">
-        <li>
-            <a href="~/" runat="server" id="linkHome">Home<span></span></a>
-        </li>
-        <li>
-            <a href="Publication" runat="server" id="linkPublication">Tracks<span></span></a>
-        </li>
-        <li>
-            <a href="Schedules" runat="server" id="linkSchedules">Exhibition<span></span></a>
-        </li>
-        <li>
-            <a href="Ceremony" runat="server" id="linkCeremony">Conference Program<span></span></a>
-        </li>
-        <li>
-            <a href="Judges" runat="server" id="linkJudges">Speakers<span></span></a>
-        </li>
-        <li>
-            <a href="Sponsors" runat="server" id="linkSponsors">Sponsors<span></span></a>
-        </li>
-        <li>
-            <a href="ContactUs" runat="server" id="linkContactUs">Contact Us<span></span></a>
-        </li>
-    </ul>
+                        <!-- Navigation Menu with Icons & Integrated Action Buttons -->
+                        <ul id="mainmenu">
+                            <li><a href="~/" runat="server" id="linkHome"><i class="bi bi-house-door"></i> <span>Home</span></a></li>
+                            <li><a href="Ceremony" runat="server" id="linkCeremony"><i class="bi bi-calendar2-check"></i> <span>Program &amp; Tracks</span></a></li>
+                            <li><a href="Schedules" runat="server" id="linkSchedules"><i class="bi bi-buildings"></i> <span>Exhibition</span></a></li>
+                            <li><a href="Judges" runat="server" id="linkJudges"><i class="bi bi-people"></i> <span>Speakers</span></a></li>
+                            <li><a href="Sponsors" runat="server" id="linkSponsors"><i class="bi bi-award"></i> <span>Sponsors</span></a></li>
+                            <li><a href="ContactUs" runat="server" id="linkContactUs"><i class="bi bi-envelope"></i> <span>Contact</span></a></li>
+                            <li style="display:none;"><a href="Publication" runat="server" id="linkPublication" aria-hidden="true"></a></li>
 
-    <!-- 3. Right Balancer (Equal width to logo) -->
-    <div class="nav-spacer"></div>
-</div>
-                                <div class="de-flex-col">
-                                    <span id="menu-btn"></span>
+                            <!-- Menu Separator -->
+                            <li class="menu-separator" aria-hidden="true"></li>
+
+                            <!-- Signed In User Account Dropdown -->
+                            <li class="header-user-dropdown" runat="server" id="liProfile" ClientIDMode="Static">
+                                <button type="button" class="action-pill user-dropdown-toggle" id="userDropdownTrigger" aria-label="User Account Menu" aria-haspopup="true">
+                                    <i class="bi bi-person-circle"></i>
+                                    <span>Account</span>
+                                    <i class="bi bi-chevron-down user-dropdown-caret"></i>
+                                </button>
+                                <div class="user-dropdown-menu" id="userDropdownMenu">
+                                    <div class="user-dropdown-header">
+                                        <div class="user-dropdown-avatar">
+                                            <i class="bi bi-person-circle"></i>
+                                        </div>
+                                        <div class="user-dropdown-info">
+                                            <span class="user-dropdown-badge"><i class="bi bi-check-circle"></i> Signed In</span>
+                                            <span class="user-dropdown-greeting">Attendee Account</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-dropdown-divider"></div>
+                                    <asp:LinkButton ID="BtnProfile" runat="server" PostBackUrl="~/Profile.aspx" CssClass="user-dropdown-item">
+                                        <i class="bi bi-person-badge"></i> <span>My Profile &amp; Pass</span>
+                                    </asp:LinkButton>
+                                    <span runat="server" id="liDashboard" style="display:none;">
+                                        <asp:LinkButton ID="BtnDashboard" runat="server" PostBackUrl="~/Dashboard.aspx" CssClass="user-dropdown-item">
+                                            <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                                        </asp:LinkButton>
+                                    </span>
+                                    <div class="user-dropdown-divider"></div>
+                                    <span runat="server" id="liLogOut">
+                                        <asp:LinkButton ID="BtnSignOut" runat="server" OnClick="BtnSignOut_Click" CssClass="user-dropdown-item user-dropdown-item-danger">
+                                            <i class="bi bi-box-arrow-right"></i> <span>Sign out</span>
+                                        </asp:LinkButton>
+                                    </span>
                                 </div>
+                            </li>
+
+                            <!-- Guest State: Sign in & Register Buttons (Shown only when not signed in) -->
+                            <li class="header-guest-actions" runat="server" id="liLogin" ClientIDMode="Static">
+                                <a href="Login" class="action-pill"><i class="bi bi-box-arrow-in-right"></i> <span>Sign in</span></a>
+                                <a href="Register" class="action-pill action-pill-primary"><i class="bi bi-person-plus"></i> <span>Register</span></a>
+                            </li>
+
+                            <!-- Language Switcher -->
+                            <li class="menu-action-lang">
+                                <asp:LinkButton ID="BtnToAr" runat="server" CssClass="action-pill lang-switcher-pill" OnClick="BtnToAr_Click"><i class="bi bi-globe"></i> <span>العربية</span></asp:LinkButton>
+                            </li>
+                        </ul>
+
+                        <!-- Header End Controls: Mobile Menu Toggle & Official Year of AI 2026 Logo (Right on LTR) -->
+                        <div class="header-end-controls">
+                            <span id="menu-btn" role="button" aria-label="Toggle navigation"></span>
+                            <div class="header-partner-logo">
+                                <a href="https://sdaia.gov.sa" target="_blank" rel="noopener noreferrer" title="The Year of Artificial Intelligence 2026">
+                                    <img alt="The Year of Artificial Intelligence 2026" class="year-of-ai-logo" src="<%= ResolveUrl("~/Content/images/year-of-ai-2026-logo-white.png") %>" />
+                                </a>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Instant Mutual Exclusivity Guard & Mobile Navigation Toggle Script -->
+                <script>
+                    (function () {
+                        // Instant mutual exclusivity between profile and login
+                        var profile = document.getElementById('liProfile');
+                        var login = document.getElementById('liLogin');
+                        if (profile && login) {
+                            login.style.setProperty('display', 'none', 'important');
+                        }
+
+                        // Robust mobile menu toggle & outside click handler
+                        function setupMenuToggle() {
+                            var menuBtn = document.getElementById('menu-btn');
+                            var header = document.querySelector('header');
+                            if (!menuBtn || !header) return;
+
+                            menuBtn.onclick = function (e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                header.classList.toggle('menu-open');
+                            };
+
+                            // Close menu when clicking outside
+                            document.addEventListener('click', function (e) {
+                                if (header.classList.contains('menu-open') && !header.contains(e.target)) {
+                                    header.classList.remove('menu-open');
+                                }
+                            });
+
+                            // Close menu when clicking an active menu link
+                            var navLinks = header.querySelectorAll('ul#mainmenu a:not(.user-dropdown-toggle)');
+                            for (var i = 0; i < navLinks.length; i++) {
+                                navLinks[i].addEventListener('click', function () {
+                                    header.classList.remove('menu-open');
+                                });
+                            }
+                        }
+
+                        if (document.readyState === 'loading') {
+                            document.addEventListener('DOMContentLoaded', setupMenuToggle);
+                        } else {
+                            setupMenuToggle();
+                        }
+                    })();
+                </script>
             </header>
 
+            <!-- Main Content Area -->
             <div class="no-bottom no-top" id="content">
                 <div id="top"></div>
                 <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
                 <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
                 </asp:ContentPlaceHolder>
-
             </div>
-            <!-- content close -->
 
-            <a href="#" id="back-to-top"></a>
-           <%-- <div class="spacer-10"></div>--%>
+            <a href="#" id="back-to-top" aria-label="Back to Top"></a>
 
-            <!-- footer begin -->
+            <!-- Modern Liquid Glass Footer -->
+            <footer class="sairh-footer">
+                <div class="container">
+                    <div class="sairh-footer-inner">
+                        <div class="sairh-footer-social">
+                            <a href="mailto:iie@iau.edu.sa" title="Email" class="sairh-footer-link">
+                                <i class="bi bi-envelope"></i>
+                                <span>iie@iau.edu.sa</span>
+                            </a>
+                            <a href="https://twitter.com/IAU_VPSRI" target="_blank" rel="noopener noreferrer" title="X (Twitter)" class="sairh-footer-link">
+                                <i class="bi bi-twitter-x"></i>
+                                <span>@IAU_VPSRI</span>
+                            </a>
+                            <a href="https://apps.apple.com/us/app/annual-innovation-event/id6475714056" target="_blank" rel="noopener noreferrer" title="Apple App Store" class="sairh-footer-link">
+                                <i class="bi bi-apple"></i>
+                                <span>App Store</span>
+                            </a>
+                            <a href="https://play.google.com/store/apps/details?id=sa.edu.iau.annualinnovationevent" target="_blank" rel="noopener noreferrer" title="Google Play" class="sairh-footer-link">
+                                <i class="bi bi-google-play"></i>
+                                <span>Google Play</span>
+                            </a>
+                        </div>
+                        <div class="sairh-footer-copy">
+                            &copy; <%=DateTime.Now.Year.ToString() %> SAIRH &bull; Saudi First AI Summit in Radiology &amp; Health Innovation
+                        </div>
+                    </div>
+                </div>
+            </footer>
 
-            <footer>
-     <div class="row">
-         <div class="col-md-12">
-             <div class="de-flex ml-4">
-                 <div class="de-flex-col">
-                     <div class="social-icons">
-                         <a href="mailto:iie@iau.edu.sa"><i class="fa fa-envelope-o fa-lg"></i> <span>iie@iau.edu.sa</span></a>
-                         <a href="https://twitter.com/IAU_VPSRI" target="_blank"><i class="fa-brands fa-x-twitter fa-lg"></i> <span>IAU_VPSRI</span></a>
-                         <a href="https://apps.apple.com/us/app/annual-innovation-event/id6475714056" target="_blank"><i class="fa-brands fa-apple fa-lg"></i> <span>SRAS-IAU</span></a>
-                         <a href="https://play.google.com/store/apps/details?id=sa.edu.iau.annualinnovationevent" target="_blank"><i class="fa-brands fa-android fa-lg"></i> <span class="app-text">SRAS-IAU</span></a>
-                     </div>
-                 </div>
-                 <div class="de-flex-col mr-4">
-                     &copy; AIE <%=DateTime.Now.Year.ToString() %> 
-                 </div>
-             </div>
-         </div>
-     </div>
- </footer>
-
-
-            <!-- footer close -->
-
+            <!-- Preloader -->
             <div id="preloader">
                 <div class="spinner">
                     <div class="bounce1"></div>
@@ -305,47 +211,43 @@
             </div>
         </div>
 
-
-        <!-- Javascript Files
-    ================================================== -->
-        <script src="Content/js/jquery.min.js"></script>
-        <script src="Content/js/popper.min.js"></script>
-        <script src="Content/js/bootstrap.min.js"></script>
-        <script src="Content/js/wow.min.js"></script>
-        <script src="Content/js/jquery.isotope.min.js"></script>
-        <script src="Content/js/easing.js"></script>
-        <script src="Content/js/owl.carousel.js"></script>
-        <script src="Content/js/validation.js"></script>
-        <script src="Content/js/jquery.magnific-popup.min.js"></script>
-        <script src="Content/js/enquire.min.js"></script>
-        <script src="Content/js/jquery.stellar.min.js"></script>
-        <script src="Content/js/jquery.plugin.js"></script>
-        <script src="Content/js/typed.js"></script>
-        <script src="Content/js/jquery.countTo.js"></script>
-        <script src="Content/js/jquery.countdown.js"></script>
-        <script src="Content/js/typed.js"></script>
-        <script src="Content/js/designesia.js"></script>
+        <!-- Core JavaScript Files -->
+        <script src="<%= ResolveUrl("~/Content/js/jquery.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/popper.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/bootstrap.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/wow.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/jquery.isotope.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/easing.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/owl.carousel.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/validation.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/jquery.magnific-popup.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/enquire.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/jquery.stellar.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/jquery.plugin.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/typed.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/jquery.countTo.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/jquery.countdown.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/designesia.js") %>"></script>
 
         <script>
             $(function () {
-                // jquery typed plugin
-                $(".typed").typed({
-                    stringsElement: $('.typed-strings'),
-                    typeSpeed: 100,
-                    backDelay: 1500,
-                    loop: true,
-                    contentType: 'html', // or text
-                    // defaults to false for infinite loop
-                    loopCount: false,
-                    callback: function () { null; },
-                    resetCallback: function () { newTyped(); }
-                });
+                if ($('.typed-strings').length && $(".typed").length) {
+                    $(".typed").typed({
+                        stringsElement: $('.typed-strings'),
+                        typeSpeed: 100,
+                        backDelay: 1500,
+                        loop: true,
+                        contentType: 'html',
+                        loopCount: false
+                    });
+                }
             });
         </script>
 
-
+        <!-- Live Dashboard & Scroll Reveal Scripts -->
+        <script src="<%= ResolveUrl("~/Scripts/dashboard.js") %>"></script>
         <script src="<%= ResolveUrl("~/Scripts/scroll-reveal.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Scripts/hero-slider.js") %>"></script>
     </form>
-
 </body>
 </html>

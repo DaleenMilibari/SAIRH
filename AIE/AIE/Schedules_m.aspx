@@ -1,13 +1,6 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/PublicMobile.Master" AutoEventWireup="true" CodeBehind="Schedules_m.aspx.cs" Inherits="AIE.Schedules_m" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/PublicMobile.Master" AutoEventWireup="true" CodeBehind="Schedules_m.aspx.cs" Inherits="AIE.Schedules_m" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cc2" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <style>
-        .modalBg {
-            background-color: Black;
-            filter: alpha(opacity=60);
-            opacity: 0.6;
-        }
-    </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <section id="subheader" class="text-light" data-bgimage="url(Content/images/background/1.jpg) bottom">

@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="PublicMobile.master.cs" Inherits="AIE.PublicMobile" %>
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="PublicMobile.master.cs" Inherits="AIE.PublicMobile" %>
 
 <!DOCTYPE html>
 <html lang="zxx">
@@ -30,7 +30,8 @@
     <!-- color scheme -->
     <link id="colors" href="Content/css/colors/scheme-01.css" rel="stylesheet" type="text/css" />
     <link href="Content/css/coloring.css" rel="stylesheet" type="text/css" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
     <link href="Content/images/favico.png" rel="icon" />
 
 

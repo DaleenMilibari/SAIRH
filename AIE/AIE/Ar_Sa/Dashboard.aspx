@@ -1,48 +1,12 @@
 <%@ Page Title="لوحة التحكم - SAIRH 2026" Language="C#" MasterPageFile="~/Ar_Sa/PublicAr.Master" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs" Inherits="AIE.Ar_Sa.Dashboard" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <style>
-        .dash-nav-pills .nav-link {
-            background: rgba(14, 28, 66, 0.45);
-            border: 1px solid rgba(56, 189, 248, 0.16);
-            border-radius: 12px;
-            color: #cbd5e1;
-            padding: 14px 20px;
-            margin-bottom: 12px;
-            font-weight: 600;
-            transition: all 0.25s ease;
-        }
-        .dash-nav-pills .nav-link:hover {
-            background: rgba(14, 28, 66, 0.7);
-            border-color: rgba(56, 189, 248, 0.35);
-            color: #ffffff;
-        }
-        .dash-nav-pills .nav-link.active {
-            background: linear-gradient(135deg, rgba(2, 132, 199, 0.4), rgba(37, 99, 235, 0.4)) !important;
-            border-color: #38bdf8 !important;
-            color: #ffffff !important;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
-        }
-        .dash-content-card {
-            background: rgba(14, 28, 66, 0.5);
-            border: 1px solid rgba(56, 189, 248, 0.18);
-            border-radius: 18px;
-            padding: 35px;
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            color: #e2e8f0;
-            font-size: 1.05rem;
-            line-height: 1.8;
-            min-height: 380px;
-        }
-    </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <!-- Header -->
     <section class="py-5 simpler-main-bg" aria-label="لوحة التحكم">
         <div class="container text-center pt-4 pb-2">
-            <span class="glass-pill glass-pill-cyan mb-3">بوابة المشاركين</span>
             <h1 class="text-white font-weight-bold display-4 mb-3">
                 لوحة التحكم
             </h1>
@@ -57,16 +21,16 @@
                 <div class="col-lg-3 col-md-4 mb-4">
                     <div class="nav flex-column dash-nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                         <a class="nav-link active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true">
-                            <i class="fa fa-home ml-2"></i> الرئيسية
+                            <i class="bi bi-house-door ml-2"></i> الرئيسية
                         </a>
                         <a class="nav-link" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="false">
-                            <i class="fa fa-user ml-2"></i> الملف الشخصي
+                            <i class="bi bi-person ml-2"></i> الملف الشخصي
                         </a>
                         <a class="nav-link" id="v-pills-messages-tab" data-toggle="pill" href="#v-pills-messages" role="tab" aria-controls="v-pills-messages" aria-selected="false">
-                            <i class="fa fa-envelope ml-2"></i> الرسائل والإشعارات
+                            <i class="bi bi-envelope ml-2"></i> الرسائل والإشعارات
                         </a>
                         <a class="nav-link" id="v-pills-settings-tab" data-toggle="pill" href="#v-pills-settings" role="tab" aria-controls="v-pills-settings" aria-selected="false">
-                            <i class="fa fa-cog ml-2"></i> الإعدادات
+                            <i class="bi bi-gear ml-2"></i> الإعدادات
                         </a>
                     </div>
                 </div>

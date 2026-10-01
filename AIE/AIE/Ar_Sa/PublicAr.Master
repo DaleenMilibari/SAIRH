@@ -3,260 +3,205 @@
 <html lang="ar" dir="rtl">
 <head runat="server">
     <meta charset="utf-8" />
-
     <title>القمة السعودية للذكاء الاصطناعي في الاشعة والابتكار الصحي</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="القمة السعودية الأولى للذكاء الاصطناعي في الأشعة والابتكار الصحي" name="description" />
+    <meta content="الذكاء الاصطناعي، الأشعة، الابتكار الصحي، السعودية، 2026" name="keywords" />
+    <meta content="SAIRH" name="author" />
 
-    <!-- CSS Files -->
-    <link id="bootstrap" href="~/Content/css/bootstrap-rtl.min.css" rel="stylesheet" type="text/css" />
-    <link id="bootstrapgrid" href="~/Content/css/bootstrap-grid-rtl.min.css" rel="stylesheet" type="text/css" />
-    <link id="bootstrapreboot" href="~/Content/css/bootstrap-reboot-rtl.min.css" rel="stylesheet" type="text/css" />
-    <link href="~/Content/css/animate.css" rel="stylesheet" type="text/css" />
-    <link href="~/Content/css/owl.carousel.css" rel="stylesheet" type="text/css" />
-    <link href="~/Content/css/owl.theme.css" rel="stylesheet" type="text/css" />
-    <link href="~/Content/css/owl.transitions.css" rel="stylesheet" type="text/css" />
-    <link href="~/Content/css/magnific-popup.css" rel="stylesheet" type="text/css" />
-    <link href="~/Content/css/jquery.countdown.css" rel="stylesheet" type="text/css" />
-    <link href="~/Content/css/font/font.css" rel="stylesheet" />
-    <link id="colors" href="~/Content/css/colors/scheme-01.css" rel="stylesheet" type="text/css" />
-    <link href="~/Content/css/coloring.css" rel="stylesheet" type="text/css" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" type="text/css" />
-    <link href="~/Content/css/style.css" rel="stylesheet" type="text/css" />
-    <link href="~/Content/css/modern-dark-theme.css" rel="stylesheet" type="text/css" />
-    <link href="~/Content/css/live-dashboard.css" rel="stylesheet" type="text/css" />
-    <link href="../Content/images/logo.jpg" rel="icon" />
+    <!-- Core Stylesheets -->
+    <link id="bootstrap" href="<%= ResolveUrl("~/Content/css/bootstrap-rtl.min.css") %>" rel="stylesheet" type="text/css" />
+    <link id="bootstrapgrid" href="<%= ResolveUrl("~/Content/css/bootstrap-grid-rtl.min.css") %>" rel="stylesheet" type="text/css" />
+    <link id="bootstrapreboot" href="<%= ResolveUrl("~/Content/css/bootstrap-reboot-rtl.min.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/animate.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/owl.carousel.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/owl.theme.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/owl.transitions.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/magnific-popup.css") %>" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+    <link href="<%= ResolveUrl("~/Content/css/style.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/live-dashboard.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/liquid-glass-theme.css?v=20260930_no_overlap") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/images/logo.jpg") %>" rel="icon" />
 
-    <style>
-/* Smaller Hero Background Image Container */
-#content .bg-image,
-section.bg-image,
-.hero-section {
-    background-size: cover !important;
-    background-position: center center !important;
-    background-repeat: no-repeat !important;
-    min-height: 80vh !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding-top: 20px !important;
-    padding-bottom: 100px !important;
-    margin-top: 0px !important;
-}
-
-/* Shift title upward by 4 units */
-#content h1, 
-#content .hero-title, 
-#content .typed-strings,
-.bg-image h1 {
-    transform: translateY(-4rem) !important;
-    position: relative !important;
-    z-index: 10 !important;
-}
-
-/* Ensure child content centers cleanly over the background */
-#content .bg-image .container {
-    position: relative;
-    z-index: 2;
-}
-
-#topbar {
-    padding: 4px 0 !important;
-}
-
-/* Fixed Navigation Layout */
-.menu-bar-container {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    width: 100%;
-    padding: 4px 0 !important;
-    direction: rtl;
-}
-
-/* Responsive Logo Alignment */
-/* Responsive Logo Alignment (Right-Centered) */
-.menu-logo-box {
-    flex: 0 0 220px;
-    display: flex !important;
-    align-items: center !important;     /* Centers vertically */
-    justify-content: flex-start !important; /* Aligns to the right in RTL layout */
-}
-
-.menu-logo-box a {
-    display: flex !important;
-    align-items: center !important;     /* Ensures anchor link centers vertically */
-}
-
-.menu-logo-box img {
-    height: 50px !important;
-    width: auto;
-    display: block !important;
-}
-
-.menu-spacer {
-    flex: 0 0 220px;
-}
-
-/* Menu Links List */
-ul#mainmenu.ar-menu-list {
-    flex: 1;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    gap: 35px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    list-style: none !important;
-    transform: none !important;
-}
-
-ul#mainmenu.ar-menu-list li {
-    white-space: nowrap !important;
-    margin: 0 !important;
-}
-
-/* Default Menu Link Style (Not Bold) */
-ul#mainmenu.ar-menu-list li a {
-    font-size: 0.95rem;
-    font-weight: normal !important; /* Regular font weight by default */
-    text-decoration: none !important;
-    padding: 2px 0px !important;
-    position: relative !important;
-    display: inline-block !important;
-    color: #333333;
-    word-spacing: 6px !important;
-    transition: font-weight 0.2s ease-in-out;
-}
-
-/* Black Underline for Hover and Active Page */
-ul#mainmenu.ar-menu-list li a::after {
-    content: '' !important;
-    position: absolute !important;
-    width: 0;
-    height: 2px !important;
-    bottom: -2px !important;
-    left: 0 !important;
-    right: 0 !important;
-    margin: 0 auto !important;
-    background-color: #000000 !important;
-    transition: width 0.3s ease-in-out !important;
-}
-
-/* Bold and Underline on Hover / Active Page */
-ul#mainmenu.ar-menu-list li a:hover,
-ul#mainmenu.ar-menu-list li a.active {
-    font-weight: bold !important; /* Turns bold when hovered or active */
-}
-
-ul#mainmenu.ar-menu-list li a:hover::after,
-ul#mainmenu.ar-menu-list li a.active::after {
-    width: 100% !important; /* Underlines the word */
-}
-
-/* Mobile Adjustments */
-@media (max-width: 992px) {
-    .menu-bar-container {
-        flex-wrap: wrap;
-    }
-    .menu-spacer {
-        display: none;
-    }
-}
-</style>
-
-    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
 </head>
 
 <body>
     <form id="form1" runat="server">
         <div id="wrapper">
-            
-            <!-- Top Utility Bar -->
-            <div id="topbar" class="text-white bg-color">
-                <div class="container">
-                    <div class="topbar-right">
-                        <span class="topbar-widget" runat="server" id="liProfile">
-                            <asp:LinkButton ID="BtnProfile" runat="server" PostBackUrl="~/Ar_Sa/Profile.aspx" CssClass="text-white droidkufiregular"><i class="fa fa-user-circle-o"></i>ملفي</asp:LinkButton>
-                        </span>
-                        <span class="topbar-widget" runat="server" id="liDashboard">
-                            <asp:LinkButton ID="BtnDashboard" runat="server" PostBackUrl="~/Dashboard.aspx" CssClass="text-white droidkufiregular"><i class="fa fa-dashboard"></i>لوحة القيادة</asp:LinkButton>
-                        </span>
-                        <span class="topbar-widget" runat="server" id="liLogOut">
-                            <asp:LinkButton ID="BtnSignOut" runat="server" CssClass="droidkufiregular text-white" OnClick="BtnSignOut_Click">تسجيل الخروج <i class="fa fa-key"></i></asp:LinkButton>
-                        </span>
-                        <span class="topbar-widget" runat="server" id="liLogin">
-                            <a href="Login" class="droidkufiregular">الدخول <i class="icon_lock-open"></i></a>
-                        </span>
-                        <span class="topbar-widget" runat="server" id="Span4">
-                            <asp:LinkButton ID="BtnToEn" runat="server" CssClass="text-white lang-switcher-btn" OnClick="BtnToEn_Click">English <i class="fa fa-language"></i></asp:LinkButton>
-                        </span>
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
-            </div>
-
-            <!-- Header Begin -->
+            <!-- Merged Sticky Liquid Glass Header (Unified Navbar with Icons & Actions) -->
             <header class="header-dark">
-                <div class="container-fluid px-4">
-                    <div class="menu-bar-container">
-                        
-                        <!-- 1. Right Side Logo -->
-                        <div class="menu-logo-box">
-                            <a href="~/Ar_sa/" runat="server">
-                                <img alt="SAIRH Logo" src="<%= ResolveUrl("~/Content/images/background/SAIRH_logo_transparent.svg") %>" style="height: 50px; width: auto;" />
+                <div class="container">
+                    <div class="header-inner">
+                        <!-- Logo -->
+                        <div id="logo">
+                            <a href="~/Ar_Sa/" runat="server">
+                                <img alt="SAIRH Logo" class="logo" src="<%= ResolveUrl("~/Content/images/background/SAIRH_logo_transparent.svg") %>" />
                             </a>
                         </div>
 
-                        <!-- 2. Centered Menu Bar -->
+                        <!-- Navigation Menu with Icons & Integrated Action Buttons -->
                         <ul id="mainmenu" class="ar-menu-list">
-                            <li><a href="~/Ar_Sa/" runat="server" id="linkHomeAr" class="droidkufiregular">الرئيسية</a></li>
-                            <li><a href="Publication" runat="server" id="linkPublicationAr" class="droidkufiregular">المسارات</a></li>
-                            <li><a href="Schedules" runat="server" id="linkSchedulesAr" class="droidkufiregular">المعرض</a></li>
-                            <li><a href="Ceremony" runat="server" id="linkCeremonyAr" class="droidkufiregular">برنامج المؤتمر</a></li>
-                            <li><a href="Judges" runat="server" id="linkJudgesAr" class="droidkufiregular">المتحدثون</a></li>
-                            <li><a href="Sponsors" runat="server" id="linkSponsorsAr" class="droidkufiregular">الرعاة</a></li>
-                            <li><a href="ContactUs" runat="server" id="linkContactUsAr" class="droidkufiregular">اتصل بنا</a></li>
+                            <li><a href="~/Ar_Sa/" runat="server" id="linkHomeAr"><i class="bi bi-house-door"></i> <span>الرئيسية</span></a></li>
+                            <li><a href="Ceremony" runat="server" id="linkCeremonyAr"><i class="bi bi-calendar2-check"></i> <span>البرنامج والمسارات</span></a></li>
+                            <li><a href="Schedules" runat="server" id="linkSchedulesAr"><i class="bi bi-buildings"></i> <span>المعرض</span></a></li>
+                            <li><a href="Judges" runat="server" id="linkJudgesAr"><i class="bi bi-people"></i> <span>المتحدثون</span></a></li>
+                            <li><a href="Sponsors" runat="server" id="linkSponsorsAr"><i class="bi bi-award"></i> <span>الرعاة</span></a></li>
+                            <li><a href="ContactUs" runat="server" id="linkContactUsAr"><i class="bi bi-envelope"></i> <span>اتصل بنا</span></a></li>
+                            <li style="display:none;"><a href="Publication" runat="server" id="linkPublicationAr" aria-hidden="true"></a></li>
+
+                            <!-- فاصل القائمة -->
+                            <li class="menu-separator" aria-hidden="true"></li>
+
+                            <!-- قائمة حساب المستخدم بعد تسجيل الدخول -->
+                            <li class="header-user-dropdown" runat="server" id="liProfile" ClientIDMode="Static">
+                                <button type="button" class="action-pill user-dropdown-toggle" id="userDropdownTriggerAr" aria-label="قائمة الحساب" aria-haspopup="true">
+                                    <i class="bi bi-person-circle"></i>
+                                    <span>حسابي</span>
+                                    <i class="bi bi-chevron-down user-dropdown-caret"></i>
+                                </button>
+                                <div class="user-dropdown-menu" id="userDropdownMenuAr">
+                                    <div class="user-dropdown-header">
+                                        <div class="user-dropdown-avatar">
+                                            <i class="bi bi-person-circle"></i>
+                                        </div>
+                                        <div class="user-dropdown-info">
+                                            <span class="user-dropdown-badge"><i class="bi bi-check-circle"></i> تم الدخول</span>
+                                            <span class="user-dropdown-greeting">حساب المشترك</span>
+                                        </div>
+                                    </div>
+                                    <div class="user-dropdown-divider"></div>
+                                    <asp:LinkButton ID="BtnProfile" runat="server" PostBackUrl="~/Ar_Sa/Profile.aspx" CssClass="user-dropdown-item">
+                                        <i class="bi bi-person-badge"></i> <span>ملفي وبطاقة الدخول</span>
+                                    </asp:LinkButton>
+                                    <span runat="server" id="liDashboard" style="display:none;">
+                                        <asp:LinkButton ID="BtnDashboard" runat="server" PostBackUrl="~/Ar_Sa/Dashboard.aspx" CssClass="user-dropdown-item">
+                                            <i class="bi bi-speedometer2"></i> <span>لوحة القيادة</span>
+                                        </asp:LinkButton>
+                                    </span>
+                                    <div class="user-dropdown-divider"></div>
+                                    <span runat="server" id="liLogOut">
+                                        <asp:LinkButton ID="BtnSignOut" runat="server" OnClick="BtnSignOut_Click" CssClass="user-dropdown-item user-dropdown-item-danger">
+                                            <i class="bi bi-box-arrow-right"></i> <span>تسجيل الخروج</span>
+                                        </asp:LinkButton>
+                                    </span>
+                                </div>
+                            </li>
+
+                            <!-- حالة الزائر غير المسجل: أزرار الدخول والتسجيل -->
+                            <li class="header-guest-actions" runat="server" id="liLogin" ClientIDMode="Static">
+                                <a href="Login" class="action-pill"><i class="bi bi-box-arrow-in-right"></i> <span>تسجيل الدخول</span></a>
+                                <a href="Register" class="action-pill action-pill-primary"><i class="bi bi-person-plus"></i> <span>التسجيل</span></a>
+                            </li>
+
+                            <!-- محول اللغة -->
+                            <li class="menu-action-lang">
+                                <asp:LinkButton ID="BtnToEn" runat="server" CssClass="action-pill lang-switcher-pill" OnClick="BtnToEn_Click"><i class="bi bi-globe"></i> <span>English</span></asp:LinkButton>
+                            </li>
                         </ul>
 
-                        <!-- 3. Left Side Balancer -->
-                        <div class="menu-spacer"></div>
-
+                        <!-- أدوات نهاية الترويسة: زر القائمة المتنقلة وشعار عام الذكاء الاصطناعي 2026 (على اليسار في الواجهة العربية) -->
+                        <div class="header-end-controls">
+                            <span id="menu-btn" role="button" aria-label="Toggle navigation"></span>
+                            <div class="header-partner-logo">
+                                <a href="https://sdaia.gov.sa" target="_blank" rel="noopener noreferrer" title="عام الذكاء الاصطناعي 2026">
+                                    <img alt="عام الذكاء الاصطناعي 2026" class="year-of-ai-logo" src="<%= ResolveUrl("~/Content/images/year-of-ai-2026-logo-white.png") %>" />
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </header>
-            <!-- Header Close -->
 
-            <!-- Content Begin -->
+                <!-- Instant Mutual Exclusivity Guard & Mobile Navigation Toggle Script -->
+                <script>
+                    (function () {
+                        // Instant mutual exclusivity between profile and login
+                        var profile = document.getElementById('liProfile');
+                        var login = document.getElementById('liLogin');
+                        if (profile && login) {
+                            login.style.setProperty('display', 'none', 'important');
+                        }
+
+                        // Robust mobile menu toggle & outside click handler
+                        function setupMenuToggle() {
+                            var menuBtn = document.getElementById('menu-btn');
+                            var header = document.querySelector('header');
+                            if (!menuBtn || !header) return;
+
+                            menuBtn.onclick = function (e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                header.classList.toggle('menu-open');
+                            };
+
+                            // Close menu when clicking outside
+                            document.addEventListener('click', function (e) {
+                                if (header.classList.contains('menu-open') && !header.contains(e.target)) {
+                                    header.classList.remove('menu-open');
+                                }
+                            });
+
+                            // Close menu when clicking an active menu link
+                            var navLinks = header.querySelectorAll('ul#mainmenu a:not(.user-dropdown-toggle)');
+                            for (var i = 0; i < navLinks.length; i++) {
+                                navLinks[i].addEventListener('click', function () {
+                                    header.classList.remove('menu-open');
+                                });
+                            }
+                        }
+
+                        if (document.readyState === 'loading') {
+                            document.addEventListener('DOMContentLoaded', setupMenuToggle);
+                        } else {
+                            setupMenuToggle();
+                        }
+                    })();
+                </script>
+            </header>
+
+            <!-- Main Content Area -->
             <div class="no-bottom no-top" id="content">
                 <div id="top"></div>
                 <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
-                <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server"></asp:ContentPlaceHolder>
+                <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+                </asp:ContentPlaceHolder>
             </div>
-            <!-- Content Close -->
 
-            <a href="#" id="back-to-top"></a>
+            <a href="#" id="back-to-top" aria-label="الرجوع للأعلى"></a>
 
-            <!-- Footer Begin -->
-            <footer>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="de-flex ml-4">
-                            <div class="de-flex-col">
-                                <div class="social-icons">
-                                    <a href="mailto:iie@iau.edu.sa"><i class="fa fa-envelope-o fa-lg"></i> <span>iie@iau.edu.sa</span></a>
-                                    <a href="https://twitter.com/IAU_VPSRI" target="_blank"><i class="fa-brands fa-x-twitter fa-lg"></i> <span>IAU_VPSRI</span></a>
-                                    <a href="https://apps.apple.com/us/app/annual-innovation-event/id6475714056" target="_blank"><i class="fa-brands fa-apple fa-lg"></i> <span>SRAS-IAU</span></a>
-                                    <a href="https://play.google.com/store/apps/details?id=sa.edu.iau.annualinnovationevent" target="_blank"><i class="fa-brands fa-android fa-lg"></i> <span class="app-text">SRAS-IAU</span></a>
-                                </div>
-                            </div>
-                            <div class="de-flex-col mr-4">
-                                &copy; AIE <%=DateTime.Now.Year.ToString() %> 
-                            </div>
+            <!-- Modern Liquid Glass Footer -->
+            <footer class="sairh-footer">
+                <div class="container">
+                    <div class="sairh-footer-inner">
+                        <div class="sairh-footer-social">
+                            <a href="mailto:iie@iau.edu.sa" title="البريد الإلكتروني" class="sairh-footer-link">
+                                <i class="bi bi-envelope"></i>
+                                <span>iie@iau.edu.sa</span>
+                            </a>
+                            <a href="https://twitter.com/IAU_VPSRI" target="_blank" rel="noopener noreferrer" title="منصة إكس" class="sairh-footer-link">
+                                <i class="bi bi-twitter-x"></i>
+                                <span>@IAU_VPSRI</span>
+                            </a>
+                            <a href="https://apps.apple.com/us/app/annual-innovation-event/id6475714056" target="_blank" rel="noopener noreferrer" title="متجر آبل" class="sairh-footer-link">
+                                <i class="bi bi-apple"></i>
+                                <span>App Store</span>
+                            </a>
+                            <a href="https://play.google.com/store/apps/details?id=sa.edu.iau.annualinnovationevent" target="_blank" rel="noopener noreferrer" title="متجر جوجل" class="sairh-footer-link">
+                                <i class="bi bi-google-play"></i>
+                                <span>Google Play</span>
+                            </a>
+                        </div>
+                        <div class="sairh-footer-copy">
+                            &copy; <%=DateTime.Now.Year.ToString() %> القمة السعودية للذكاء الاصطناعي في الأشعة والابتكار الصحي
                         </div>
                     </div>
                 </div>
             </footer>
 
+            <!-- Preloader -->
             <div id="preloader">
                 <div class="spinner">
                     <div class="bounce1"></div>
@@ -264,42 +209,45 @@ ul#mainmenu.ar-menu-list li a.active::after {
                     <div class="bounce3"></div>
                 </div>
             </div>
-
         </div>
 
-        <!-- JS Files -->
-        <script src="../Content/js/jquery.min.js"></script>
-        <script src="../Content/js/popper.min.js"></script>
-        <script src="../Content/js/bootstrap.min.js"></script>
-        <script src="../Content/js/wow.min.js"></script>
-        <script src="../Content/js/jquery.isotope.min.js"></script>
-        <script src="../Content/js/easing.js"></script>
-        <script src="../Content/js/owl.carousel.js"></script>
-        <script src="../Content/js/validation.js"></script>
-        <script src="../Content/js/jquery.magnific-popup.min.js"></script>
-        <script src="../Content/js/enquire.min.js"></script>
-        <script src="../Content/js/jquery.stellar.min.js"></script>
-        <script src="../Content/js/jquery.plugin.js"></script>
-        <script src="../Content/js/typed.js"></script>
-        <script src="../Content/js/jquery.countTo.js"></script>
-        <script src="../Content/js/jquery.countdown.js"></script>
-        <script src="../Content/js/designesia_ar.js"></script>
+        <!-- Core JavaScript Files -->
+        <script src="<%= ResolveUrl("~/Content/js/jquery.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/popper.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/bootstrap.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/wow.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/jquery.isotope.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/easing.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/owl.carousel.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/validation.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/jquery.magnific-popup.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/enquire.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/jquery.stellar.min.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/jquery.plugin.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/typed.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/jquery.countTo.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/jquery.countdown.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/designesia_ar.js") %>"></script>
 
         <script>
             $(function () {
-                $(".typed").typed({
-                    stringsElement: $('.typed-strings'),
-                    typeSpeed: 100,
-                    backDelay: 1500,
-                    loop: true,
-                    contentType: 'html',
-                    loopCount: false,
-                    callback: function () { null; },
-                    resetCallback: function () { newTyped(); }
-                });
+                if ($('.typed-strings').length && $(".typed").length) {
+                    $(".typed").typed({
+                        stringsElement: $('.typed-strings'),
+                        typeSpeed: 100,
+                        backDelay: 1500,
+                        loop: true,
+                        contentType: 'html',
+                        loopCount: false
+                    });
+                }
             });
         </script>
+
+        <!-- Live Dashboard & Scroll Reveal Scripts -->
+        <script src="<%= ResolveUrl("~/Scripts/dashboard.js") %>"></script>
         <script src="<%= ResolveUrl("~/Scripts/scroll-reveal.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Scripts/hero-slider.js") %>"></script>
     </form>
 </body>
 </html>

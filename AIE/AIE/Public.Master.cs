@@ -1,4 +1,4 @@
-﻿using DBFunction;
+using DBFunction;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,39 +13,17 @@ namespace AIE
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-           if(!IsPostBack)
-            {
-                if(Ado.UserDetails!=null)
-                {
-                    liLogin.Visible = false;
-                    liLogOut.Visible = true;
-                    liProfile.Visible = true;
-                    if (Ado.UserDetails.UserLevel == "Admin")
-                    {
-                        liDashboard.Visible = true;
-                    }
-                    else
-                    {
-                        liDashboard.Visible = false;
-                    }
-                }
-                else
-                {
-                    liLogin.Visible = true;
-                    liLogOut.Visible = false;
-                    liDashboard.Visible = false;
-                    liProfile.Visible = false;
-                }
+            UpdateAuthVisibility();
 
+            if (!IsPostBack)
+            {
                 // New logic for setting the active class
                 string currentPage = Request.Url.AbsolutePath.ToLower();
 
-                if (currentPage.Contains("publication"))
-                    linkPublication.Attributes["class"] += " active";
+                if (currentPage.Contains("publication") || currentPage.Contains("ceremony"))
+                    linkCeremony.Attributes["class"] += " active";
                 else if (currentPage.Contains("schedules"))
                     linkSchedules.Attributes["class"] += " active";
-                else if (currentPage.Contains("ceremony"))
-                    linkCeremony.Attributes["class"] += " active";
                 else if (currentPage.Contains("judges"))
                     linkJudges.Attributes["class"] += " active";
                 else if (currentPage.Contains("sponsors"))
@@ -54,7 +32,39 @@ namespace AIE
                     linkContactUs.Attributes["class"] += " active";
                 else
                     linkHome.Attributes["class"] += " active";
+            }
+        }
 
+        protected void Page_PreRender(object sender, EventArgs e)
+        {
+            UpdateAuthVisibility();
+        }
+
+        private void UpdateAuthVisibility()
+        {
+            bool isSignedIn = (Ado.UserDetails != null) ||
+                              (Context.User != null && Context.User.Identity != null && Context.User.Identity.IsAuthenticated);
+
+            if (isSignedIn)
+            {
+                liLogin.Visible = false;
+                liProfile.Visible = true;
+                liLogOut.Visible = true;
+                if (Ado.UserDetails != null && Ado.UserDetails.UserLevel == "Admin")
+                {
+                    liDashboard.Visible = true;
+                }
+                else
+                {
+                    liDashboard.Visible = false;
+                }
+            }
+            else
+            {
+                liLogin.Visible = true;
+                liProfile.Visible = false;
+                liLogOut.Visible = false;
+                liDashboard.Visible = false;
             }
         }
 

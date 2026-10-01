@@ -1,48 +1,12 @@
 <%@ Page Title="Dashboard - SAIRH 2026" Language="C#" MasterPageFile="~/Public.Master" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs" Inherits="AIE.Dashboard" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <style>
-        .dash-nav-pills .nav-link {
-            background: rgba(14, 28, 66, 0.45);
-            border: 1px solid rgba(56, 189, 248, 0.16);
-            border-radius: 12px;
-            color: #cbd5e1;
-            padding: 14px 20px;
-            margin-bottom: 12px;
-            font-weight: 600;
-            transition: all 0.25s ease;
-        }
-        .dash-nav-pills .nav-link:hover {
-            background: rgba(14, 28, 66, 0.7);
-            border-color: rgba(56, 189, 248, 0.35);
-            color: #ffffff;
-        }
-        .dash-nav-pills .nav-link.active {
-            background: linear-gradient(135deg, rgba(2, 132, 199, 0.4), rgba(37, 99, 235, 0.4)) !important;
-            border-color: #38bdf8 !important;
-            color: #ffffff !important;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
-        }
-        .dash-content-card {
-            background: rgba(14, 28, 66, 0.5);
-            border: 1px solid rgba(56, 189, 248, 0.18);
-            border-radius: 18px;
-            padding: 35px;
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            color: #e2e8f0;
-            font-size: 1.05rem;
-            line-height: 1.8;
-            min-height: 380px;
-        }
-    </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <!-- Header -->
     <section class="py-5 simpler-main-bg" aria-label="Dashboard Header">
         <div class="container text-center pt-4 pb-2">
-            <span class="glass-pill glass-pill-cyan mb-3">Attendee Portal</span>
             <h1 class="text-white font-weight-bold display-4 mb-3">
                 Dashboard
             </h1>
@@ -57,16 +21,16 @@
                 <div class="col-lg-3 col-md-4 mb-4">
                     <div class="nav flex-column dash-nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                         <a class="nav-link active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="true">
-                            <i class="fa fa-home mr-2"></i> Home
+                            <i class="bi bi-house-door mr-2"></i> Home
                         </a>
                         <a class="nav-link" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="false">
-                            <i class="fa fa-user mr-2"></i> Profile
+                            <i class="bi bi-person mr-2"></i> Profile
                         </a>
                         <a class="nav-link" id="v-pills-messages-tab" data-toggle="pill" href="#v-pills-messages" role="tab" aria-controls="v-pills-messages" aria-selected="false">
-                            <i class="fa fa-envelope mr-2"></i> Messages
+                            <i class="bi bi-envelope mr-2"></i> Messages
                         </a>
                         <a class="nav-link" id="v-pills-settings-tab" data-toggle="pill" href="#v-pills-settings" role="tab" aria-controls="v-pills-settings" aria-selected="false">
-                            <i class="fa fa-cog mr-2"></i> Settings
+                            <i class="bi bi-gear mr-2"></i> Settings
                         </a>
                     </div>
                 </div>

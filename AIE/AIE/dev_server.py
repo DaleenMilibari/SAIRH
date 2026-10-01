@@ -70,8 +70,15 @@ def parse_aspx(aspx_path, relative_url):
     rendered = re.sub(r'<%=\s*ResolveUrl\(["\']~?/([^"\']+)["\']\)\s*%>', r'/\1', rendered)
     rendered = re.sub(r'<%=\s*ResolveUrl\(["\']([^"\']+)["\']\)\s*%>', r'/\1', rendered)
     
-    # Replace <%=DateTime.Now.Year.ToString() %>
-    rendered = re.sub(r'<%=\s*DateTime\.Now\.Year\.ToString\(\)\s*%>', '2026', rendered)
+    # Replace <%=DateTime... %> expressions
+    from datetime import datetime as dt
+    now_dt = dt.now()
+    year_str = now_dt.strftime("%Y")
+    today_iso = now_dt.strftime("%Y-%m-%d")
+    rendered = re.sub(r'<%=\s*DateTime\.Now\.Year\.ToString\(\)\s*%>', year_str, rendered)
+    rendered = re.sub(r'<%=\s*DateTime\.Today\.ToString\([^\)]*\)\s*%>', today_iso, rendered, flags=re.IGNORECASE)
+    rendered = re.sub(r'<%=\s*DateTime\.Now\.ToString\([^\)]*\)\s*%>', today_iso, rendered, flags=re.IGNORECASE)
+    rendered = re.sub(r'<%=\s*DateTime\.(?:Today|Now)(?:\.ToString\([^)]*\))?\s*%>', today_iso, rendered, flags=re.IGNORECASE)
     
     # Remove any remaining server tags <% ... %>
     rendered = re.sub(r'<%@[^%]*%>', '', rendered)
@@ -157,7 +164,7 @@ def parse_aspx(aspx_path, relative_url):
             rendered = rendered.replace('id="linkSchedulesAr"', 'id="linkSchedulesAr" class="active"')
         elif 'ceremony' in req_lower:
             rendered = rendered.replace('id="linkCeremonyAr"', 'id="linkCeremonyAr" class="active"')
-        elif 'judges' in req_lower:
+        elif 'judges' in req_lower or 'speaker' in req_lower:
             rendered = rendered.replace('id="linkJudgesAr"', 'id="linkJudgesAr" class="active"')
         elif 'sponsors' in req_lower:
             rendered = rendered.replace('id="linkSponsorsAr"', 'id="linkSponsorsAr" class="active"')
@@ -172,7 +179,7 @@ def parse_aspx(aspx_path, relative_url):
             rendered = rendered.replace('id="linkSchedules"', 'id="linkSchedules" class="active"')
         elif 'ceremony' in req_lower:
             rendered = rendered.replace('id="linkCeremony"', 'id="linkCeremony" class="active"')
-        elif 'judges' in req_lower:
+        elif 'judges' in req_lower or 'speaker' in req_lower:
             rendered = rendered.replace('id="linkJudges"', 'id="linkJudges" class="active"')
         elif 'sponsors' in req_lower:
             rendered = rendered.replace('id="linkSponsors"', 'id="linkSponsors" class="active"')
@@ -215,7 +222,7 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                 aspx_file = 'Ar_Sa/Schedules.aspx'
             elif subpath.lower() in ['ceremony', 'ceremony.aspx']:
                 aspx_file = 'Ar_Sa/Ceremony.aspx'
-            elif subpath.lower() in ['judges', 'judges.aspx']:
+            elif subpath.lower() in ['judges', 'judges.aspx', 'speakers', 'speakers.aspx']:
                 aspx_file = 'Ar_Sa/Judges.aspx'
             elif subpath.lower() in ['sponsors', 'sponsors.aspx']:
                 aspx_file = 'Ar_Sa/Sponsors.aspx'
@@ -239,7 +246,7 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                 aspx_file = 'Schedules.aspx'
             elif path.lower() in ['ceremony', 'ceremony.aspx']:
                 aspx_file = 'Ceremony.aspx'
-            elif path.lower() in ['judges', 'judges.aspx']:
+            elif path.lower() in ['judges', 'judges.aspx', 'speakers', 'speakers.aspx']:
                 aspx_file = 'Judges.aspx'
             elif path.lower() in ['sponsors', 'sponsors.aspx']:
                 aspx_file = 'Sponsors.aspx'

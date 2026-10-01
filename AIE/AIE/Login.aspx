@@ -1,30 +1,6 @@
 <%@ Page Title="Sign In - SAIRH 2026" Language="C#" MasterPageFile="~/Public.Master" AutoEventWireup="true" CodeBehind="Login.aspx.cs" Inherits="AIE.Login" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <style>
-        .login-glass-card {
-            background: rgba(14, 28, 66, 0.55);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            border-radius: 20px;
-            padding: 40px;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
-        }
-        .login-glass-card .form-control {
-            background: rgba(4, 8, 22, 0.65) !important;
-            border: 1px solid rgba(56, 189, 248, 0.25) !important;
-            color: #ffffff !important;
-            border-radius: 10px;
-            padding: 14px 18px;
-            font-size: 1rem;
-            margin-bottom: 20px;
-        }
-        .login-glass-card .form-control:focus {
-            border-color: #38bdf8 !important;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3) !important;
-        }
-    </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
@@ -33,7 +9,6 @@
             <div class="row align-items-center justify-content-center">
                 <div class="col-lg-5 text-light mb-5 mb-lg-0">
                     <div class="d-inline-flex mb-3">
-                        <span class="glass-pill glass-pill-cyan">Portal Access</span>
                     </div>
                     <div class="h1 text-light font-weight-bold mb-3">
                         Welcome <br />

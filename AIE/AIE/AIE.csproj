@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\EntityFramework.6.5.2\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.5.2\build\EntityFramework.props')" />
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.0\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
@@ -186,6 +186,7 @@
     <Content Include="Content\css\jpreloader.css" />
     <Content Include="Content\css\jquery.countdown.css" />
     <Content Include="Content\css\live-dashboard.css" />
+    <Content Include="Content\css\liquid-glass-theme.css" />
     <Content Include="Content\css\magnific-popup.css" />
     <Content Include="Content\css\owl.carousel.css" />
     <Content Include="Content\css\owl.theme.css" />
@@ -933,7 +934,12 @@
     <Content Include="Content\images\background\3.jpg" />
     <Content Include="Content\images\background\background.png" />
     <Content Include="Content\images\background\footer.png" />
+    <Content Include="Content\images\background\hero-ai-bg.png" />
     <Content Include="Content\images\background\SAIRH_logo_transparent.svg" />
+    <Content Include="Content\images\mbs-portrait.jpg" />
+    <Content Include="Content\images\year-of-ai-2026-logo.png" />
+    <Content Include="Content\images\year-of-ai-2026-logo-white.png" />
+    <Content Include="Content\images\Home-Image\hero-ai-bg.png" />
     <Content Include="Content\images\gallery\1.jpg" />
     <Content Include="Content\images\gallery\2.jpg" />
     <Content Include="Content\images\gallery\3.jpg" />
@@ -1107,6 +1113,10 @@
     <Content Include="Scripts\jquery-3.3.1.slim.js" />
     <Content Include="Scripts\jquery-3.3.1.slim.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Scripts\dashboard.js" />
+    <Content Include="Scripts\scroll-reveal.js" />
+    <Content Include="Scripts\hero-slider.js" />
+    <Content Include="Scripts\speakers.js" />
     <Content Include="Scripts\WebForms\DetailsView.js" />
     <Content Include="Scripts\WebForms\Focus.js" />
     <Content Include="Scripts\WebForms\GridView.js" />

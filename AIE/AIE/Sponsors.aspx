@@ -1,117 +1,12 @@
 <%@ Page Title="Summit Partners - SAIRH 2026" Language="C#" MasterPageFile="~/Public.Master" AutoEventWireup="true" CodeBehind="Sponsors.aspx.cs" Inherits="AIE.Sponsors" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <style>
-        .partner-block {
-            background: rgba(14, 28, 66, 0.45);
-            border: 1px solid rgba(56, 189, 248, 0.18);
-            border-radius: 22px;
-            padding: 35px 30px;
-            margin-bottom: 35px;
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-        }
-        .partner-block-title {
-            color: #ffffff;
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 18px;
-            padding-bottom: 14px;
-            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .partner-entity-list {
-            list-style: none;
-            padding-left: 0;
-            margin-bottom: 25px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 10px;
-        }
-        .partner-entity-list li {
-            color: #cbd5e1;
-            font-size: 1.05rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .partner-entity-list li::before {
-            content: '◆';
-            color: #38bdf8;
-            font-size: 0.85rem;
-        }
-        .logo-cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 16px;
-        }
-        .logo-card-item {
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 14px;
-            padding: 14px 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            min-height: 100px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        .logo-card-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.35);
-        }
-        .logo-card-item img {
-            max-height: 48px;
-            max-width: 130px;
-            object-fit: contain;
-            margin-bottom: 6px;
-        }
-        .logo-label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #0f172a;
-            line-height: 1.2;
-        }
-        .alliances-ribbon {
-            background: linear-gradient(135deg, rgba(2, 132, 199, 0.25), rgba(37, 99, 235, 0.25));
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 20px;
-            padding: 35px;
-            margin-top: 20px;
-        }
-        .alliance-point-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 14px;
-            color: #f1f5f9;
-            font-size: 1.1rem;
-        }
-        .alliance-point-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: rgba(56, 189, 248, 0.2);
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #38bdf8;
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
-    </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <!-- Header -->
     <section class="py-5 simpler-main-bg" aria-label="Partners Header">
         <div class="container text-center pt-4 pb-2">
-            <span class="glass-pill glass-pill-cyan mb-3">Ecosystem Alliances</span>
             <h1 class="text-white font-weight-bold display-4 mb-3">
                 Summit Partners
             </h1>
@@ -221,27 +116,27 @@
                         <p class="text-secondary mb-4" style="font-size: 1.1rem;">These alliances will support the Summit through:</p>
 
                         <div class="alliance-point-item">
-                            <div class="alliance-point-icon"><i class="fa fa-flask"></i></div>
+                            <div class="alliance-point-icon"><i class="bi bi-radioactive"></i></div>
                             <span>Scientific collaboration and content contribution.</span>
                         </div>
 
                         <div class="alliance-point-item">
-                            <div class="alliance-point-icon"><i class="fa fa-shield"></i></div>
+                            <div class="alliance-point-icon"><i class="bi bi-shield-check"></i></div>
                             <span>Policy and regulatory alignment.</span>
                         </div>
 
                         <div class="alliance-point-item">
-                            <div class="alliance-point-icon"><i class="fa fa-desktop"></i></div>
+                            <div class="alliance-point-icon"><i class="bi bi-display"></i></div>
                             <span>Technology showcases and live demonstrations.</span>
                         </div>
 
                         <div class="alliance-point-item">
-                            <div class="alliance-point-icon"><i class="fa fa-rocket"></i></div>
+                            <div class="alliance-point-icon"><i class="bi bi-rocket-takeoff"></i></div>
                             <span>Innovation and startup engagement.</span>
                         </div>
 
                         <div class="alliance-point-item">
-                            <div class="alliance-point-icon"><i class="fa fa-handshake-o"></i></div>
+                            <div class="alliance-point-icon"><i class="bi bi-award"></i></div>
                             <span>Research partnerships and future initiatives.</span>
                         </div>
                     </div>

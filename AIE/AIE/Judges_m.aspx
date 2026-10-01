@@ -1,13 +1,6 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/PublicMobile.Master" AutoEventWireup="true" CodeBehind="Judges_m.aspx.cs" Inherits="AIE.Judges_m" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/PublicMobile.Master" AutoEventWireup="true" CodeBehind="Judges_m.aspx.cs" Inherits="AIE.Judges_m" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="cc2" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-        <style>
-        .modalBg {
-            background-color: Black;
-            filter: alpha(opacity=60);
-            opacity: 0.6;
-        }
-    </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <asp:UpdatePanel ID="UpdatePanel1" runat="server">

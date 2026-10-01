@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -11,13 +11,16 @@ namespace AIE
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            if(!IsPostBack)
+            string track = Request.QueryString["track"];
+            if (!string.IsNullOrEmpty(track))
             {
-                //string embed = "<object data=\"{0}\" type=\"application/pdf\" width=\"100%\" height=\"500px\"></object>";
-                //embedPdf1.Text = string.Format(embed, ResolveUrl("Content/pdf/Publication_en.pdf"));
-                //embedPdf2.Text = string.Format(embed, ResolveUrl("Content/pdf/Pub2.pdf"));
-                //embedPdf3.Text = string.Format(embed, ResolveUrl("Content/pdf/Pub3.pdf"));
+                Response.Redirect("~/Ceremony?track=" + Server.UrlEncode(track), false);
             }
+            else
+            {
+                Response.Redirect("~/Ceremony", false);
+            }
+            Context.ApplicationInstance.CompleteRequest();
         }
     }
 }

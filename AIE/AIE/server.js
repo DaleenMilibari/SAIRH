@@ -68,10 +68,19 @@ function parseAspx(aspxPath, relativeUrl) {
   rendered = rendered.replace(/<asp:ContentPlaceHolder[^>]*ID=["']head["'][^>]*>[\s\S]*?<\/asp:ContentPlaceHolder>/gi, () => headContent);
   rendered = rendered.replace(/<asp:ContentPlaceHolder[^>]*ID=["']ContentPlaceHolder1["'][^>]*>[\s\S]*?<\/asp:ContentPlaceHolder>/gi, () => mainContent);
 
-  // ResolveUrl
+  // Resolve dates and expressions
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const todayIso = `${year}-${month}-${day}`;
+
   rendered = rendered.replace(/<%=\s*ResolveUrl\(["']~?\/([^"']+)["']\)\s*%>/g, '/$1');
   rendered = rendered.replace(/<%=\s*ResolveUrl\(["']([^"']+)["']\)\s*%>/g, '/$1');
-  rendered = rendered.replace(/<%=\s*DateTime\.Now\.Year\.ToString\(\)\s*%>/g, '2026');
+  rendered = rendered.replace(/<%=\s*DateTime\.Now\.Year\.ToString\(\)\s*%>/g, String(year));
+  rendered = rendered.replace(/<%=\s*DateTime\.Today\.ToString\([^)]*\)\s*%>/gi, todayIso);
+  rendered = rendered.replace(/<%=\s*DateTime\.Now\.ToString\([^)]*\)\s*%>/gi, todayIso);
+  rendered = rendered.replace(/<%=\s*DateTime\.(?:Today|Now)(?:\.ToString\([^)]*\))?\s*%>/gi, todayIso);
 
   // Remove ScriptManager & directives
   rendered = rendered.replace(/<%@[\s\S]*?%>/g, '');
@@ -123,7 +132,7 @@ function parseAspx(aspxPath, relativeUrl) {
     if (reqLower.includes('publication')) rendered = rendered.replace('id="linkPublicationAr"', 'id="linkPublicationAr" class="active"');
     else if (reqLower.includes('schedules')) rendered = rendered.replace('id="linkSchedulesAr"', 'id="linkSchedulesAr" class="active"');
     else if (reqLower.includes('ceremony')) rendered = rendered.replace('id="linkCeremonyAr"', 'id="linkCeremonyAr" class="active"');
-    else if (reqLower.includes('judges')) rendered = rendered.replace('id="linkJudgesAr"', 'id="linkJudgesAr" class="active"');
+    else if (reqLower.includes('judges') || reqLower.includes('speaker')) rendered = rendered.replace('id="linkJudgesAr"', 'id="linkJudgesAr" class="active"');
     else if (reqLower.includes('sponsors')) rendered = rendered.replace('id="linkSponsorsAr"', 'id="linkSponsorsAr" class="active"');
     else if (reqLower.includes('contactus')) rendered = rendered.replace('id="linkContactUsAr"', 'id="linkContactUsAr" class="active"');
     else rendered = rendered.replace('id="linkHomeAr"', 'id="linkHomeAr" class="active"');
@@ -131,7 +140,7 @@ function parseAspx(aspxPath, relativeUrl) {
     if (reqLower.includes('publication')) rendered = rendered.replace('id="linkPublication"', 'id="linkPublication" class="active"');
     else if (reqLower.includes('schedules')) rendered = rendered.replace('id="linkSchedules"', 'id="linkSchedules" class="active"');
     else if (reqLower.includes('ceremony')) rendered = rendered.replace('id="linkCeremony"', 'id="linkCeremony" class="active"');
-    else if (reqLower.includes('judges')) rendered = rendered.replace('id="linkJudges"', 'id="linkJudges" class="active"');
+    else if (reqLower.includes('judges') || reqLower.includes('speaker')) rendered = rendered.replace('id="linkJudges"', 'id="linkJudges" class="active"');
     else if (reqLower.includes('sponsors')) rendered = rendered.replace('id="linkSponsors"', 'id="linkSponsors" class="active"');
     else if (reqLower.includes('contactus')) rendered = rendered.replace('id="linkContactUs"', 'id="linkContactUs" class="active"');
     else rendered = rendered.replace('id="linkHome"', 'id="linkHome" class="active"');
@@ -172,7 +181,7 @@ function handleRequest(req, res) {
     else if (['publication', 'publication.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Publication.aspx';
     else if (['schedules', 'schedules.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Schedules.aspx';
     else if (['ceremony', 'ceremony.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Ceremony.aspx';
-    else if (['judges', 'judges.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Judges.aspx';
+    else if (['judges', 'judges.aspx', 'speakers', 'speakers.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Judges.aspx';
     else if (['sponsors', 'sponsors.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Sponsors.aspx';
     else if (['contactus', 'contactus.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/ContactUs.aspx';
     else if (['login', 'login.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Login.aspx';
@@ -183,7 +192,7 @@ function handleRequest(req, res) {
     else if (['publication', 'publication.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Publication.aspx';
     else if (['schedules', 'schedules.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Schedules.aspx';
     else if (['ceremony', 'ceremony.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Ceremony.aspx';
-    else if (['judges', 'judges.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Judges.aspx';
+    else if (['judges', 'judges.aspx', 'speakers', 'speakers.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Judges.aspx';
     else if (['sponsors', 'sponsors.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Sponsors.aspx';
     else if (['contactus', 'contactus.aspx'].includes(pathname.toLowerCase())) aspxFile = 'ContactUs.aspx';
     else if (['login', 'login.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Login.aspx';
