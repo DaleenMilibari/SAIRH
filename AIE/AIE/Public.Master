@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
     <link href="<%= ResolveUrl("~/Content/css/style.css") %>" rel="stylesheet" type="text/css" />
     <link href="<%= ResolveUrl("~/Content/css/live-dashboard.css") %>" rel="stylesheet" type="text/css" />
-    <link href="<%= ResolveUrl("~/Content/css/liquid-glass-theme.css?v=20260930_no_overlap") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/liquid-glass-theme.css?v=20261004_no_overlap_v3") %>" rel="stylesheet" type="text/css" />
     <link href="<%= ResolveUrl("~/Content/images/logo.jpg") %>" rel="icon" />
 
     <asp:ContentPlaceHolder ID="head" runat="server">
@@ -34,7 +34,7 @@
         <div id="wrapper">
             <!-- Merged Sticky Liquid Glass Header (Unified Navbar with Icons & Actions) -->
             <header class="header-dark">
-                <div class="container">
+                <div class="container-fluid header-container">
                     <div class="header-inner">
                         <!-- Logo -->
                         <div id="logo">
@@ -43,67 +43,70 @@
                             </a>
                         </div>
 
-                        <!-- Navigation Menu with Icons & Integrated Action Buttons -->
-                        <ul id="mainmenu">
-                            <li><a href="~/" runat="server" id="linkHome"><i class="bi bi-house-door"></i> <span>Home</span></a></li>
-                            <li><a href="Ceremony" runat="server" id="linkCeremony"><i class="bi bi-calendar2-check"></i> <span>Program &amp; Tracks</span></a></li>
-                            <li><a href="Schedules" runat="server" id="linkSchedules"><i class="bi bi-buildings"></i> <span>Exhibition</span></a></li>
-                            <li><a href="Judges" runat="server" id="linkJudges"><i class="bi bi-people"></i> <span>Speakers</span></a></li>
-                            <li><a href="Sponsors" runat="server" id="linkSponsors"><i class="bi bi-award"></i> <span>Sponsors</span></a></li>
-                            <li><a href="ContactUs" runat="server" id="linkContactUs"><i class="bi bi-envelope"></i> <span>Contact</span></a></li>
-                            <li style="display:none;"><a href="Publication" runat="server" id="linkPublication" aria-hidden="true"></a></li>
+                        <!-- Navigation & Actions Container -->
+                        <div class="header-nav-container" id="headerNavContainer">
+                            <!-- Main Navigation Menu -->
+                            <ul id="mainmenu">
+                                <li><a href="~/" runat="server" id="linkHome"><i class="bi bi-house-door"></i> <span>Home</span></a></li>
+                                <li><a href="Ceremony" runat="server" id="linkCeremony"><i class="bi bi-calendar2-check"></i> <span>Program &amp; Tracks</span></a></li>
+                                <li><a href="Schedules" runat="server" id="linkSchedules"><i class="bi bi-buildings"></i> <span>Exhibition</span></a></li>
+                                <li><a href="Judges" runat="server" id="linkJudges"><i class="bi bi-people"></i> <span>Speakers</span></a></li>
+                                <li><a href="Sponsors" runat="server" id="linkSponsors"><i class="bi bi-award"></i> <span>Sponsors</span></a></li>
+                                <li><a href="ContactUs" runat="server" id="linkContactUs"><i class="bi bi-envelope"></i> <span>Contact</span></a></li>
+                                <li style="display:none;"><a href="Publication" runat="server" id="linkPublication" aria-hidden="true"></a></li>
+                            </ul>
 
-                            <!-- Menu Separator -->
-                            <li class="menu-separator" aria-hidden="true"></li>
-
-                            <!-- Signed In User Account Dropdown -->
-                            <li class="header-user-dropdown" runat="server" id="liProfile" ClientIDMode="Static">
-                                <button type="button" class="action-pill user-dropdown-toggle" id="userDropdownTrigger" aria-label="User Account Menu" aria-haspopup="true">
-                                    <i class="bi bi-person-circle"></i>
-                                    <span>Account</span>
-                                    <i class="bi bi-chevron-down user-dropdown-caret"></i>
-                                </button>
-                                <div class="user-dropdown-menu" id="userDropdownMenu">
-                                    <div class="user-dropdown-header">
-                                        <div class="user-dropdown-avatar">
-                                            <i class="bi bi-person-circle"></i>
+                            <!-- Account & Language Switcher Group -->
+                            <div class="header-actions">
+                                <!-- Signed In User Account Dropdown -->
+                                <div class="header-user-dropdown" runat="server" id="liProfile" ClientIDMode="Static">
+                                    <button type="button" class="action-pill user-dropdown-toggle" id="userDropdownTrigger" aria-label="User Account Menu" aria-haspopup="true">
+                                        <i class="bi bi-person-circle"></i>
+                                        <span>Account</span>
+                                        <i class="bi bi-chevron-down user-dropdown-caret"></i>
+                                    </button>
+                                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                                        <div class="user-dropdown-header">
+                                            <div class="user-dropdown-avatar">
+                                                <i class="bi bi-person-circle"></i>
+                                            </div>
+                                            <div class="user-dropdown-info">
+                                                <span class="user-dropdown-badge"><i class="bi bi-check-circle"></i> Signed In</span>
+                                                <span class="user-dropdown-greeting">Attendee Account</span>
+                                            </div>
                                         </div>
-                                        <div class="user-dropdown-info">
-                                            <span class="user-dropdown-badge"><i class="bi bi-check-circle"></i> Signed In</span>
-                                            <span class="user-dropdown-greeting">Attendee Account</span>
-                                        </div>
+                                        <div class="user-dropdown-divider"></div>
+                                        <asp:LinkButton ID="BtnProfile" runat="server" PostBackUrl="~/Profile.aspx" CssClass="user-dropdown-item">
+                                            <i class="bi bi-person-badge"></i> <span>My Profile &amp; Pass</span>
+                                        </asp:LinkButton>
+                                        <span runat="server" id="liDashboard" style="display:none;">
+                                            <asp:LinkButton ID="BtnDashboard" runat="server" PostBackUrl="~/Dashboard.aspx" CssClass="user-dropdown-item">
+                                                <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                                            </asp:LinkButton>
+                                        </span>
+                                        <div class="user-dropdown-divider"></div>
+                                        <span runat="server" id="liLogOut">
+                                            <asp:LinkButton ID="BtnSignOut" runat="server" OnClick="BtnSignOut_Click" CssClass="user-dropdown-item user-dropdown-item-danger">
+                                                <i class="bi bi-box-arrow-right"></i> <span>Sign out</span>
+                                            </asp:LinkButton>
+                                        </span>
                                     </div>
-                                    <div class="user-dropdown-divider"></div>
-                                    <asp:LinkButton ID="BtnProfile" runat="server" PostBackUrl="~/Profile.aspx" CssClass="user-dropdown-item">
-                                        <i class="bi bi-person-badge"></i> <span>My Profile &amp; Pass</span>
-                                    </asp:LinkButton>
-                                    <span runat="server" id="liDashboard" style="display:none;">
-                                        <asp:LinkButton ID="BtnDashboard" runat="server" PostBackUrl="~/Dashboard.aspx" CssClass="user-dropdown-item">
-                                            <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
-                                        </asp:LinkButton>
-                                    </span>
-                                    <div class="user-dropdown-divider"></div>
-                                    <span runat="server" id="liLogOut">
-                                        <asp:LinkButton ID="BtnSignOut" runat="server" OnClick="BtnSignOut_Click" CssClass="user-dropdown-item user-dropdown-item-danger">
-                                            <i class="bi bi-box-arrow-right"></i> <span>Sign out</span>
-                                        </asp:LinkButton>
-                                    </span>
                                 </div>
-                            </li>
 
-                            <!-- Guest State: Sign in & Register Buttons (Shown only when not signed in) -->
-                            <li class="header-guest-actions" runat="server" id="liLogin" ClientIDMode="Static">
-                                <a href="Login" class="action-pill"><i class="bi bi-box-arrow-in-right"></i> <span>Sign in</span></a>
-                                <a href="Register" class="action-pill action-pill-primary"><i class="bi bi-person-plus"></i> <span>Register</span></a>
-                            </li>
+                                <!-- Guest State: Sign in & Register Buttons (Shown only when not signed in) -->
+                                <div class="header-guest-actions" runat="server" id="liLogin" ClientIDMode="Static">
+                                    <a href="Login" class="action-pill"><i class="bi bi-box-arrow-in-right"></i> <span>Sign in</span></a>
+                                    <a href="Register" class="action-pill action-pill-primary"><i class="bi bi-person-plus"></i> <span>Register</span></a>
+                                </div>
 
-                            <!-- Language Switcher -->
-                            <li class="menu-action-lang">
-                                <asp:LinkButton ID="BtnToAr" runat="server" CssClass="action-pill lang-switcher-pill" OnClick="BtnToAr_Click"><i class="bi bi-globe"></i> <span>العربية</span></asp:LinkButton>
-                            </li>
-                        </ul>
+                                <!-- Language Switcher -->
+                                <div class="menu-action-lang">
+                                    <asp:LinkButton ID="BtnToAr" runat="server" CssClass="action-pill lang-switcher-pill" OnClick="BtnToAr_Click"><i class="bi bi-globe"></i> <span>العربية</span></asp:LinkButton>
+                                </div>
+                            </div>
+                        </div>
 
-                        <!-- Header End Controls: Mobile Menu Toggle & Official Year of AI 2026 Logo (Right on LTR) -->
+                        <!-- 2nd Logo: Year of AI 2026 Partner Logo & Mobile Hamburger Toggle -->
                         <div class="header-end-controls">
                             <span id="menu-btn" role="button" aria-label="Toggle navigation"></span>
                             <div class="header-partner-logo">

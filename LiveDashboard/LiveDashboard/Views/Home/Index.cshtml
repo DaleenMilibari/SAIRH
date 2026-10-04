@@ -77,124 +77,131 @@
                          data-end="@session.EndDateTime.ToString("O")"
                          data-language="@languageCode">
 
-                    <aside class="sairh-speaker-panel">
-                        <div class="sairh-speaker-image-frame">
+                    <!-- Left: Speaker Profile Card -->
+                    <aside class="sairh-speaker-card sairh-speaker-panel">
+                        <div class="sairh-speaker-avatar-wrap sairh-speaker-image-frame">
                             <img src="@session.SpeakerImage"
-                                 alt="@(isArabic
-                                                                ? $"صورة المتحدث {speakerName}"
-                                                                : $"Speaker photo: {speakerName}")"
-                 class="sairh-speaker-image"
-                 onerror="this.onerror=null; this.src='/images/speakers/default-speaker.png';" />
-        </div>
+                                 alt="@(isArabic ? $"صورة المتحدث {speakerName}" : $"Speaker photo: {speakerName}")"
+                                 class="sairh-speaker-avatar sairh-speaker-image"
+                                 onerror="this.onerror=null; this.src='/images/sairh-logo.png';" />
+                            <span class="sairh-speaker-badge">@(isArabic ? "المتحدث" : "Speaker")</span>
+                        </div>
 
-        <div class="sairh-speaker-information">
-            <h3 class="sairh-speaker-name">@speakerName</h3>
-            <p class="sairh-speaker-job">@speakerJobTitle</p>
+                        <div class="sairh-speaker-information">
+                            <h3 class="sairh-speaker-name">@speakerName</h3>
+                            <p class="sairh-speaker-role sairh-speaker-job">@speakerJobTitle</p>
 
-            @if (!string.IsNullOrWhiteSpace(organization))
-            {
-                <p class="sairh-speaker-organization">
-                    <span class="sairh-organization-icon" aria-hidden="true">◇</span>
-                    <span>@organization</span>
-                </p>
+                            @if (!string.IsNullOrWhiteSpace(organization))
+                            {
+                                <p class="sairh-speaker-org sairh-speaker-organization">
+                                    <i class="bi bi-bank sairh-organization-icon" aria-hidden="true"></i>
+                                    <span>@organization</span>
+                                </p>
+                            }
+                        </div>
+                    </aside>
+
+                    <!-- Right: Session Telemetry & Timeline Main Panel -->
+                    <div class="sairh-session-main sairh-session-panel">
+                        <div class="sairh-slide-header sairh-session-heading">
+                            <span class="sairh-track-tag sairh-year">
+                                <i class="bi bi-boxes"></i> SAIRH 2026
+                            </span>
+
+                            <div class="sairh-status @(isLive ? "live" : "upcoming")">
+                                <span class="sairh-status-dot"></span>
+                                <span class="sairh-status-text">
+                                    @(isLive
+                                        ? (isArabic ? "يعرض الآن" : "Live Now")
+                                        : (isArabic ? "الجلسة القادمة" : "Next Session"))
+                                </span>
+                            </div>
+                        </div>
+
+                        <h2 class="sairh-session-title">@title</h2>
+
+                        <!-- 3 Balanced Meta Telemetry Cards -->
+                        <div class="sairh-session-meta-grid sairh-session-details">
+                            <div class="sairh-meta-card sairh-detail-card">
+                                <div class="sairh-meta-icon sairh-detail-icon" aria-hidden="true">
+                                    <i class="bi bi-geo-alt"></i>
+                                </div>
+                                <div class="sairh-meta-info">
+                                    <span class="sairh-meta-label sairh-detail-label">
+                                        @(isArabic ? "القاعة" : "Location")
+                                    </span>
+                                    <strong class="sairh-meta-value sairh-detail-value">@roomName</strong>
+                                </div>
+                            </div>
+
+                            <div class="sairh-meta-card sairh-detail-card">
+                                <div class="sairh-meta-icon sairh-detail-icon" aria-hidden="true">
+                                    <i class="bi bi-clock"></i>
+                                </div>
+                                <div class="sairh-meta-info">
+                                    <span class="sairh-meta-label sairh-detail-label">
+                                        @(isArabic ? "الوقت" : "Schedule")
+                                    </span>
+                                    <strong class="sairh-meta-value sairh-detail-value sairh-session-time" dir="ltr">
+                                        @session.StartDateTime.ToString("hh:mm tt") &ndash; @session.EndDateTime.ToString("hh:mm tt")
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="sairh-meta-card sairh-meta-card-highlight sairh-detail-card">
+                                <div class="sairh-meta-icon sairh-detail-icon" aria-hidden="true">
+                                    <i class="bi bi-hourglass-split"></i>
+                                </div>
+                                <div class="sairh-meta-info">
+                                    <span class="sairh-meta-label sairh-detail-label sairh-countdown-label">
+                                        @(isLive
+                                            ? (isArabic ? "متبقي على نهاية الجلسة" : "Time Remaining")
+                                            : (isArabic ? "تبدأ الجلسة بعد" : "Starts In"))
+                                    </span>
+                                    <strong class="sairh-meta-value sairh-detail-value sairh-countdown" aria-live="polite"></strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar Track -->
+                        <div class="sairh-progress-wrap">
+                            <div class="sairh-progress-track" aria-hidden="true">
+                                <div class="sairh-progress-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
             }
         </div>
-    </aside>
-
-    <div class="sairh-session-panel">
-        <div class="sairh-session-heading">
-            <span class="sairh-year">SAIRH 2026</span>
-
-            <div class="sairh-status @(isLive ? "live" : "upcoming")">
-                <span class="sairh-status-dot"></span>
-                <span class="sairh-status-text">
-                    @(isLive
-                        ? (isArabic ? "يعرض الآن" : "Live Now")
-                        : (isArabic ? "الجلسة القادمة" : "Next Session"))
-                </span>
-            </div>
-        </div>
-
-        <h2 class="sairh-session-title">@title</h2>
-
-        <div class="sairh-title-line"></div>
-
-        <div class="sairh-session-details">
-            <div class="sairh-detail-card">
-                <div class="sairh-detail-icon" aria-hidden="true">▯</div>
-                <div>
-                    <span class="sairh-detail-label">
-                        @(isArabic ? "القاعة" : "Room")
-                    </span>
-                    <strong class="sairh-detail-value">@roomName</strong>
-                </div>
-            </div>
-
-            <div class="sairh-detail-card">
-                <div class="sairh-detail-icon" aria-hidden="true">◷</div>
-                <div>
-                    <span class="sairh-detail-label">
-                        @(isArabic ? "الوقت" : "Time")
-                    </span>
-                    <strong class="sairh-detail-value sairh-session-time" dir="ltr">
-                        @session.StartDateTime.ToString("hh:mm tt")
-                        –
-                        @session.EndDateTime.ToString("hh:mm tt")
-                    </strong>
-                </div>
-            </div>
-
-            <div class="sairh-detail-card">
-                <div class="sairh-detail-icon" aria-hidden="true">◇</div>
-                <div>
-                    <span class="sairh-detail-label sairh-countdown-label">
-                        @(isLive
-                            ? (isArabic ? "متبقي على نهاية الجلسة" : "Time Remaining")
-                            : (isArabic ? "تبدأ الجلسة بعد" : "Starts In"))
-                    </span>
-                    <strong class="sairh-detail-value sairh-countdown" aria-live="polite"></strong>
-                </div>
-            </div>
-        </div>
-
-        <div class="sairh-progress-track" aria-hidden="true">
-            <div class="sairh-progress-fill"></div>
-        </div>
-    </div>
-</article>
-            }
-</div>
 
         @if (Model.Sessions.Count > 1)
-{
-    <div class="sairh-slider-controls">
-        <div class="sairh-arrows">
-            <button type="button"
-                    class="sairh-slider-arrow previous"
-                    aria-label="@(isArabic ? "الجلسة السابقة" : "Previous session")">
-                <span aria-hidden="true">@(isArabic ? "›" : "‹")</span>
-            </button>
+        {
+            <div class="sairh-slider-controls">
+                <div class="sairh-arrows">
+                    <button type="button"
+                            class="sairh-slider-arrow previous"
+                            aria-label="@(isArabic ? "الجلسة السابقة" : "Previous session")">
+                        <i class="bi @(isArabic ? "bi-chevron-right" : "bi-chevron-left")" aria-hidden="true"></i>
+                    </button>
 
-            <button type="button"
-                    class="sairh-slider-arrow next"
-                    aria-label="@(isArabic ? "الجلسة التالية" : "Next session")">
-                <span aria-hidden="true">@(isArabic ? "‹" : "›")</span>
-            </button>
-        </div>
+                    <button type="button"
+                            class="sairh-slider-arrow next"
+                            aria-label="@(isArabic ? "الجلسة التالية" : "Next session")">
+                        <i class="bi @(isArabic ? "bi-chevron-left" : "bi-chevron-right")" aria-hidden="true"></i>
+                    </button>
+                </div>
 
-        <div class="sairh-slider-dots">
-            @for (var index = 0; index < Model.Sessions.Count; index++)
-            {
-                <button type="button"
-                        class="sairh-slider-dot @(index == 0 ? "active" : "")"
-                        data-index="@index"
-                        aria-label="@(isArabic
-                                                        ? $"عرض الجلسة رقم {index + 1}"
-                                                        : $"Show session {index + 1}")">
-        </button>
-    }
-</div>
-</div>
+                <div class="sairh-slider-dots">
+                    @for (var index = 0; index < Model.Sessions.Count; index++)
+                    {
+                        <button type="button"
+                                class="sairh-slider-dot @(index == 0 ? "active" : "")"
+                                data-index="@index"
+                                aria-label="@(isArabic ? $"عرض الجلسة رقم {index + 1}" : $"Show session {index + 1}")">
+                        </button>
+                    }
+                </div>
+            </div>
         }
     }
     else

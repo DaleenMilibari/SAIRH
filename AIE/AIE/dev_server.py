@@ -208,8 +208,15 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
         is_arabic = path.lower().startswith('ar_sa')
         subpath = path[5:].strip('/') if is_arabic else path
 
-        # Check if requesting static assets
-        if path.startswith('Content/') or path.startswith('Scripts/') or any(path.lower().endswith(ext) for ext in ['.css', '.js', '.png', '.jpg', '.jpeg', '.svg', '.woff', '.woff2', '.ttf', '.ico', '.mp4']):
+        # Check if requesting static assets (including relative to Ar_Sa)
+        static_path = path
+        if static_path.lower().startswith('ar_sa/content/'):
+            static_path = static_path[6:]
+        elif static_path.lower().startswith('ar_sa/scripts/'):
+            static_path = static_path[6:]
+
+        if static_path.startswith('Content/') or static_path.startswith('Scripts/') or any(static_path.lower().endswith(ext) for ext in ['.css', '.js', '.png', '.jpg', '.jpeg', '.svg', '.woff', '.woff2', '.ttf', '.ico', '.mp4', '.pdf']):
+            self.path = '/' + static_path
             return super().do_GET()
 
         # Route matching to ASPX files

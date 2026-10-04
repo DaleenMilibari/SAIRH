@@ -1035,11 +1035,15 @@ header.header-dark::before {
   z-index: 0;
 }
 
-header .container, header.header-dark .container {
+header .container, 
+header .container-fluid,
+header.header-dark .container, 
+header.header-dark .container-fluid,
+.header-container {
   max-width: 100% !important;
   width: 100% !important;
-  padding-left: clamp(14px, 2vw, 36px) !important;
-  padding-right: clamp(14px, 2vw, 36px) !important;
+  padding-left: clamp(14px, 2.5vw, 40px) !important;
+  padding-right: clamp(14px, 2.5vw, 40px) !important;
   position: relative !important;
   z-index: 1 !important;
 }
@@ -1064,7 +1068,7 @@ header.header-dark.smaller,
     inset 0 -1px 0 0 rgba(0, 0, 0, 0.95),
     0 14px 35px rgba(0, 0, 0, 0.75) !important;
   border-bottom: 1px solid #000000 !important;
-  min-height: 64px !important;
+  min-height: 68px !important;
 }
 
 .header-inner, .sairh-nav-wrap, .menu-bar-container {
@@ -1074,7 +1078,7 @@ header.header-dark.smaller,
   width: 100% !important;
   padding: 8px 0 !important;
   position: relative !important;
-  gap: clamp(12px, 1.5vw, 28px) !important;
+  gap: clamp(8px, 1.2vw, 20px) !important;
   flex-wrap: nowrap !important;
 }
 
@@ -1087,6 +1091,7 @@ header.header-dark.smaller,
   padding: 0 !important;
   position: relative !important;
   z-index: 5 !important;
+  margin-inline-end: clamp(12px, 1.5vw, 24px) !important;
 }
 
 #logo a, .menu-logo-box a, .sairh-logo-box a {
@@ -1096,38 +1101,54 @@ header.header-dark.smaller,
 }
 
 #logo img.logo, .menu-logo-box img, .sairh-logo-box img, #logo img {
-  height: 36px !important;
+  height: 48px !important;
   width: auto !important;
-  max-width: 150px !important;
+  max-width: 260px !important;
   object-fit: contain !important;
-  filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(56, 189, 248, 0.45)) !important;
+  filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(56, 189, 248, 0.5)) !important;
   transition: var(--lg-transition) !important;
   display: block !important;
 }
 
 #logo a:hover img, .menu-logo-box a:hover img, .sairh-logo-box a:hover img {
-  filter: brightness(0) invert(1) drop-shadow(0 0 16px rgba(56, 189, 248, 0.7)) !important;
+  filter: brightness(0) invert(1) drop-shadow(0 0 18px rgba(56, 189, 248, 0.75)) !important;
+}
+
+/* Navigation & Actions Wrapper (Houses ul#mainmenu and .header-actions) */
+.header-nav-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: relative !important;
+  z-index: 2 !important;
+  gap: clamp(8px, 1.2vw, 20px) !important;
 }
 
 ul#mainmenu, ul#mainmenu.ar-menu-list {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: clamp(2px, 0.25vw, 5px) !important;
   margin: 0 auto !important;
+  margin-inline-start: auto !important;
+  margin-inline-end: auto !important;
   padding: 0 !important;
   list-style: none !important;
   flex: 0 1 auto !important;
-  min-width: 0 !important;
   position: relative !important;
   z-index: 2 !important;
+  gap: clamp(4px, 0.6vw, 10px) !important;
 }
 
 ul#mainmenu li, ul#mainmenu.ar-menu-list li {
   margin: 0 !important;
   padding: 0 !important;
   list-style: none !important;
-  display: inline-block !important;
+  display: inline-flex !important;
+  align-items: center !important;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
 }
@@ -1136,14 +1157,16 @@ ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item),
 ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item) {
   display: inline-flex !important;
   align-items: center !important;
-  padding: 5px clamp(5px, 0.4vw, 8px) !important;
+  padding: 5px clamp(6px, 0.55vw, 10px) !important;
   border-radius: var(--lg-radius-pill) !important;
-  font-size: clamp(0.77rem, 0.79vw, 0.83rem) !important;
+  font-size: clamp(0.74rem, 0.77vw, 0.82rem) !important;
   font-weight: 600 !important;
-  color: var(--lg-text-secondary) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.35px !important;
+  color: rgba(255, 255, 255, 0.88) !important;
   text-decoration: none !important;
   transition: var(--lg-transition) !important;
-  border: 1px solid transparent !important;
+  border: 1.5px solid transparent !important;
   background: transparent !important;
   position: relative !important;
   white-space: nowrap !important;
@@ -1157,128 +1180,124 @@ ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item)::afte
 ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item) span,
 ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item) span {
   display: inline !important;
+  border-bottom: none !important;
+  width: auto !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  color: inherit !important;
 }
 
+/* Hide icons in desktop navigation to match screenshot */
 ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item) i,
 ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item) i {
-  color: var(--lg-cyan) !important;
-  font-size: clamp(0.76rem, 0.78vw, 0.82rem) !important;
-  margin-inline-end: 3px !important;
-  transition: var(--lg-transition) !important;
+  display: none !important;
 }
 
 ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item):hover, 
 ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item):hover {
-  color: #ffffff !important;
-  background: rgba(56, 189, 248, 0.12) !important;
-  border-color: rgba(56, 189, 248, 0.28) !important;
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.18) !important;
+  color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.08) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
 }
 
-ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item):hover i,
-ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item):hover i {
-  color: #ffffff !important;
-  transform: scale(1.1);
-}
-
+/* Active Link: Cyan pill outline like SPEAKERS in screenshot */
 ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item).active, 
 ul#mainmenu li.active > a:not(.action-pill):not(.user-dropdown-item),
 ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item).active,
 ul#mainmenu.ar-menu-list li.active > a:not(.action-pill):not(.user-dropdown-item) {
-  background: linear-gradient(135deg, rgba(2, 132, 199, 0.35), rgba(37, 99, 235, 0.35)) !important;
-  border: 1px solid var(--lg-cyan) !important;
+  background: rgba(56, 189, 248, 0.12) !important;
+  border: 1.5px solid #38bdf8 !important;
   color: #ffffff !important;
-  box-shadow: 0 0 18px rgba(56, 189, 248, 0.28) !important;
+  border-radius: var(--lg-radius-pill) !important;
+  padding: 5px clamp(8px, 0.75vw, 13px) !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35), inset 0 0 8px rgba(56, 189, 248, 0.12) !important;
   font-weight: 700 !important;
 }
 
-ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item).active i,
-ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item).active i {
-  color: #ffffff !important;
-}
-
 /* ==========================================================================
-   5. Integrated Action Buttons (Part of mainmenu)
+   5. Action Buttons & Switcher (.header-actions)
    ========================================================================== */
-ul#mainmenu li.menu-separator,
-ul#mainmenu.ar-menu-list li.menu-separator {
-  display: inline-block !important;
-  width: 1px !important;
-  height: 18px !important;
-  background: rgba(56, 189, 248, 0.25) !important;
-  margin: 0 clamp(3px, 0.35vw, 6px) !important;
-  padding: 0 !important;
-  vertical-align: middle !important;
-  border: none !important;
-  align-self: center !important;
-  flex-shrink: 0 !important;
-}
-
-ul#mainmenu li.header-guest-actions,
-ul#mainmenu.ar-menu-list li.header-guest-actions {
+.header-actions {
   display: inline-flex !important;
   align-items: center !important;
-  gap: clamp(3px, 0.35vw, 6px) !important;
+  gap: clamp(6px, 0.6vw, 10px) !important;
   margin: 0 !important;
   padding: 0 !important;
+  flex: 0 0 auto !important;
   flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 3 !important;
+  margin-inline-start: clamp(10px, 1.2vw, 20px) !important;
+  margin-inline-end: clamp(10px, 1.2vw, 20px) !important;
 }
 
-ul#mainmenu li.menu-action-lang,
-ul#mainmenu.ar-menu-list li.menu-action-lang {
+.header-actions .header-user-dropdown,
+.header-actions .header-guest-actions,
+.header-actions .menu-action-lang {
   display: inline-flex !important;
   align-items: center !important;
   margin: 0 !important;
   padding: 0 !important;
   flex-shrink: 0 !important;
+}
+
+.header-actions .header-guest-actions {
+  gap: 6px !important;
 }
 
 /* Action Pills */
 .action-pill,
+.header-actions .action-pill,
 ul#mainmenu .action-pill,
 ul#mainmenu.ar-menu-list .action-pill {
   display: inline-flex !important;
   align-items: center !important;
-  gap: clamp(3px, 0.35vw, 6px) !important;
-  padding: 6px clamp(8px, 0.7vw, 13px) !important;
+  gap: 6px !important;
+  padding: 5px clamp(8px, 0.7vw, 12px) !important;
   border-radius: var(--lg-radius-pill) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: var(--lg-text-secondary) !important;
-  font-size: clamp(0.79rem, 0.82vw, 0.85rem) !important;
+  background: rgba(4, 23, 47, 0.65) !important;
+  border: 1px solid rgba(56, 189, 248, 0.45) !important;
+  color: #ffffff !important;
+  font-size: clamp(0.74rem, 0.77vw, 0.81rem) !important;
   font-weight: 600 !important;
   text-decoration: none !important;
   transition: var(--lg-transition) !important;
-  backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   white-space: nowrap !important;
   line-height: normal !important;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.35) !important;
 }
 
 .action-pill i,
+.header-actions .action-pill i,
 ul#mainmenu .action-pill i,
 ul#mainmenu.ar-menu-list .action-pill i {
   color: var(--lg-cyan) !important;
-  font-size: clamp(0.82rem, 0.85vw, 0.9rem) !important;
+  font-size: 0.85rem !important;
   margin-inline-end: 0 !important;
   transition: var(--lg-transition) !important;
 }
 
 .action-pill:hover,
+.header-actions .action-pill:hover,
 ul#mainmenu .action-pill:hover,
 ul#mainmenu.ar-menu-list .action-pill:hover {
-  background: rgba(56, 189, 248, 0.16) !important;
+  background: rgba(56, 189, 248, 0.22) !important;
   border-color: var(--lg-cyan) !important;
   color: #ffffff !important;
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.25) !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35) !important;
 }
 
 .action-pill:hover i,
+.header-actions .action-pill:hover i,
 ul#mainmenu .action-pill:hover i,
 ul#mainmenu.ar-menu-list .action-pill:hover i {
   color: #ffffff !important;
 }
 
 .action-pill-primary,
+.header-actions .action-pill-primary,
 ul#mainmenu .action-pill-primary,
 ul#mainmenu.ar-menu-list .action-pill-primary {
   background: linear-gradient(135deg, rgba(2, 132, 199, 0.35), rgba(37, 99, 235, 0.35)) !important;
@@ -1288,6 +1307,7 @@ ul#mainmenu.ar-menu-list .action-pill-primary {
 }
 
 .action-pill-primary:hover,
+.header-actions .action-pill-primary:hover,
 ul#mainmenu .action-pill-primary:hover,
 ul#mainmenu.ar-menu-list .action-pill-primary:hover {
   background: linear-gradient(135deg, #0284c7, #2563eb) !important;
@@ -1297,32 +1317,35 @@ ul#mainmenu.ar-menu-list .action-pill-primary:hover {
 }
 
 .lang-switcher-pill,
+.header-actions .lang-switcher-pill,
 ul#mainmenu .lang-switcher-pill,
 ul#mainmenu.ar-menu-list .lang-switcher-pill {
-  background: rgba(4, 23, 47, 0.55) !important;
-  border-color: rgba(56, 189, 248, 0.35) !important;
+  background: rgba(4, 23, 47, 0.65) !important;
+  border-color: rgba(56, 189, 248, 0.45) !important;
   color: #ffffff !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 .lang-switcher-pill:hover,
+.header-actions .lang-switcher-pill:hover,
 ul#mainmenu .lang-switcher-pill:hover,
 ul#mainmenu.ar-menu-list .lang-switcher-pill:hover {
   background: rgba(56, 189, 248, 0.22) !important;
   border-color: var(--lg-cyan) !important;
   color: #ffffff !important;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.3) !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.35) !important;
 }
 
 /* Header End Controls: Hamburger & Partner Logo */
 .header-end-controls {
   display: flex !important;
   align-items: center !important;
-  gap: clamp(8px, 1vw, 14px) !important;
+  gap: clamp(6px, 0.8vw, 12px) !important;
   flex: 0 0 auto !important;
   flex-shrink: 0 !important;
   position: relative !important;
   z-index: 5 !important;
+  margin-inline-start: 0 !important;
 }
 
 /* Official Kingdom Year of AI 2026 Partner Logo */
@@ -1331,26 +1354,26 @@ ul#mainmenu.ar-menu-list .lang-switcher-pill:hover {
   align-items: center !important;
   flex: 0 0 auto !important;
   flex-shrink: 0 !important;
-  padding-left: clamp(8px, 0.8vw, 14px) !important;
-  border-left: 1px solid rgba(56, 189, 248, 0.22) !important;
-  margin-left: clamp(2px, 0.3vw, 6px) !important;
+  padding-left: clamp(10px, 1.2vw, 18px) !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.28) !important;
+  margin-left: 0 !important;
 }
 
 [dir="rtl"] .header-partner-logo,
 .rtl .header-partner-logo,
 html[lang="ar"] .header-partner-logo {
   border-left: none !important;
-  border-right: 1px solid rgba(56, 189, 248, 0.22) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.28) !important;
   padding-left: 0 !important;
-  padding-right: clamp(8px, 0.8vw, 14px) !important;
+  padding-right: clamp(10px, 1.2vw, 18px) !important;
   margin-left: 0 !important;
-  margin-right: clamp(2px, 0.3vw, 6px) !important;
+  margin-right: 0 !important;
 }
 
 .year-of-ai-logo {
-  height: 35px !important;
+  height: 34px !important;
   width: auto !important;
-  max-width: 115px !important;
+  max-width: 110px !important;
   object-fit: contain !important;
   display: block !important;
   filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.35)) !important;
@@ -1362,8 +1385,9 @@ html[lang="ar"] .header-partner-logo {
   transform: translateY(-1px) scale(1.02);
 }
 
-/* User Account Dropdown in Header / Main Menu */
+/* User Account Dropdown in Header */
 .header-user-dropdown,
+.header-actions .header-user-dropdown,
 ul#mainmenu li.header-user-dropdown,
 ul#mainmenu.ar-menu-list li.header-user-dropdown {
   position: relative !important;
@@ -1372,10 +1396,12 @@ ul#mainmenu.ar-menu-list li.header-user-dropdown {
 }
 
 /* Mutual Exclusivity: If user account dropdown is present and active, guest sign-in/register actions MUST NEVER be shown */
+.header-actions:has(.header-user-dropdown:not([style*="display: none"]):not([style*="display:none"])) .header-guest-actions,
+.header-actions:has(.header-user-dropdown:not([style*="display: none"]):not([style*="display:none"])) #liLogin,
 ul#mainmenu:has(.header-user-dropdown:not([style*="display: none"]):not([style*="display:none"])) .header-guest-actions,
 ul#mainmenu:has(.header-user-dropdown:not([style*="display: none"]):not([style*="display:none"])) #liLogin,
-.header-user-dropdown ~ .header-guest-actions,
-.header-user-dropdown ~ #liLogin {
+.header-user-dropdown:not([style*="display: none"]):not([style*="display:none"]) ~ .header-guest-actions,
+.header-user-dropdown:not([style*="display: none"]):not([style*="display:none"]) ~ #liLogin {
   display: none !important;
 }
 
@@ -2388,15 +2414,22 @@ html[lang="ar"] .user-dropdown-item:hover {
   color: #ffffff;
 }
 
-/* Speaker Cards Grid */
+/* Speaker Cards Grid (3 per row) */
 .speakers-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 28px;
   margin-bottom: 50px;
 }
 
-@media (max-width: 576px) {
+@media (max-width: 991px) {
+  .speakers-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (max-width: 640px) {
   .speakers-grid {
     grid-template-columns: 1fr;
     gap: 20px;
@@ -4254,57 +4287,144 @@ section.is-revealed,
   }
 }
 
-/* 25.1 Compact Desktop / Laptop Optimization (<= 1400px)
-   Prevents any collision between mainmenu and the two logos by slimming down items and hiding decorative icons */
-@media (max-width: 1400px) {
-  .header-inner {
-    gap: 8px !important;
+/* Explicit Desktop rules for >= 1200px to ensure #menu-btn is never visible and header-nav-container is horizontal */
+@media (min-width: 1200px) {
+  #menu-btn {
+    display: none !important;
+  }
+
+  .header-nav-container {
+    display: flex !important;
+    position: static !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: none !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    gap: clamp(8px, 1.2vw, 20px) !important;
   }
   
-  /* Hide decorative icons in standard navigation links to save horizontal room */
+  ul#mainmenu,
+  ul#mainmenu.ar-menu-list {
+    display: flex !important;
+    position: static !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+    margin-inline-start: auto !important;
+    margin-inline-end: auto !important;
+    gap: clamp(4px, 0.6vw, 10px) !important;
+    width: auto !important;
+    max-width: none !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 0 !important;
+    flex: 0 1 auto !important;
+  }
+
   ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item) i,
   ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item) i {
     display: none !important;
   }
 
+  .header-actions {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: clamp(6px, 0.6vw, 10px) !important;
+    border-top: none !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    margin-inline-start: clamp(10px, 1.2vw, 20px) !important;
+    margin-inline-end: clamp(10px, 1.2vw, 20px) !important;
+  }
+
+  .header-end-controls {
+    flex-shrink: 0 !important;
+    margin-inline-start: 0 !important;
+  }
+}
+
+/* 25.1 Compact Desktop / Laptop Optimization (1200px - 1440px)
+   Prevents any collision between navigation, actions, and the two logos by slimming down items and tightening gaps */
+@media (min-width: 1200px) and (max-width: 1440px) {
+  .header-inner {
+    gap: 8px !important;
+  }
+
+  .header-nav-container {
+    gap: 6px !important;
+  }
+  
   ul#mainmenu,
   ul#mainmenu.ar-menu-list {
-    gap: 2px !important;
+    gap: clamp(3px, 0.45vw, 6px) !important;
   }
 
   ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item),
   ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item) {
-    padding: 5px 6px !important;
-    font-size: 0.77rem !important;
+    padding: 4px clamp(5px, 0.45vw, 7px) !important;
+    font-size: 0.73rem !important;
+    letter-spacing: 0.2px !important;
   }
 
-  ul#mainmenu .action-pill,
-  ul#mainmenu.ar-menu-list .action-pill {
-    padding: 5px 8px !important;
-    font-size: 0.76rem !important;
-    gap: 4px !important;
+  .header-actions {
+    gap: 5px !important;
+    margin-inline-start: 8px !important;
+    margin-inline-end: 10px !important;
   }
 
-  ul#mainmenu li.menu-separator,
-  ul#mainmenu.ar-menu-list li.menu-separator {
-    margin: 0 3px !important;
+  .action-pill,
+  .header-actions .action-pill {
+    padding: 4px 7px !important;
+    font-size: 0.72rem !important;
+    gap: 5px !important;
+  }
+
+  #logo, .menu-logo-box, .sairh-logo-box {
+    margin-inline-end: 10px !important;
   }
 
   #logo img.logo,
   #logo img {
-    height: 32px !important;
-    max-width: 135px !important;
+    height: 42px !important;
+    max-width: 210px !important;
   }
 
   .year-of-ai-logo {
-    height: 32px !important;
-    max-width: 105px !important;
+    height: 30px !important;
+    max-width: 95px !important;
+  }
+
+  .header-partner-logo {
+    padding-left: 8px !important;
+  }
+
+  [dir="rtl"] .header-partner-logo,
+  .rtl .header-partner-logo,
+  html[lang="ar"] .header-partner-logo {
+    padding-right: 8px !important;
   }
 }
 
-/* 25.2 Tablet and Mobile Breakpoint (<= 1200px)
-   Collapses mainmenu into a floating glass drawer, completely eliminating any horizontal overlap */
-@media (max-width: 1200px) {
+/* 25.2 Tablet and Mobile Breakpoint (< 1200px)
+   Collapses navigation and actions into a floating glass drawer, completely eliminating any horizontal overlap */
+@media (max-width: 1199.98px) {
   header.header-dark {
     overflow: visible !important;
     height: auto !important;
@@ -4331,9 +4451,8 @@ section.is-revealed,
     content: "\F62A" !important; /* Bootstrap icon bi-x-lg */
   }
 
-  /* Mainmenu Floating Mobile Glass Dropdown */
-  ul#mainmenu,
-  ul#mainmenu.ar-menu-list {
+  /* Floating Mobile Glass Dropdown Container */
+  .header-nav-container {
     display: none !important;
     position: absolute !important;
     top: calc(100% + 8px) !important;
@@ -4344,48 +4463,61 @@ section.is-revealed,
     margin: 0 auto !important;
     flex-direction: column !important;
     align-items: stretch !important;
-    padding: 16px 14px !important;
+    padding: 18px 16px !important;
     background: rgba(4, 9, 25, 0.98) !important;
     backdrop-filter: blur(28px) saturate(200%) !important;
     -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
     border-radius: 18px !important;
     border: 1px solid rgba(56, 189, 248, 0.28) !important;
-    gap: 8px !important;
+    gap: 12px !important;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 35px rgba(56, 189, 248, 0.18) !important;
     z-index: 9999 !important;
   }
 
   /* Open state triggers */
-  header.menu-open ul#mainmenu,
-  header.menu-open ul#mainmenu.ar-menu-list,
-  header.header-mobile.menu-open ul#mainmenu,
-  header.header-mobile.menu-open ul#mainmenu.ar-menu-list {
+  header.menu-open .header-nav-container,
+  header.header-mobile.menu-open .header-nav-container {
     display: flex !important;
     animation: lgMenuSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   }
 
-  /* Prevent closed mobile header from inadvertently showing the menu */
-  header.header-mobile:not(.menu-open) ul#mainmenu,
-  header.header-mobile:not(.menu-open) ul#mainmenu.ar-menu-list {
+  /* Prevent closed mobile header from showing drawer */
+  header:not(.menu-open) .header-nav-container,
+  header.header-mobile:not(.menu-open) .header-nav-container {
     display: none !important;
   }
 
-  ul#mainmenu li,
-  ul#mainmenu.ar-menu-list li {
+  /* Navigation Links inside Drawer */
+  .header-nav-container ul#mainmenu,
+  .header-nav-container ul#mainmenu.ar-menu-list {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 6px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .header-nav-container ul#mainmenu li,
+  .header-nav-container ul#mainmenu.ar-menu-list li {
     display: block !important;
     width: 100% !important;
   }
 
   /* Re-enable and format icons nicely in mobile drawer */
-  ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item) i,
-  ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item) i {
+  .header-nav-container ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item) i,
+  .header-nav-container ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item) i {
     display: inline-block !important;
     font-size: 1.05rem !important;
     margin-inline-end: 10px !important;
   }
 
-  ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item), 
-  ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item) {
+  .header-nav-container ul#mainmenu li > a:not(.action-pill):not(.user-dropdown-item), 
+  .header-nav-container ul#mainmenu.ar-menu-list li > a:not(.action-pill):not(.user-dropdown-item) {
     display: flex !important;
     align-items: center !important;
     width: 100% !important;
@@ -4395,25 +4527,24 @@ section.is-revealed,
     border-radius: 10px !important;
   }
 
-  ul#mainmenu li.menu-separator,
-  ul#mainmenu.ar-menu-list li.menu-separator {
-    display: block !important;
+  /* Actions section inside mobile drawer */
+  .header-nav-container .header-actions {
+    display: flex !important;
+    flex-direction: column !important;
     width: 100% !important;
-    height: 1px !important;
-    background: rgba(56, 189, 248, 0.15) !important;
-    margin: 8px 0 !important;
+    gap: 8px !important;
+    padding-top: 12px !important;
+    margin-top: 4px !important;
+    border-top: 1px solid rgba(56, 189, 248, 0.18) !important;
   }
 
-  ul#mainmenu li.header-guest-actions,
-  ul#mainmenu.ar-menu-list li.header-guest-actions {
+  .header-nav-container .header-actions .header-guest-actions {
     display: flex !important;
     width: 100% !important;
     gap: 8px !important;
-    margin-top: 4px !important;
   }
 
-  ul#mainmenu li.header-guest-actions .action-pill,
-  ul#mainmenu.ar-menu-list li.header-guest-actions .action-pill {
+  .header-nav-container .header-actions .header-guest-actions .action-pill {
     flex: 1 1 50% !important;
     justify-content: center !important;
     padding: 11px 14px !important;
@@ -4421,15 +4552,12 @@ section.is-revealed,
     font-size: 0.88rem !important;
   }
 
-  ul#mainmenu li.menu-action-lang,
-  ul#mainmenu.ar-menu-list li.menu-action-lang {
+  .header-nav-container .header-actions .menu-action-lang {
     display: block !important;
     width: 100% !important;
-    margin-top: 4px !important;
   }
 
-  ul#mainmenu li.menu-action-lang .action-pill,
-  ul#mainmenu.ar-menu-list li.menu-action-lang .action-pill {
+  .header-nav-container .header-actions .menu-action-lang .action-pill {
     display: flex !important;
     width: 100% !important;
     justify-content: center !important;
@@ -4438,27 +4566,30 @@ section.is-revealed,
     font-size: 0.88rem !important;
   }
 
-  ul#mainmenu li.header-user-dropdown,
-  ul#mainmenu.ar-menu-list li.header-user-dropdown {
+  .header-nav-container .header-actions .header-user-dropdown {
     display: block !important;
     width: 100% !important;
   }
 
-  ul#mainmenu li.header-user-dropdown .user-dropdown-toggle,
-  ul#mainmenu.ar-menu-list li.header-user-dropdown .user-dropdown-toggle {
+  .header-nav-container .header-actions .header-user-dropdown .user-dropdown-toggle {
     display: flex !important;
     width: 100% !important;
     justify-content: space-between !important;
     padding: 11px 16px !important;
   }
 
-  ul#mainmenu li.header-user-dropdown .user-dropdown-menu,
-  ul#mainmenu.ar-menu-list li.header-user-dropdown .user-dropdown-menu {
+  .header-nav-container .header-actions .header-user-dropdown .user-dropdown-menu {
     position: static !important;
     width: 100% !important;
     margin-top: 6px !important;
     box-shadow: none !important;
     border: 1px solid rgba(56, 189, 248, 0.2) !important;
+  }
+
+  #logo img.logo,
+  #logo img {
+    height: 38px !important;
+    max-width: 200px !important;
   }
 
   .year-of-ai-logo {
@@ -4571,8 +4702,8 @@ section.is-revealed,
 
 @media (max-width: 576px) {
   #logo img.logo, .menu-logo-box img, .sairh-logo-box img, #logo img {
-    height: 32px !important;
-    max-width: 130px !important;
+    height: 35px !important;
+    max-width: 180px !important;
   }
   .year-of-ai-logo {
     height: 24px !important;

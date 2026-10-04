@@ -25,7 +25,8 @@ const MIME_TYPES = {
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.ttf': 'font/ttf',
-  '.mp4': 'video/mp4'
+  '.mp4': 'video/mp4',
+  '.pdf': 'application/pdf'
 };
 
 function parseAspx(aspxPath, relativeUrl) {
@@ -159,6 +160,13 @@ function handleRequest(req, res) {
   // Enable CORS & no-cache
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+  // Normalize static asset paths if requested relative to /Ar_Sa/
+  if (pathname.toLowerCase().startsWith('ar_sa/content/')) {
+    pathname = pathname.substring(6);
+  } else if (pathname.toLowerCase().startsWith('ar_sa/scripts/')) {
+    pathname = pathname.substring(6);
+  }
 
   // Check static asset
   const ext = path.extname(pathname).toLowerCase();

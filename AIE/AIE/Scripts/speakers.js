@@ -160,6 +160,16 @@
     var initials = card.getAttribute('data-initials') || 'SP';
     var flag = card.getAttribute('data-flag') || '🇸🇦';
     var regionName = card.getAttribute('data-region-name') || 'Saudi Arabia';
+    var photo = card.getAttribute('data-photo') || '';
+    var cv = card.getAttribute('data-cv') || '';
+
+    // Normalize paths to absolute root so they work from any route
+    if (photo && !photo.startsWith('/') && !photo.startsWith('http')) {
+      photo = '/' + photo;
+    }
+    if (cv && !cv.startsWith('/') && !cv.startsWith('http')) {
+      cv = '/' + cv;
+    }
 
     // Populate modal elements
     document.getElementById('modalSpeakerName').textContent = name;
@@ -168,15 +178,38 @@
     document.getElementById('modalLectureTitle').textContent = lecture;
     document.getElementById('modalSpeakerInitials').textContent = initials;
     document.getElementById('modalSpeakerFlag').textContent = flag;
-    
-    var trackBadge = document.getElementById('modalTrackBadge');
-    if (trackBadge) {
-      trackBadge.textContent = track;
-      trackBadge.className = 'speaker-track-tag tag-' + trackId;
-    }
 
     var metaRegion = document.getElementById('modalMetaRegion');
     if (metaRegion) metaRegion.textContent = regionName;
+
+    // Speaker Photo
+    var photoEl = document.getElementById('modalSpeakerPhoto');
+    var initialsEl = document.getElementById('modalSpeakerInitials');
+    if (photoEl) {
+      if (photo) {
+        photoEl.src = photo;
+        photoEl.style.display = 'block';
+        if (initialsEl) initialsEl.style.display = 'none';
+      } else {
+        photoEl.src = '';
+        photoEl.style.display = 'none';
+        if (initialsEl) initialsEl.style.display = 'flex';
+      }
+    }
+
+    // Speaker CV PDF Button (View in new tab)
+    var cvBtn = document.getElementById('modalCvBtn');
+    if (cvBtn) {
+      if (cv) {
+        cvBtn.href = cv;
+        cvBtn.target = '_blank';
+        cvBtn.rel = 'noopener noreferrer';
+        cvBtn.removeAttribute('download');
+        cvBtn.style.display = 'inline-flex';
+      } else {
+        cvBtn.style.display = 'none';
+      }
+    }
 
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';

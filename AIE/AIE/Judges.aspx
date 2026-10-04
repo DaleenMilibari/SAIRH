@@ -31,6 +31,26 @@
             font-weight: 600;
             margin: 0;
         }
+
+        /* Enforce 3 cards per row on desktop */
+        .speakers-grid {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            gap: 28px !important;
+            margin-bottom: 50px !important;
+        }
+        @media (max-width: 991px) {
+            .speakers-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 24px !important;
+            }
+        }
+        @media (max-width: 640px) {
+            .speakers-grid {
+                grid-template-columns: 1fr !important;
+                gap: 20px !important;
+            }
+        }
     </style>
 </asp:Content>
 
@@ -101,6 +121,8 @@
 
                 <!-- 1. Dr. Fahad Almsned -->
                 <article class="speaker-card track-a"
+                         data-photo="/Content/images/speakers/Fahad-Almsned-Photo.jpeg"
+                         data-cv="/Content/docs/speakers/Fahad-Almsned-CV.pdf"
                          data-track="track-a"
                          data-sector="clinical"
                          data-region="national"
@@ -122,7 +144,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">FA</div>
+                        <img src="/Content/images/speakers/Fahad-Almsned-Photo.jpeg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">FA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -150,6 +173,8 @@
 
                 <!-- 2. Dr. Eman Alshehri -->
                 <article class="speaker-card track-a"
+                         data-photo="/Content/images/speakers/Speaker-Photo.png"
+                         data-cv="/Content/docs/speakers/Eman-Alshehri-CV.pdf"
                          data-track="track-a"
                          data-sector="academic"
                          data-region="national"
@@ -171,7 +196,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">EA</div>
+                        <img src="/Content/images/speakers/Speaker-Photo.png" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">EA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -199,6 +225,8 @@
 
                 <!-- 3. Ms. Fadwa AlBawardi Msc -->
                 <article class="speaker-card track-a"
+                         data-photo="/Content/images/speakers/Fadwa-AlBawardi-Photo.jpg"
+                         data-cv="/Content/docs/speakers/Fadwa-AlBawardi-CV.pdf"
                          data-track="track-a"
                          data-sector="industry"
                          data-region="national"
@@ -220,7 +248,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">FB</div>
+                        <img src="/Content/images/speakers/Fadwa-AlBawardi-Photo.jpg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">FB</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -248,6 +277,8 @@
 
                 <!-- 4. Dr. Aseel Aldawood -->
                 <article class="speaker-card track-a"
+                         data-photo="/Content/images/speakers/Speaker-Photo.png"
+                         data-cv="/Content/docs/speakers/Aseel-Addawood-CV.pdf"
                          data-track="track-a"
                          data-sector="industry"
                          data-region="national"
@@ -269,7 +300,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">AA</div>
+                        <img src="/Content/images/speakers/Speaker-Photo.png" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">AA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -297,6 +329,8 @@
 
                 <!-- 5. Dr. Mostafa Youldash -->
                 <article class="speaker-card track-a"
+                         data-photo="/Content/images/speakers/Speaker-Photo.png"
+                         data-cv="/Content/docs/speakers/Mustafa-Yoldash-CV.pdf"
                          data-track="track-a"
                          data-sector="academic"
                          data-region="national"
@@ -318,7 +352,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">MY</div>
+                        <img src="/Content/images/speakers/Speaker-Photo.png" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">MY</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -346,6 +381,8 @@
 
                 <!-- 6. Mr. Yazeed Alsudays MBA -->
                 <article class="speaker-card track-a"
+                         data-photo="/Content/images/speakers/Yazeed-Alsudays-Photo.jpg"
+                         data-cv="/Content/docs/speakers/Yazeed-Alsudays-CV.pdf"
                          data-track="track-a"
                          data-sector="industry"
                          data-region="national"
@@ -367,7 +404,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">YA</div>
+                        <img src="/Content/images/speakers/Yazeed-Alsudays-Photo.jpg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">YA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -395,6 +433,8 @@
 
                 <!-- 7. Dr. Abeer Alalmaie -->
                 <article class="speaker-card track-a"
+                         data-photo="/Content/images/speakers/Abeer-Alalmaie-Photo.png"
+                         data-cv="/Content/docs/speakers/Abeer-Alalmaie-CV.pdf"
                          data-track="track-a"
                          data-sector="academic"
                          data-region="national"
@@ -416,7 +456,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">AA</div>
+                        <img src="/Content/images/speakers/Abeer-Alalmaie-Photo.png" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">AA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -444,6 +485,8 @@
 
                 <!-- 8. Dr. Clare Rainey -->
                 <article class="speaker-card track-a"
+                         data-photo="/Content/images/speakers/Clare-Rainey-Photo.jpg.png"
+                         data-cv="/Content/docs/speakers/Clare-Rainey-CV.pdf"
                          data-track="track-a"
                          data-sector="academic"
                          data-region="international"
@@ -465,7 +508,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">CR</div>
+                        <img src="/Content/images/speakers/Clare-Rainey-Photo.jpg.png" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">CR</div>
                         <span class="speaker-badge-flag" title="Ireland">🇮🇪</span>
                     </div>
                     <div class="speaker-body">
@@ -493,6 +537,8 @@
 
                 <!-- 9. Dr. Rebecca Vaz -->
                 <article class="speaker-card track-a"
+                         data-photo="/Content/images/speakers/Rebeca-Queiroz-Photo.JPG"
+                         data-cv="/Content/docs/speakers/Rebeca-Queiroz-CV.pdf"
                          data-track="track-a"
                          data-sector="industry"
                          data-region="international"
@@ -514,7 +560,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">RV</div>
+                        <img src="/Content/images/speakers/Rebeca-Queiroz-Photo.JPG" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">RV</div>
                         <span class="speaker-badge-flag" title="International">🌐</span>
                     </div>
                     <div class="speaker-body">
@@ -542,6 +589,7 @@
 
                 <!-- 10. Moath Ameer -->
                 <article class="speaker-card track-a"
+                         data-photo="/Content/images/speakers/Speaker-Photo.png"
                          data-track="track-a"
                          data-sector="academic"
                          data-region="national"
@@ -563,7 +611,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">MA</div>
+                        <img src="/Content/images/speakers/Speaker-Photo.png" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">MA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -595,6 +644,8 @@
 
                 <!-- 11. Dr. Amna Kashgari -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Amna-Kashgari-Photo.jpg"
+                         data-cv="/Content/docs/speakers/Amna-Kashgari-CV.pdf"
                          data-track="track-b"
                          data-sector="clinical"
                          data-region="national"
@@ -616,7 +667,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">AK</div>
+                        <img src="/Content/images/speakers/Amna-Kashgari-Photo.jpg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">AK</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -644,6 +696,8 @@
 
                 <!-- 12. Prof. Karen Knapp -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Karen-Knapp-Photo.jpg"
+                         data-cv="/Content/docs/speakers/Karen-Knapp-CV.pdf"
                          data-track="track-b"
                          data-sector="academic"
                          data-region="international"
@@ -665,7 +719,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">KK</div>
+                        <img src="/Content/images/speakers/Karen-Knapp-Photo.jpg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">KK</div>
                         <span class="speaker-badge-flag" title="United Kingdom">🇬🇧</span>
                     </div>
                     <div class="speaker-body">
@@ -693,6 +748,8 @@
 
                 <!-- 13. Dr. Mohammed Asiri -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Mohammed-Asiri-Photo.jpeg"
+                         data-cv="/Content/docs/speakers/Mohammed-Asiri-CV.pdf"
                          data-track="track-b"
                          data-sector="academic"
                          data-region="national"
@@ -714,7 +771,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">MA</div>
+                        <img src="/Content/images/speakers/Mohammed-Asiri-Photo.jpeg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">MA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -742,6 +800,8 @@
 
                 <!-- 14. Dr. Yasser Hadi -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Yasser-Hadi-Photo.JPG"
+                         data-cv="/Content/docs/speakers/Yasser-Hadi.pdf"
                          data-track="track-b"
                          data-sector="clinical"
                          data-region="national"
@@ -763,7 +823,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">YH</div>
+                        <img src="/Content/images/speakers/Yasser-Hadi-Photo.JPG" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">YH</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -791,6 +852,8 @@
 
                 <!-- 15. Dr. Abdulkarem Alqahtani -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Abdulkareem-Alqahtani-Photo.jpeg"
+                         data-cv="/Content/docs/speakers/Abdulkareem-Alqahtani-CV.pdf"
                          data-track="track-b"
                          data-sector="academic"
                          data-region="national"
@@ -812,7 +875,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">AA</div>
+                        <img src="/Content/images/speakers/Abdulkareem-Alqahtani-Photo.jpeg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">AA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -840,6 +904,8 @@
 
                 <!-- 16. Dr. Abdulaziz Almulhim -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Abdulaziz-Almulhim-Photo.png"
+                         data-cv="/Content/docs/speakers/Abdulaziz-AlMulhim-CV.pdf"
                          data-track="track-b"
                          data-sector="clinical"
                          data-region="national"
@@ -861,7 +927,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">AA</div>
+                        <img src="/Content/images/speakers/Abdulaziz-Almulhim-Photo.png" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">AA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -889,6 +956,8 @@
 
                 <!-- 17. Dr. Sonyia McFadden -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Sonyia-McFadden-Photo.jpg"
+                         data-cv="/Content/docs/speakers/Sonyia-McFadden-CV.pdf"
                          data-track="track-b"
                          data-sector="academic"
                          data-region="international"
@@ -910,7 +979,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">SM</div>
+                        <img src="/Content/images/speakers/Sonyia-McFadden-Photo.jpg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">SM</div>
                         <span class="speaker-badge-flag" title="United Kingdom">🇬🇧</span>
                     </div>
                     <div class="speaker-body">
@@ -938,6 +1008,8 @@
 
                 <!-- 18. Dr. Raid Alshinibr -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Raid-Alshinibr-Photo.png"
+                         data-cv="/Content/docs/speakers/Raid-Alshinibr-CV.pdf"
                          data-track="track-b"
                          data-sector="clinical"
                          data-region="national"
@@ -959,7 +1031,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">RA</div>
+                        <img src="/Content/images/speakers/Raid-Alshinibr-Photo.png" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">RA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -987,6 +1060,8 @@
 
                 <!-- 19. Prof. Minyar Sassi -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Minyar-Hidr-Photo.jpg"
+                         data-cv="/Content/docs/speakers/Minyar-Hidr-CV.pdf"
                          data-track="track-b"
                          data-sector="academic"
                          data-region="international"
@@ -1008,7 +1083,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">MS</div>
+                        <img src="/Content/images/speakers/Minyar-Hidr-Photo.jpg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">MS</div>
                         <span class="speaker-badge-flag" title="Tunisia">🇹🇳</span>
                     </div>
                     <div class="speaker-body">
@@ -1036,6 +1112,8 @@
 
                 <!-- 20. Dr. Abdul Razak Hairil -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Hairil-AbdulRazak-Photo.jpg"
+                         data-cv="/Content/docs/speakers/Hairil-AbdulRazak-CV.pdf"
                          data-track="track-b"
                          data-sector="academic"
                          data-region="international"
@@ -1057,7 +1135,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">AH</div>
+                        <img src="/Content/images/speakers/Hairil-AbdulRazak-Photo.jpg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">AH</div>
                         <span class="speaker-badge-flag" title="United Kingdom">🇬🇧</span>
                     </div>
                     <div class="speaker-body">
@@ -1085,6 +1164,7 @@
 
                 <!-- 21. Dr. Abdulaziz M. Al-Sharydah -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Speaker-Photo.png"
                          data-track="track-b"
                          data-sector="academic"
                          data-region="national"
@@ -1106,7 +1186,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">AA</div>
+                        <img src="/Content/images/speakers/Speaker-Photo.png" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">AA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -1134,6 +1215,8 @@
 
                 <!-- 22. Dr. Mohammed Alsaadi -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Mohammed-Saadi-Photo.jpeg"
+                         data-cv="/Content/docs/speakers/Mohammed-Saadi-CV.pdf"
                          data-track="track-b"
                          data-sector="academic"
                          data-region="national"
@@ -1155,7 +1238,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">MA</div>
+                        <img src="/Content/images/speakers/Mohammed-Saadi-Photo.jpeg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">MA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -1183,6 +1267,8 @@
 
                 <!-- 23. Dr. Oun Al-iedani -->
                 <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Oun-Aliedani-Photo.jpg"
+                         data-cv="/Content/docs/speakers/Oun-Aliedani-CV.pdf"
                          data-track="track-b"
                          data-sector="academic"
                          data-region="international"
@@ -1204,7 +1290,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">OA</div>
+                        <img src="/Content/images/speakers/Oun-Aliedani-Photo.jpg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">OA</div>
                         <span class="speaker-badge-flag" title="Australia">🇦🇺</span>
                     </div>
                     <div class="speaker-body">
@@ -1230,12 +1317,118 @@
                     </div>
                 </article>
 
+                <!-- 23b. Dr. Hussain Alarfaj -->
+                <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Hussain-Alarfaj-Photo.jpg"
+                         data-cv="/Content/docs/speakers/Hussain-Alarfaj-CV.pdf"
+                         data-track="track-b"
+                         data-sector="academic"
+                         data-region="national"
+                         data-name="Dr. Hussain Alarfaj"
+                         data-role="Consultant Clinical Radiologist"
+                         data-org="Imam Abdulrahman Bin Faisal University"
+                         data-lecture="Advances in Clinical Radiology and AI Integration"
+                         data-track-name="Track B &ndash; Advanced Clinical Radiology"
+                         data-sector-name="Academic &amp; Universities"
+                         data-region-name="Saudi Arabia"
+                         data-flag="🇸🇦"
+                         data-initials="HA">
+                    <div class="speaker-card-header">
+                        <span class="speaker-track-tag tag-track-b">
+                            <i class="bi bi-activity"></i> Track B
+                        </span>
+                        <span class="speaker-sector-tag">
+                            <i class="bi bi-mortarboard"></i> Academic
+                        </span>
+                    </div>
+                    <div class="speaker-avatar-wrap">
+                        <img src="/Content/images/speakers/Hussain-Alarfaj-Photo.jpg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">HA</div>
+                        <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
+                    </div>
+                    <div class="speaker-body">
+                        <h3 class="speaker-name">Dr. Hussain Alarfaj</h3>
+                        <p class="speaker-title">Consultant Clinical Radiologist</p>
+                        <p class="speaker-org">
+                            <i class="bi bi-bank sairh-organization-icon"></i>
+                            <span>Imam Abdulrahman Bin Faisal University</span>
+                        </p>
+                        <div class="speaker-lecture-card">
+                            <div class="speaker-lecture-label">
+                                <i class="bi bi-mic-fill"></i> Lecture Presentation
+                            </div>
+                            <p class="speaker-lecture-title">
+                                Advances in Clinical Radiology and AI Integration
+                            </p>
+                        </div>
+                    </div>
+                    <div class="speaker-card-actions">
+                        <button type="button" class="btn-speaker-detail" onclick="openSpeakerModal(this.closest('.speaker-card'))">
+                            <i class="bi bi-info-circle"></i> Quick Overview
+                        </button>
+                    </div>
+                </article>
+
+                <!-- 23c. Dr. Qurain Alqurain -->
+                <article class="speaker-card track-b"
+                         data-photo="/Content/images/speakers/Qurain-Alqurain-Photo.png"
+                         data-cv="/Content/docs/speakers/Qurain-Alqurain-CV.pdf"
+                         data-track="track-b"
+                         data-sector="academic"
+                         data-region="national"
+                         data-name="Dr. Qurain Alqurain"
+                         data-role="Consultant Radiologist"
+                         data-org="Imam Abdulrahman Bin Faisal University"
+                         data-lecture="AI Diagnostic Precision in Modern Radiology"
+                         data-track-name="Track B &ndash; Advanced Clinical Radiology"
+                         data-sector-name="Academic &amp; Universities"
+                         data-region-name="Saudi Arabia"
+                         data-flag="🇸🇦"
+                         data-initials="QA">
+                    <div class="speaker-card-header">
+                        <span class="speaker-track-tag tag-track-b">
+                            <i class="bi bi-activity"></i> Track B
+                        </span>
+                        <span class="speaker-sector-tag">
+                            <i class="bi bi-mortarboard"></i> Academic
+                        </span>
+                    </div>
+                    <div class="speaker-avatar-wrap">
+                        <img src="/Content/images/speakers/Qurain-Alqurain-Photo.png" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">QA</div>
+                        <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
+                    </div>
+                    <div class="speaker-body">
+                        <h3 class="speaker-name">Dr. Qurain Alqurain</h3>
+                        <p class="speaker-title">Consultant Radiologist</p>
+                        <p class="speaker-org">
+                            <i class="bi bi-bank sairh-organization-icon"></i>
+                            <span>Imam Abdulrahman Bin Faisal University</span>
+                        </p>
+                        <div class="speaker-lecture-card">
+                            <div class="speaker-lecture-label">
+                                <i class="bi bi-mic-fill"></i> Lecture Presentation
+                            </div>
+                            <p class="speaker-lecture-title">
+                                AI Diagnostic Precision in Modern Radiology
+                            </p>
+                        </div>
+                    </div>
+                    <div class="speaker-card-actions">
+                        <button type="button" class="btn-speaker-detail" onclick="openSpeakerModal(this.closest('.speaker-card'))">
+                            <i class="bi bi-info-circle"></i> Quick Overview
+                        </button>
+                    </div>
+                </article>
+
                 <!-- ========================================== -->
                 <!-- TRACK C: Health Innovation (7) -->
                 <!-- ========================================== -->
 
                 <!-- 24. Dr. Amal Alsalamah -->
                 <article class="speaker-card track-c"
+                         data-photo="/Content/images/speakers/Amal-Alsalamah-Photo.jpeg"
+                         data-cv="/Content/docs/speakers/Amal-Alsalamah-CV.pdf"
                          data-track="track-c"
                          data-sector="academic"
                          data-region="national"
@@ -1257,7 +1450,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">AA</div>
+                        <img src="/Content/images/speakers/Amal-Alsalamah-Photo.jpeg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">AA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -1285,6 +1479,8 @@
 
                 <!-- 25. Dr. Rasha Alafaleg -->
                 <article class="speaker-card track-c"
+                         data-photo="/Content/images/speakers/Rasha-Alafaleg-Photo.jpeg"
+                         data-cv="/Content/docs/speakers/Rasha-Alafaleg-CV.pdf"
                          data-track="track-c"
                          data-sector="academic"
                          data-region="national"
@@ -1306,7 +1502,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">RA</div>
+                        <img src="/Content/images/speakers/Rasha-Alafaleg-Photo.jpeg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">RA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -1334,6 +1531,8 @@
 
                 <!-- 26. Dr. Ali Alhailiy -->
                 <article class="speaker-card track-c"
+                         data-photo="/Content/images/speakers/Ali-Alhaili-Photo.jpg"
+                         data-cv="/Content/docs/speakers/Ali-Alhailiy-CV.pdf"
                          data-track="track-c"
                          data-sector="academic"
                          data-region="national"
@@ -1355,7 +1554,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">AA</div>
+                        <img src="/Content/images/speakers/Ali-Alhaili-Photo.jpg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">AA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -1383,6 +1583,8 @@
 
                 <!-- 27. Mr. Fahad Alsadan, MSc -->
                 <article class="speaker-card track-c"
+                         data-photo="/Content/images/speakers/Fahad-Alsadan-Photo.jpg"
+                         data-cv="/Content/docs/speakers/Fahad-Alsadan-CV.pdf"
                          data-track="track-c"
                          data-sector="industry"
                          data-region="national"
@@ -1404,7 +1606,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">FA</div>
+                        <img src="/Content/images/speakers/Fahad-Alsadan-Photo.jpg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">FA</div>
                         <span class="speaker-badge-flag" title="Saudi Arabia">🇸🇦</span>
                     </div>
                     <div class="speaker-body">
@@ -1432,6 +1635,8 @@
 
                 <!-- 28. Prof. Mark McEntee -->
                 <article class="speaker-card track-c"
+                         data-photo="/Content/images/speakers/Mark-McEntee-Photo.jpeg"
+                         data-cv="/Content/docs/speakers/Mark-McEntee-CV.pdf"
                          data-track="track-c"
                          data-sector="academic"
                          data-region="international"
@@ -1453,7 +1658,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">MM</div>
+                        <img src="/Content/images/speakers/Mark-McEntee-Photo.jpeg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">MM</div>
                         <span class="speaker-badge-flag" title="Ireland">🇮🇪</span>
                     </div>
                     <div class="speaker-body">
@@ -1481,6 +1687,8 @@
 
                 <!-- 29. Dr. Laura McLaughlin -->
                 <article class="speaker-card track-c"
+                         data-photo="/Content/images/speakers/Laura-McLaughlin-Photo.jpg"
+                         data-cv="/Content/docs/speakers/Laura-McLaughlin-CV.pdf"
                          data-track="track-c"
                          data-sector="academic"
                          data-region="international"
@@ -1502,7 +1710,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">LM</div>
+                        <img src="/Content/images/speakers/Laura-McLaughlin-Photo.jpg" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">LM</div>
                         <span class="speaker-badge-flag" title="United Kingdom">🇬🇧</span>
                     </div>
                     <div class="speaker-body">
@@ -1530,6 +1739,8 @@
 
                 <!-- 30. Dr. Andrew England -->
                 <article class="speaker-card track-c"
+                         data-photo="/Content/images/speakers/Speaker-Photo.png"
+                         data-cv="/Content/docs/speakers/Andrew-England-CV.pdf"
                          data-track="track-c"
                          data-sector="academic"
                          data-region="international"
@@ -1551,7 +1762,8 @@
                         </span>
                     </div>
                     <div class="speaker-avatar-wrap">
-                        <div class="speaker-monogram">AE</div>
+                        <img src="/Content/images/speakers/Speaker-Photo.png" alt="Speaker" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="speaker-monogram" style="display:none;">AE</div>
                         <span class="speaker-badge-flag" title="Ireland">🇮🇪</span>
                     </div>
                     <div class="speaker-body">
@@ -1601,11 +1813,11 @@
             
             <div class="d-flex align-items-center mb-4" style="gap: 18px;">
                 <div class="speaker-avatar-wrap m-0" style="width: 80px; height: 80px;">
+                    <img id="modalSpeakerPhoto" src="" alt="Speaker" class="speaker-avatar-img" style="width: 80px; height: 80px; display: none;" />
                     <div id="modalSpeakerInitials" class="speaker-monogram" style="width: 80px; height: 80px; font-size: 1.4rem;">SP</div>
                     <span id="modalSpeakerFlag" class="speaker-badge-flag">🇸🇦</span>
                 </div>
                 <div>
-                    <span id="modalTrackBadge" class="speaker-track-tag tag-track-a mb-2 d-inline-block">Track A</span>
                     <h3 id="modalSpeakerName" class="text-white font-weight-bold mb-1" style="font-size: 1.4rem;">Speaker Name</h3>
                     <p id="modalSpeakerRole" class="text-info font-weight-600 mb-0" style="font-size: 0.95rem;">Speaker Role</p>
                 </div>
@@ -1633,9 +1845,9 @@
                 </h4>
             </div>
 
-            <div class="d-flex flex-wrap justify-content-between align-items-center pt-3 border-top border-secondary" style="gap: 12px;">
-                <a href="Ceremony" class="btn btn-outline-info rounded-pill px-4 py-2 font-weight-bold">
-                    <i class="bi bi-calendar2-check mr-1"></i> View Program &amp; Tracks Agenda
+            <div class="d-flex flex-wrap justify-content-end align-items-center pt-3 border-top border-secondary" style="gap: 12px;">
+                <a id="modalCvBtn" href="#" target="_blank" class="btn btn-info rounded-pill px-4 py-2 font-weight-bold" style="display:none;">
+                    <i class="bi bi-file-earmark-pdf mr-1"></i> View Speaker CV (PDF)
                 </a>
                 <button type="button" class="btn btn-secondary rounded-pill px-4 py-2 font-weight-bold" onclick="closeSpeakerModal()">
                     Close
