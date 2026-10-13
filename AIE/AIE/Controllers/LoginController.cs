@@ -10,47 +10,52 @@ using System.Web.Http;
 
 namespace AIE.Controllers
 {
+   
+    public class LoginRequest
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+
     public class LoginController : ApiController
     {
+        [HttpPost]
         [BasicAuthentication]
-        public HttpResponseMessage Get(string user, string pass)
+        public HttpResponseMessage Post([FromBody] LoginRequest request)
         {
-            string username = Thread.CurrentPrincipal.Identity.Name;
-
-            using (EntitiesAPI entities = new EntitiesAPI())
+        
+            if (request == null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
             {
-                switch (username.ToLower())
-                {
-                    case "aie-user":
-                        var objs = entities.qryApiUserLogins.ToList().Where(x => x.Email == user && x.Password == pass);
-                        var obj = objs.ToList();
-                        return Request.CreateResponse(HttpStatusCode.OK, obj);
-                    //return Request.CreateResponse(HttpStatusCode.OK,
-                    //    entities.qryAPIUsersLogins.ToList());
-
-                    default:
-                        return Request.CreateResponse(HttpStatusCode.BadRequest);
-                }
+                return Request.CreateResponse(HttpStatusCode.BadRequest, new { message = "Email and password are required." });
             }
-        }
 
-        [BasicAuthentication]
-        public HttpResponseMessage Get()
-        {
+            
             string username = Thread.CurrentPrincipal.Identity.Name;
+            if (!string.Equals(username, "aie-user", StringComparison.OrdinalIgnoreCase))
+            {
+                return Request.CreateResponse(HttpStatusCode.Forbidden, new { message = "Access denied." });
+            }
 
             using (EntitiesAPI entities = new EntitiesAPI())
             {
-                switch (username.ToLower())
-                {
-                    case "aie-user":
-                        var objs = entities.qryApiUserLogins.ToList();
-                        var obj = objs.ToList();
-                        return Request.CreateResponse(HttpStatusCode.OK, obj);
+           
+                var user = entities.qryApiUserLogins
+                    .Where(x => x.Email == request.Email && x.Password == request.Password)
+                    .Select(x => new
+                    {
+                        x.ID,
+                        x.Email,
+                        x.Username,
+                        x.FullName
+                    })
+                    .FirstOrDefault();
 
-                    default:
-                        return Request.CreateResponse(HttpStatusCode.BadRequest);
+                if (user == null)
+                {
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized, new { message = "Invalid credentials." });
                 }
+
+                return Request.CreateResponse(HttpStatusCode.OK, user);
             }
         }
     }
