@@ -1,0 +1,116 @@
+@{
+    ViewData["Title"] = "SAIRH 2026 - AI Summit Assistant";
+}
+
+<!-- Summit Assistant Hero & Integration Hub -->
+<section class="sairh-preview-hero py-5 text-center">
+    <div class="container py-4">
+        <div class="mb-3">
+            <span class="badge px-3 py-2 rounded-pill" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); font-size: 0.85rem; font-weight: 600;">
+                <i class="bi bi-stars me-1"></i> YEAR OF ARTIFICIAL INTELLIGENCE 2026
+            </span>
+        </div>
+        <h1 class="display-4 fw-bold text-white mb-3" style="letter-spacing: -0.5px;">
+            SAIRH AI Summit Assistant
+        </h1>
+        <p class="lead text-secondary mx-auto mb-4" style="max-width: 680px; font-size: 1.15rem;">
+            Intelligent assistant for the Saudi First AI Summit in Radiology &amp; Health Innovation.
+            Click the floating chat button on the bottom corner to interact.
+        </p>
+
+        <!-- Feature Pillars -->
+        <div class="row g-4 mt-2 justify-content-center text-start">
+            <div class="col-md-4">
+                <div class="p-4 rounded-4" style="background: rgba(12, 22, 52, 0.65); border: 1px solid rgba(56, 189, 248, 0.25); backdrop-filter: blur(16px);">
+                    <div class="d-inline-flex p-3 rounded-3 mb-3" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+                        <i class="bi bi-chat-heart-fill fs-4"></i>
+                    </div>
+                    <h5 class="text-white fw-bold mb-2">Floating Action Button</h5>
+                    <p class="text-secondary small mb-0">Liquid-glass pulse ring, bilingual call-to-action pill, and smooth icon morphing.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 rounded-4" style="background: rgba(12, 22, 52, 0.65); border: 1px solid rgba(56, 189, 248, 0.25); backdrop-filter: blur(16px);">
+                    <div class="d-inline-flex p-3 rounded-3 mb-3" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+                        <i class="bi bi-translate fs-4"></i>
+                    </div>
+                    <h5 class="text-white fw-bold mb-2">Bilingual &amp; RTL Native</h5>
+                    <p class="text-secondary small mb-0">Seamless instant toggle between English (LTR) and Arabic (RTL) with specialized summit typography.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 rounded-4" style="background: rgba(12, 22, 52, 0.65); border: 1px solid rgba(56, 189, 248, 0.25); backdrop-filter: blur(16px);">
+                    <div class="d-inline-flex p-3 rounded-3 mb-3" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+                        <i class="bi bi-cpu fs-4"></i>
+                    </div>
+                    <h5 class="text-white fw-bold mb-2">Dual Grounding Engine</h5>
+                    <p class="text-secondary small mb-0">Instant responses from official summit FAQs and intelligent generative fallback via Gemini AI.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SAIRH AI Chatbot Interactive Floating Action Button -->
+<div id="sairh-chat-fab-container" class="sairh-chat-fab-wrap">
+    <div id="sairh-chat-fab-pill" class="sairh-chat-fab-pill" onclick="toggleChatWindow()">
+        <span class="sairh-fab-pill-dot"></span>
+        <span id="sairh-fab-pill-text" class="sairh-fab-pill-text">Ask AI Assistant</span>
+    </div>
+    <button type="button" id="chat-toggle-btn" class="sairh-chat-fab" aria-label="Open SAIRH AI Chatbot" onclick="toggleChatWindow()">
+        <span class="sairh-chat-fab-icon-wrap">
+            <i class="bi bi-chat-dots-fill sairh-icon-chat"></i>
+            <i class="bi bi-x-lg sairh-icon-close"></i>
+        </span>
+        <span class="sairh-chat-fab-badge"><i class="bi bi-stars"></i></span>
+    </button>
+</div>
+
+<!-- SAIRH AI Chatbot Popup Window -->
+<div id="chat-popup-window" class="sairh-chat-window" aria-hidden="true" dir="ltr">
+    <div class="sairh-chat-header">
+        <div class="sairh-chat-header-info">
+            <div class="sairh-chat-avatar">
+                <i class="bi bi-robot"></i>
+                <span class="sairh-chat-status-dot" title="Online"></span>
+            </div>
+            <div class="sairh-chat-header-text">
+                <h4 id="chat-title" class="sairh-chat-title">SAIRH AI Assistant</h4>
+                <span id="chat-status" class="sairh-chat-status">Online &bull; 2026 Summit Guide</span>
+            </div>
+        </div>
+        <div class="sairh-chat-header-actions">
+            <button type="button" id="lang-toggle" class="sairh-chat-lang-btn" onclick="toggleLanguage()" aria-label="Switch Language">
+                <i class="bi bi-globe"></i>
+                <span id="lang-toggle-text">العربية</span>
+            </button>
+            <button type="button" class="sairh-chat-close-btn" onclick="toggleChatWindow()" aria-label="Close Chat">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="sairh-chat-banner">
+        <i class="bi bi-info-circle-fill"></i>
+        <span id="chat-banner-text">Official AI Summit Guide for SAIRH 2026</span>
+    </div>
+
+    <div class="sairh-chat-messages" id="chat-messages" role="log" aria-live="polite">
+    </div>
+
+    <div class="sairh-chat-footer">
+        <div class="sairh-chat-input-bar">
+            <input type="text" id="user-input" class="sairh-chat-input" maxlength="500" placeholder="Ask about sessions, venue, registration..." autocomplete="off" />
+            <button type="button" id="send-btn" class="sairh-chat-send-btn" onclick="submitUserQuery()" aria-label="Send Message">
+                <i class="bi bi-send-fill"></i>
+            </button>
+        </div>
+        <div class="sairh-chat-watermark">
+            <span>SAIRH 2026 &bull; Year of Artificial Intelligence</span>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/chat.js" asp-append-version="true"></script>
+}

@@ -13,6 +13,10 @@ namespace AIE
             var settings = new FriendlyUrlSettings();
             settings.AutoRedirectMode = RedirectMode.Permanent;
             routes.EnableFriendlyUrls(settings);
+
+            // Legacy backward-compatibility routes
+            routes.MapPageRoute("LegacyJudgesRoute", "Judges", "~/Speakers.aspx");
+            routes.MapPageRoute("LegacyJudgesArRoute", "Ar_Sa/Judges", "~/Ar_Sa/Speakers.aspx");
         }
     }
 }

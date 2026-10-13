@@ -1,0 +1,100 @@
+[
+  {
+    "categoryId": "general_info",
+    "categoryNameAr": "المعلومات العامة والهوية التنظيمية",
+    "categoryNameEn": "General Information and Organizational Identity",
+    "questions": [
+      {
+        "id": "timing_and_location",
+        "questionAr": "متى وأين ستقام القمة السعودية للذكاء الاصطناعي في الأشعة والابتكار الصحي؟",
+        "questionEn": "When and where will the Saudi Summit on AI in Radiology and Health Innovation take place?",
+        "answerAr": "ستقام القمة في 12-13 ديسمبر 2026 في فندق جراند حياة الخبر بالمنطقة الشرقية.",
+        "answerEn": "The summit will take place on 12-13 December 2026 at the Grand Hyatt Hotel in Al Khobar, Eastern Province."
+      },
+      {
+        "id": "organizing_entity",
+        "questionAr": "من هي الجهة المنظمة للقمة؟",
+        "questionEn": "Who is the organizing entity of the summit?",
+        "answerAr": "تنظم القمة جامعة الإمام عبد الرحمن بن فيصل ممثلةً في كلية الطب (قسم الأشعة).",
+        "answerEn": "The summit is organized by Imam Abdulrahman Bin Faisal University, represented by the College of Medicine (Department of Radiology)."
+      },
+      {
+        "id": "official_slogan",
+        "questionAr": "ما هو الشعار الرسمي للقمة؟",
+        "questionEn": "What is the official slogan of the summit?",
+        "answerAr": "شعار القمة هو: \"ثورة التصوير والذكاء الاصطناعي... إلى ما بعد الممكن\" (Imaging Revolution and Intelligence Beyond Possibilities) تزامنًا مع عام الذكاء الاصطناعي 2026.",
+        "answerEn": "The official slogan of the summit is: \"Imaging Revolution and Intelligence Beyond Possibilities\", coinciding with the Year of AI 2026."
+      }
+    ]
+  },
+  {
+    "categoryId": "partners_and_sponsors",
+    "categoryNameAr": "الرعاة والجهات الشريكة",
+    "categoryNameEn": "Partners and Sponsors",
+    "questions": [
+      {
+        "id": "government_and_national_entities",
+        "questionAr": "ما أبرز الجهات الحكومية والوطنية المشاركة والداعمة للقمة؟",
+        "questionEn": "What are the most prominent governmental and national entities participating in and supporting the summit?",
+        "answerAr": "تشمل الجهات الحكومية والوطنية الرئيسية: سدايا، وزارة الصحة، هيئة البحث والتطوير والابتكار (RDIA)، هيئة الحكومة الرقمية، هيئة تطوير المنطقة الشرقية، الهيئة الوطنية للأمن السيبراني، هيئة الغذاء والدواء (SFDA)، والهيئة السعودية للمواصفات والمقاييس والجودة (SASO).",
+        "answerEn": "The main governmental and national entities include: SDAIA, Ministry of Health, Research, Development and Innovation Authority (RDIA), Digital Government Authority, Eastern Province Development Authority, National Cybersecurity Authority, Saudi Food and Drug Authority (SFDA), and the Saudi Standards, Metrology and Quality Organization (SASO)."
+      },
+      {
+        "id": "strategic_and_technical_partners",
+        "questionAr": "من هم الشركاء الاستراتيجيون والتقنيون للقمة؟",
+        "questionEn": "Who are the strategic and technical partners of the summit?",
+        "answerAr": "من أبرز الشركاء التقنيين والاستراتيجيين: أرامكو ديجيتال (Aramco Digital)، وادي الدمام، مدينة الملك عبد العزيز للعلوم والتقنية (KACST)، وغرفة الشرقية.",
+        "answerEn": "Prominent technical and strategic partners include: Aramco Digital, Dammam Valley, King Abdulaziz City for Science and Technology (KACST), and the Eastern Province Chamber."
+      },
+      {
+        "id": "global_companies",
+        "questionAr": "ما هي الشركات العالمية الكبرى المشاركة في المعرض المصاحب؟",
+        "questionEn": "What major global companies are participating in the accompanying exhibition?",
+        "answerAr": "تشمل الشركات العالمية: Microsoft، Google Cloud، NVIDIA، Oracle Health، Amazon Web Services (AWS)، Siemens Healthineers، GE HealthCare، وPhilips Healthcare.",
+        "answerEn": "Global companies include: Microsoft, Google Cloud, NVIDIA, Oracle Health, Amazon Web Services (AWS), Siemens Healthineers, GE HealthCare, and Philips Healthcare."
+      }
+    ]
+  },
+  {
+    "categoryId": "scientific_program",
+    "categoryNameAr": "المسارات والجلسات العلمية",
+    "categoryNameEn": "Scientific Tracks and Sessions",
+    "questions": [
+      {
+        "id": "tracks_and_topics",
+        "questionAr": "كم عدد المسارات الرئيسية للقمة وما هي موضوعاتها؟",
+        "questionEn": "How many main tracks does the summit have and what are their topics?",
+        "answerAr": "تتكون القمة من ثلاثة مسارات رئيسية: المسار الأول (Track A): الذكاء الاصطناعي والتحول الرقمي والتقني. المسار الثاني (Track B): الأشعة الإكلينيكية المتقدمة. المسار الثالث (Track C): التعليم والجودة والبحث والابتكار.",
+        "answerEn": "The summit consists of three main tracks: Track A: Artificial Intelligence, Digital and Technical Transformation. Track B: Advanced Clinical Radiology. Track C: Education, Quality, Research, and Innovation."
+      },
+      {
+        "id": "speakers",
+        "questionAr": "من أبرز المتحدثين المحليين والدوليين المشاركين في القمة؟",
+        "questionEn": "Who are the prominent local and international speakers participating in the summit?",
+        "answerAr": "محلياً: د. فهد المسند، د. إيمان الشهري، د. أمينة كشغري، ود. عبد العزيز الشريدة. دولياً: خبراء من جامعات عالمية مرموقة مثل جامعة إكستر، جامعة ستانفورد، جامعة نيوكاسل، وجامعة كولوركو (UCC) في إيرلندا.",
+        "answerEn": "Locally: Dr. Fahad Al-Musnad, Dr. Eman Al-Shehri, Dr. Amina Kashghari, and Dr. Abdulaziz Al-Shuraida. Internationally: Experts from prestigious global universities such as the University of Exeter, Stanford University, Newcastle University, and University College Cork (UCC) in Ireland."
+      }
+    ]
+  },
+  {
+    "categoryId": "governance_and_committees",
+    "categoryNameAr": "الحوكمة واللجان التنظيمية",
+    "categoryNameEn": "Governance and Organizational Committees",
+    "questions": [
+      {
+        "id": "organizational_structure",
+        "questionAr": "من يترأس المجلس الإشرافي واللجان العلمية للقمة؟",
+        "questionEn": "Who chairs the supervisory board and scientific committees of the summit?",
+        "answerAr": "الرئيس الفخري: رئيس الجامعة. رئيس المجلس الإشرافي: نائب رئيس الجامعة للبحث العلمي والابتكار. رئيس القمة: رئيس قسم الأشعة. رئيس اللجنة العلمية: عميد كلية الطب أ.د. محمد الشهراني، ورئيس القمة د. عبد العزيز الشريدة.",
+        "answerEn": "Honorary President: University President. Head of the Supervisory Board: Vice President for Scientific Research and Innovation. Summit Chair: Head of the Radiology Department. Scientific Committee Chair: Dean of the College of Medicine Prof. Dr. Mohammed Al-Shahrani, and Summit Chair Dr. Abdulaziz Al-Shuraida."
+      },
+      {
+        "id": "registration_and_participation",
+        "questionAr": "كيف يمكن للمهتمين التسجيل أو المشاركة في فعاليات القمة؟",
+        "questionEn": "How can interested individuals register or participate in the summit activities?",
+        "answerAr": "يمكن التسجيل ومتابعة تفاصيل أوراق العمل وحضور الجلسات من خلال المنصة الرقمية الرسمية الخاصة بالقمة أو عبر التنسيق مع لجان التنظيم بالجامعة.",
+        "answerEn": "You can register and follow the details of working papers and attend sessions through the official digital platform of the summit or by coordinating with the university's organizing committees."
+      }
+    ]
+  }
+]

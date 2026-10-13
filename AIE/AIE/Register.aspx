@@ -1,6 +1,4 @@
-<%@ Page Title="Register - SAIRH 2026" Language="C#" MasterPageFile="~/Public.Master" AutoEventWireup="true" CodeBehind="Register.aspx.cs" Inherits="AIE.Register" %>
-
-<%@ Register Assembly="DevExpress.Web.Bootstrap.v20.2, Version=20.2.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Namespace="DevExpress.Web.Bootstrap" TagPrefix="dx" %>
+<%@ Page Title="Create Account - SAIRH 2026" Language="C#" MasterPageFile="~/Public.Master" AutoEventWireup="true" CodeBehind="Register.aspx.cs" Inherits="AIE.Register" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
@@ -22,93 +20,123 @@
             <section class="py-5" aria-label="Registration Form">
                 <div class="container">
                     <div class="row justify-content-center">
-                        <div class="col-lg-8">
+                        <div class="col-lg-7 col-md-9">
                             <div class="register-glass-card">
                                 <div class="text-center mb-4 pb-3 border-bottom border-secondary">
-                                    <h3 class="text-white font-weight-bold mb-2">Registration Details</h3>
+                                    <h3 class="text-white font-weight-bold mb-2">Attendee Registration</h3>
                                     <p class="text-secondary mb-0">
                                         Already registered? <a href="Login" class="text-info font-weight-bold">Sign in here</a>.
                                     </p>
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-person mr-1 text-info"></i> Full Name</label>
-                                            <asp:TextBox ID="TxtFullName" runat="server" CssClass="form-control" placeholder="Enter your full name"></asp:TextBox>
+                                <div id="divError" class="auth-alert alert" runat="server" visible="false" role="alert"></div>
+
+                                <div class="auth-form">
+                                    <div class="auth-field">
+                                        <label for="<%= TxtFullName.ClientID %>" class="auth-label">
+                                            <i class="bi bi-person mr-1 text-info"></i> Full Name
+                                        </label>
+                                        <asp:TextBox ID="TxtFullName" runat="server" CssClass="form-control" placeholder="e.g. Dr. Sarah Al-Ahmad" autocomplete="name" required="required"></asp:TextBox>
+                                    </div>
+
+                                    <div class="auth-field">
+                                        <label for="<%= TxtEmail.ClientID %>" class="auth-label">
+                                            <i class="bi bi-envelope mr-1 text-info"></i> Email Address
+                                        </label>
+                                        <asp:TextBox ID="TxtEmail" runat="server" TextMode="Email" CssClass="form-control" placeholder="name@domain.com" autocomplete="username" required="required"></asp:TextBox>
+                                    </div>
+
+                                    <div class="auth-field">
+                                        <div class="auth-row-between">
+                                            <label for="<%= TxtMobile.ClientID %>" class="auth-label">
+                                                <i class="bi bi-telephone mr-1 text-info"></i> Mobile Number
+                                            </label>
+                                            <span class="auth-optional">Optional</span>
+                                        </div>
+                                        <asp:TextBox ID="TxtMobile" runat="server" TextMode="Phone" CssClass="form-control" placeholder="e.g. +966 50 123 4567" autocomplete="tel"></asp:TextBox>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="auth-field">
+                                                <div class="auth-row-between">
+                                                    <label for="<%= TxtOrganization.ClientID %>" class="auth-label">
+                                                        <i class="bi bi-building mr-1 text-info"></i> Organization
+                                                    </label>
+                                                    <span class="auth-optional">Optional</span>
+                                                </div>
+                                                <asp:TextBox ID="TxtOrganization" runat="server" CssClass="form-control" placeholder="Hospital / University / Company" autocomplete="organization"></asp:TextBox>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="auth-field">
+                                                <div class="auth-row-between">
+                                                    <label for="<%= TxtJobTitle.ClientID %>" class="auth-label">
+                                                        <i class="bi bi-briefcase mr-1 text-info"></i> Job Title / Specialty
+                                                    </label>
+                                                    <span class="auth-optional">Optional</span>
+                                                </div>
+                                                <asp:TextBox ID="TxtJobTitle" runat="server" CssClass="form-control" placeholder="e.g. Radiologist, Researcher"></asp:TextBox>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-telephone mr-1 text-info"></i> Mobile Number</label>
-                                            <asp:TextBox ID="TxtMobile" runat="server" CssClass="form-control" placeholder="Enter mobile number"></asp:TextBox>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3 mb-md-0">
+                                            <div class="auth-field">
+                                                <label for="<%= TxtPassword.ClientID %>" class="auth-label">
+                                                    <i class="bi bi-lock mr-1 text-info"></i> Password
+                                                </label>
+                                                <div class="auth-password">
+                                                    <asp:TextBox ID="TxtPassword" runat="server" TextMode="Password" CssClass="form-control" placeholder="Min. 8 characters" autocomplete="new-password" required="required"></asp:TextBox>
+                                                    <button type="button" class="auth-password-toggle" data-toggle-password="<%= TxtPassword.ClientID %>" aria-label="Show password" data-label-show="Show password" data-label-hide="Hide password" aria-pressed="false">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="auth-field">
+                                                <label for="<%= TxtPasswordAgain.ClientID %>" class="auth-label">
+                                                    <i class="bi bi-check-all mr-1 text-info"></i> Confirm Password
+                                                </label>
+                                                <div class="auth-password">
+                                                    <asp:TextBox ID="TxtPasswordAgain" runat="server" TextMode="Password" CssClass="form-control" placeholder="Re-enter password" autocomplete="new-password" required="required"></asp:TextBox>
+                                                    <button type="button" class="auth-password-toggle" data-toggle-password="<%= TxtPasswordAgain.ClientID %>" aria-label="Show password" data-label-show="Show password" data-label-hide="Hide password" aria-pressed="false">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                </div>
+                                                <div id="pwdMatchMsg" class="password-match-status" style="display: none;"></div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-gender-ambiguous mr-1 text-info"></i> Gender</label>
-                                            <dx:ASPxRadioButtonList ID="TxtGender" runat="server" ValueType="System.String" Width="100%" RepeatDirection="Horizontal" Height="40px">
-                                                <Items>
-                                                    <dx:ListEditItem Value="Male" Text="Male" />
-                                                    <dx:ListEditItem Value="Female" Text="Female" />
-                                                </Items>
-                                            </dx:ASPxRadioButtonList>
+                                    <!-- Interactive Password Strength Meter -->
+                                    <div class="password-strength-container" id="pwdStrengthBox" style="display: none;">
+                                        <div class="password-strength-label">
+                                            <span>Password Strength:</span>
+                                            <span class="password-strength-text" id="pwdStrengthText">Weak</span>
                                         </div>
+                                        <div class="password-strength-bar-track">
+                                            <div class="password-strength-bar" id="pwdStrengthBar"></div>
+                                        </div>
+                                        <ul class="password-req-list">
+                                            <li class="password-req-item" id="reqLen"><i class="bi bi-circle"></i> 8+ characters</li>
+                                            <li class="password-req-item" id="reqUpper"><i class="bi bi-circle"></i> Uppercase letter (A-Z)</li>
+                                            <li class="password-req-item" id="reqLower"><i class="bi bi-circle"></i> Lowercase letter (a-z)</li>
+                                            <li class="password-req-item" id="reqNum"><i class="bi bi-circle"></i> Number (0-9)</li>
+                                            <li class="password-req-item" id="reqSpecial"><i class="bi bi-circle"></i> Symbol (!@#$%^&*...)</li>
+                                        </ul>
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-flag mr-1 text-info"></i> Nationality</label>
-                                            <dx:BootstrapComboBox ID="Nationality" runat="server" DataSourceID="ds_Countries" EnableTheming="true" CssClass="form-control"
-                                                ValueField="CountryID" ValueType="System.String">
-                                                <Fields>
-                                                    <dx:BootstrapListBoxField FieldName="NationalityEn"></dx:BootstrapListBoxField>
-                                                </Fields>
-                                            </dx:BootstrapComboBox>
-                                            <asp:SqlDataSource runat="server" ID="ds_Countries" ConnectionString='<%$ ConnectionStrings:AIEConnectionString %>' 
-                                                SelectCommand="SELECT [CountryID], [NationalityEn], [PathLocation] FROM [qryCountries] ORDER BY [Sorting]"></asp:SqlDataSource>
-                                        </div>
+                                    <div class="mt-3">
+                                        <asp:Button ID="BtnRegister" runat="server" CssClass="cyan-glow-btn w-100 py-3 text-white font-weight-bold" Text="Create Account" OnClick="BtnRegister_Click" data-loading-text="Creating Account..." />
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-envelope mr-1 text-info"></i> Email Address</label>
-                                            <asp:TextBox ID="TxtEmail" runat="server" CssClass="form-control" placeholder="name@domain.com"></asp:TextBox>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-linkedin mr-1 text-info"></i> LinkedIn Account</label>
-                                            <asp:TextBox ID="TxtLinkedin" runat="server" CssClass="form-control" placeholder="https://linkedin.com/in/username"></asp:TextBox>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-lock mr-1 text-info"></i> Password</label>
-                                            <asp:TextBox ID="TxtPassword" TextMode="Password" runat="server" CssClass="form-control" placeholder="Create password"></asp:TextBox>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 mb-4">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-check-all mr-1 text-info"></i> Re-enter Password</label>
-                                            <asp:TextBox ID="TxtPasswordAgain" TextMode="Password" runat="server" CssClass="form-control" placeholder="Confirm password"></asp:TextBox>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 mt-2">
-                                        <div class="d-flex justify-content-center">
-                                            <asp:LinkButton ID="BtnRegister" runat="server" CssClass="cyan-glow-btn px-5 py-3 text-white font-weight-bold" OnClick="BtnRegister_Click">
-                                                <i class="bi bi-person-plus mr-1"></i> Register Account
-                                            </asp:LinkButton>
-                                        </div>
-
-                                        <div id="divError" class="text-danger text-center mt-3" runat="server"></div>
-                                    </div>
+                                    <p class="auth-switch">
+                                        Already have an account? <a href="Login" class="text-info font-weight-bold">Sign in here</a>
+                                    </p>
                                 </div>
                             </div>
                         </div>

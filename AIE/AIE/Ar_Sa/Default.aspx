@@ -5,8 +5,7 @@
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <!-- Hero Section (Arabic, AI-Powered Liquid Glass Hero) -->
-    <section aria-label="Summit Hero" class="landing-hero-section text-light" style="background-image: linear-gradient(to right, rgba(4, 8, 22, 0.94) 0%, rgba(4, 8, 22, 0.82) 36%, rgba(4, 8, 22, 0.15) 68%, transparent 100%), linear-gradient(to bottom, transparent 75%, #040816 100%), url('<%= ResolveUrl("~/Content/images/background/hero-ai-bg.png") %>') !important; background-position: right center !important; background-size: cover !important; background-repeat: no-repeat !important;">
-        <!-- Edge Slider Navigation Controls (Middle of Most Left & Right of Section) -->
+    <section aria-label="Summit Hero" class="landing-hero-section text-light" style="background-image: linear-gradient(to left, rgba(4, 8, 22, 0.75) 0%, rgba(4, 8, 22, 0.45) 35%, rgba(4, 8, 22, 0.05) 65%, transparent 100%), linear-gradient(to bottom, transparent 80%, #040816 100%), url('<%= ResolveUrl("~/Content/images/background/hero-ai-ar-bg.png") %>') !important; background-position: left center !important; background-size: cover !important; background-repeat: no-repeat !important;">
         <button type="button" class="hero-arrow-btn hero-arrow-left" aria-label="الشريحة السابقة">
             <i class="bi bi-chevron-left"></i>
         </button>
@@ -19,7 +18,7 @@
                 <div class="carousel-inner">
                     <!-- Slide 1: Main Summit Overview (Existing Hero with Typed 2026 Effect) -->
                     <div class="carousel-item active" data-slide-index="0">
-                        <div class="row align-items-center">
+                        <div class="row align-items-center justify-content-start">
                             <div class="col-lg-8 col-xl-8 hero-text-col text-right">
                                 <div class="hero-slide-stage">
                                     <h1 class="hero-slide-title font-weight-bold text-white mb-2">
@@ -65,7 +64,7 @@
 
                     <!-- Slide 2: Summit Inauguration Live Countdown Timer (13 December, 09:00 AM AST) -->
                     <div class="carousel-item" data-slide-index="1">
-                        <div class="row align-items-center">
+                        <div class="row align-items-center justify-content-start">
                             <div class="col-lg-8 col-xl-8 hero-text-col text-right">
                                 <div class="hero-slide-stage">
                                     <h2 class="hero-slide-title font-weight-bold text-white mb-2">
@@ -101,7 +100,7 @@
 
                     <!-- Slide 3: Royal Quote & Portrait of HRH Crown Prince Mohammed bin Salman -->
                     <div class="carousel-item" data-slide-index="2">
-                        <div class="row align-items-center">
+                        <div class="row align-items-center justify-content-start">
                             <div class="col-lg-8 col-xl-8 hero-text-col text-right">
                                 <div class="hero-slide-stage">
                                     <div class="royal-quote-wrapper">
@@ -147,7 +146,6 @@
         <div class="container">
             <!-- Section Title -->
             <div class="text-center mb-4">
-                <span class="sairh-track-tag mb-2" style="display: inline-flex;"><i class="bi bi-broadcast"></i> المتابعة الفورية لفعاليات القمة</span>
                 <h2 class="text-white font-weight-bold display-5 mb-3">لوحة المتابعة الحية للمؤتمر</h2>
                 <div style="width: 80px; height: 3px; background: linear-gradient(90deg, #38bdf8, #2563eb); margin: 0 auto 20px; border-radius: 2px;"></div>
             </div>

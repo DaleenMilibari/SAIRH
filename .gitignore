@@ -14,3 +14,14 @@ obj/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Environment and secrets
+.env
+.env.*
+*.local.json
+appsettings.*.local.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class

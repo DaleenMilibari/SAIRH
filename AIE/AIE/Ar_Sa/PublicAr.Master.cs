@@ -24,8 +24,8 @@ namespace AIE
                     linkCeremonyAr.Attributes["class"] += " active";
                 else if (currentPage.Contains("schedules"))
                     linkSchedulesAr.Attributes["class"] += " active";
-                else if (currentPage.Contains("judges"))
-                    linkJudgesAr.Attributes["class"] += " active";
+                else if (currentPage.Contains("speakers") || currentPage.Contains("judges"))
+                    linkSpeakersAr.Attributes["class"] += " active";
                 else if (currentPage.Contains("sponsors"))
                     linkSponsorsAr.Attributes["class"] += " active";
                 else if (currentPage.Contains("contactus"))
@@ -83,9 +83,9 @@ namespace AIE
                 Response.Redirect("~/Sponsors");
             }
 
-            else if (absolutepath.Contains("Judges"))
+            else if (absolutepath.Contains("Speakers") || absolutepath.Contains("Judges"))
             {
-                Response.Redirect("~/Judges");
+                Response.Redirect("~/Speakers");
             }
 
             else if (absolutepath.Contains("Winners"))

@@ -1,0 +1,6 @@
+@SiteMap.ApiTester_HostAddress = http://localhost:5156
+
+GET {{SiteMap.ApiTester_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

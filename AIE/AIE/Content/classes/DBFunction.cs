@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -105,22 +105,56 @@ namespace DBFunction
         }
 
 
+        [Serializable]
         public class Users
         {
             public Int32 UserID { get; set; }
             public string UserName { get; set; }
             public string FullName { get; set; }
-
             public string UserLevel { get; set; }
-
+            public bool IsAdmin { get { return string.Equals(UserLevel, "Admin", StringComparison.OrdinalIgnoreCase); } }
+            public string MobileNo { get; set; }
+            public string Organization { get; set; }
+            public string JobTitle { get; set; }
+            public string Specialty { get; set; }
+            public string LinkedInUrl { get; set; }
+            public string SecurityStamp { get; set; }
         }
+        /// <summary>
+        /// The signed-in user, or null. The encrypted Forms auth cookie is the source of truth
+        /// (its name is the AttendeeID); the session is only a cache and is ignored if it does
+        /// not belong to the authenticated user.
+        /// </summary>
         public static Users UserDetails
         {
             get
             {
-                return (HttpContext.Current.Session["UserDetails"] == null) ? null : (Users)HttpContext.Current.Session["UserDetails"];
+                HttpContext ctx = HttpContext.Current;
+                if (ctx == null || ctx.User == null || ctx.User.Identity == null || !ctx.User.Identity.IsAuthenticated)
+                    return null;
+
+                int userId;
+                if (!int.TryParse(ctx.User.Identity.Name, System.Globalization.NumberStyles.None,
+                                  System.Globalization.CultureInfo.InvariantCulture, out userId))
+                    return null;
+
+                Users cached = ctx.Session == null ? null : ctx.Session["UserDetails"] as Users;
+                if (cached != null && cached.UserID == userId)
+                    return cached;
+
+                AIE.AuthService.Account account = AIE.AuthService.GetById(userId);
+                if (account == null || account.IsBlocked)
+                    return null;
+
+                Users user = AIE.AuthService.ToUserDetails(account);
+                if (ctx.Session != null) ctx.Session["UserDetails"] = user;
+                return user;
             }
-            set { HttpContext.Current.Session["UserDetails"] = value; }
+            set
+            {
+                HttpContext ctx = HttpContext.Current;
+                if (ctx != null && ctx.Session != null) ctx.Session["UserDetails"] = value;
+            }
         }
         public class UsersRoles
         {
@@ -209,60 +243,7 @@ namespace DBFunction
         }
 
       
-        public static DataView UsersGetByUserName(string email, string pass)
-        {
-            DBFun.dbFunctions dbFun = new DBFun.dbFunctions(_connString);
-            dbFun.ExecSelectProc("UsersGetByUserName", email+"#~~#"+pass);
-            if (dbFun.blnError)
-            {
-                BlnError = true;
-                _blnError = dbFun.blnError;
-                _strError = dbFun.strError;
-                return null;
-            }
-            return dbFun.DV;
-        }
 
-        public static DataView LoginHistoryInsert(string userid, string ips, string devtype, string browtype, string browver, string loginsuccess)
-        {
-            DBFun.dbFunctions dbFun = new DBFun.dbFunctions(_connString);
-            dbFun.ExecSelectProc("LoginHistoryInsert", userid + "#~~#" + ips + "#~~#" + devtype + "#~~#" + browtype + "#~~#" + browver + "#~~#" + loginsuccess);
-            if (dbFun.blnError)
-            {
-                BlnError = true;
-                _blnError = dbFun.blnError;
-                _strError = dbFun.strError;
-                return null;
-            }
-            return dbFun.DV;
-        }
-        //
-        public static DataView UsersInsert(string FullName, string Username, string Pass, string MobileNo, string Gender, string Nationality)
-        {
-            DBFun.dbFunctions dbFun = new DBFun.dbFunctions(_connString);
-            dbFun.ExecSelectProc("UsersInsert", FullName + "#~~#" + Username + "#~~#" + Pass + "#~~#" + MobileNo + "#~~#" + Gender + "#~~#" + Nationality);
-            if (dbFun.blnError)
-            {
-                BlnError = true;
-                _blnError = dbFun.blnError;
-                _strError = dbFun.strError;
-                return null;
-            }
-            return dbFun.DV;
-        }
-        public static DataView UsersInsertV2(string FullName, string Username, string Pass, string MobileNo, string Gender, string Nationality, string Linkedin)
-        {
-            DBFun.dbFunctions dbFun = new DBFun.dbFunctions(_connString);
-            dbFun.ExecSelectProc("UsersInsertV2", FullName + "#~~#" + Username + "#~~#" + Pass + "#~~#" + MobileNo + "#~~#" + Gender + "#~~#" + Nationality + "#~~#" + Linkedin);
-            if (dbFun.blnError)
-            {
-                BlnError = true;
-                _blnError = dbFun.blnError;
-                _strError = dbFun.strError;
-                return null;
-            }
-            return dbFun.DV;
-        }
         public static DataView ContactUsInsert(string FullName, string Email, string Mobile, string Message)
         {
             DBFun.dbFunctions dbFun = new DBFun.dbFunctions(_connString);
@@ -276,19 +257,7 @@ namespace DBFunction
             }
             return dbFun.DV;
         }
-        public static DataView UsersGetByEmail(string email)
-        {
-            DBFun.dbFunctions dbFun = new DBFun.dbFunctions(_connString);
-            dbFun.ExecSelectProc("UsersGetByEmail", email );
-            if (dbFun.blnError)
-            {
-                BlnError = true;
-                _blnError = dbFun.blnError;
-                _strError = dbFun.strError;
-                return null;
-            }
-            return dbFun.DV;
-        }
+        // NOTE: user/account data access now lives in AIE.AuthService (hashed passwords, parameterized SQL).
         public static DataSet LanguagesGet()
         {
             DBFun.dbFunctions dbFun = new DBFun.dbFunctions(_connString);
@@ -342,47 +311,7 @@ namespace DBFunction
             }
             return dbFun.DV;
         }
-        public static DataView UsersGetByID(string id)
-        {
-            DBFun.dbFunctions dbFun = new DBFun.dbFunctions(_connString);
-            dbFun.ExecSelectProc("UsersGetByID", id);
-            if (dbFun.blnError)
-            {
-                BlnError = true;
-                _blnError = dbFun.blnError;
-                _strError = dbFun.strError;
-                return null;
-            }
-            return dbFun.DV;
-        }
 
-        public static DataView UsersUpdatePass(string userid, string pass)
-        {
-            DBFun.dbFunctions dbFun = new DBFun.dbFunctions(_connString);
-            dbFun.ExecSelectProc("UsersUpdatePass", userid + "#~~#" + pass );
-            if (dbFun.blnError)
-            {
-                BlnError = true;
-                _blnError = dbFun.blnError;
-                _strError = dbFun.strError;
-                return null;
-            }
-            return dbFun.DV;
-        }
-        //
-        public static DataView UsersUpdateInfo(string userid, string MobileNo, string Gender, string Nationality, string Linkedn)
-        {
-            DBFun.dbFunctions dbFun = new DBFun.dbFunctions(_connString);
-            dbFun.ExecSelectProc("UsersUpdateInfo", userid + "#~~#" + MobileNo + "#~~#" + Gender + "#~~#" + Nationality + "#~~#" + Linkedn);
-            if (dbFun.blnError)
-            {
-                BlnError = true;
-                _blnError = dbFun.blnError;
-                _strError = dbFun.strError;
-                return null;
-            }
-            return dbFun.DV;
-        }
     }
 
 

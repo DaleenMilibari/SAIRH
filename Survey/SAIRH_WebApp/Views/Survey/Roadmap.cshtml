@@ -1,0 +1,1820 @@
+@model List<SAIRH_WebApp.Models.Booth>
+
+@{
+    ViewData["Title"] = "Your Roadmap";
+
+    var recommendedBooths =
+        ViewBag.RecommendedBooths as List<SAIRH_WebApp.Models.Booth>
+        ?? new List<SAIRH_WebApp.Models.Booth>();
+
+    var recommendedIds =
+        ViewBag.RecommendedIds as List<int>
+        ?? new List<int>();
+
+    var sponsorBooths = Model
+        .Where(item => item.Type == "SponsorBooth")
+        .OrderBy(item => item.Id)
+        .ToList();
+
+    var researchScreens = Model
+        .Where(item => item.Type == "ResearchScreen")
+        .OrderBy(item => item.Id)
+        .ToList();
+
+
+    // 30 research screens:
+    // 12 top + 6 left + 12 bottom.
+    // Right wall remains completely empty for the door.
+
+    var topScreens = researchScreens
+        .Take(12)
+        .ToList();
+
+    var leftScreens = researchScreens
+        .Skip(12)
+        .Take(6)
+        .ToList();
+
+    var bottomScreens = researchScreens
+        .Skip(18)
+        .Take(12)
+        .ToList();
+
+
+    // 15 Sponsor Booths:
+    // S1-S7 on the left side below the door.
+    // S8-S15 on the right side.
+
+    var sponsorLeft = sponsorBooths
+        .Take(7)
+        .ToList();
+
+    var sponsorRight = sponsorBooths
+        .Skip(7)
+        .Take(8)
+        .ToList();
+}
+
+
+<div class="roadmap-page">
+
+
+    <!-- ==================================================
+         CONTENT THAT WILL BE INCLUDED IN THE DOWNLOADED PDF
+    =================================================== -->
+
+    <div id="roadmapDownloadArea">
+
+
+        <!-- ========================================
+             PAGE HEADER
+        ========================================= -->
+
+        <div class="roadmap-header">
+
+            <div class="roadmap-header-text">
+
+                <span class="roadmap-tag">
+                    PERSONALIZED EXPERIENCE
+                </span>
+
+                <h1>
+                    Your Personalized Roadmap
+                </h1>
+
+                <p>
+                    Based on your preferences, these are the sponsor booths
+                    and research displays we recommend for your SAIRH 2026 visit.
+                </p>
+
+            </div>
+
+
+            <!--
+                This button is hidden while the PDF
+                image is being captured.
+            -->
+
+            <button type="button"
+                    class="download-roadmap-button"
+                    id="downloadRoadmapButton"
+                    onclick="downloadRoadmap()">
+
+                <span class="download-icon">
+                    ↓
+                </span>
+
+                <span id="downloadButtonText">
+                    Download Roadmap
+                </span>
+
+            </button>
+
+        </div>
+
+
+
+        <!-- ========================================
+             RECOMMENDED STOPS
+        ========================================= -->
+
+        <section class="recommendation-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Your Recommended Stops
+                    </h2>
+
+                    <p>
+                        We selected @recommendedBooths.Count locations
+                        that best match your preferences.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            @if (recommendedBooths.Count == 0)
+            {
+                <div class="empty-state">
+                    No matching locations were found.
+                </div>
+            }
+            else
+            {
+                <div class="recommendation-grid">
+
+                    @foreach (var booth in recommendedBooths)
+                    {
+                        <div class="recommendation-card">
+
+                            @if (booth.Type == "SponsorBooth")
+                            {
+                                <span class="type-badge sponsor-badge">
+                                    Sponsor Booth
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="type-badge research-badge">
+                                    Research Display
+                                </span>
+                            }
+
+
+                            <h3>
+                                @booth.Name
+                            </h3>
+
+
+                            <p class="organization">
+                                @booth.Organization
+                            </p>
+
+
+                            <p class="topics">
+                                @string.Join(", ", booth.Categories)
+                            </p>
+
+                        </div>
+                    }
+
+                </div>
+            }
+
+        </section>
+
+
+
+        <!-- ========================================
+             EXHIBITION MAP
+        ========================================= -->
+
+        <section class="map-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        Your Exhibition Map
+                    </h2>
+
+                    <p>
+                        Recommended locations are highlighted in blue.
+                    </p>
+
+                </div>
+
+
+                <div class="map-legend">
+
+                    <div class="legend-item">
+
+                        <span class="legend-box sponsor-key"></span>
+
+                        Sponsor Booth
+
+                    </div>
+
+
+                    <div class="legend-item">
+
+                        <span class="legend-box research-key"></span>
+
+                        Research Screen
+
+                    </div>
+
+
+                    <div class="legend-item">
+
+                        <span class="legend-box recommended-key"></span>
+
+                        Recommended
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ========================================
+                 FULL VENUE MAP
+            ========================================= -->
+
+            <div class="venue-map">
+
+
+                <!-- ========================================
+                     RESEARCH SCREEN HALL
+                ========================================= -->
+
+                <div class="screen-hall">
+
+
+                    <div class="screen-hall-title">
+
+                        <strong>
+                            Research Screen Hall
+                        </strong>
+
+                        <span>
+                            30 Research Project Displays
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- TOP WALL: R1-R12 -->
+
+                    <div class="screen-row screen-top">
+
+                        @foreach (var screen in topScreens)
+                        {
+                            var isRecommended =
+                                recommendedIds.Contains(screen.Id);
+
+                            <div class="research-screen
+                                        @(isRecommended ? "recommended-location" : "")">
+
+                                @screen.Name.Replace("Research Screen ", "")
+
+                            </div>
+                        }
+
+                    </div>
+
+
+
+                    <!-- LEFT WALL: R13-R18 -->
+
+                    <div class="screen-column screen-left">
+
+                        @foreach (var screen in leftScreens)
+                        {
+                            var isRecommended =
+                                recommendedIds.Contains(screen.Id);
+
+                            <div class="research-screen
+                                        @(isRecommended ? "recommended-location" : "")">
+
+                                @screen.Name.Replace("Research Screen ", "")
+
+                            </div>
+                        }
+
+                    </div>
+
+
+
+                    <!-- BOTTOM WALL: R19-R30 -->
+
+                    <div class="screen-row screen-bottom">
+
+                        @foreach (var screen in bottomScreens)
+                        {
+                            var isRecommended =
+                                recommendedIds.Contains(screen.Id);
+
+                            <div class="research-screen
+                                        @(isRecommended ? "recommended-location" : "")">
+
+                                @screen.Name.Replace("Research Screen ", "")
+
+                            </div>
+                        }
+
+                    </div>
+
+
+
+                    <!--
+                        RIGHT WALL:
+                        NO RESEARCH SCREENS.
+                        DOOR ONLY.
+                    -->
+
+                    <div class="screen-door">
+
+                        <span>
+                            DOOR
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ========================================
+                     MAIN HALL
+                ========================================= -->
+
+                <div class="main-hall">
+
+                    <div class="main-hall-content">
+
+                        <strong>
+                            Main Hall
+                        </strong>
+
+                        <span>
+                            No exhibition booths in this area
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ========================================
+                     SPONSOR HALL
+                ========================================= -->
+
+                <div class="sponsor-hall">
+
+
+                    <div class="sponsor-title">
+
+                        <strong>
+                            Sponsor Hall
+                        </strong>
+
+                        <span>
+                            15 Sponsor Booths
+                        </span>
+
+                    </div>
+
+
+
+                    <!--
+                        DOOR ACCESS
+
+                        This entire area remains clear.
+                    -->
+
+                    <div class="sponsor-door-clear-zone">
+
+                        <span>
+                            DOOR ACCESS
+                        </span>
+
+                        <small>
+                            KEEP CLEAR
+                        </small>
+
+                    </div>
+
+
+
+                    <!-- LEFT SIDE: S1-S7 -->
+
+                    <div class="sponsor-column sponsor-left">
+
+                        @foreach (var sponsor in sponsorLeft)
+                        {
+                            var isRecommended =
+                                recommendedIds.Contains(sponsor.Id);
+
+                            <div class="sponsor-booth
+                                        @(isRecommended ? "recommended-location" : "")">
+
+                                @sponsor.Name.Replace("Sponsor Booth ", "")
+
+                            </div>
+                        }
+
+                    </div>
+
+
+
+                    <!-- RIGHT SIDE: S8-S15 -->
+
+                    <div class="sponsor-column sponsor-right">
+
+                        @foreach (var sponsor in sponsorRight)
+                        {
+                            var isRecommended =
+                                recommendedIds.Contains(sponsor.Id);
+
+                            <div class="sponsor-booth
+                                        @(isRecommended ? "recommended-location" : "")">
+
+                                @sponsor.Name.Replace("Sponsor Booth ", "")
+
+                            </div>
+                        }
+
+                    </div>
+
+
+
+                    <!-- OPEN VISITOR WALKWAY -->
+
+                    <div class="visitor-corridor">
+
+                        <span>
+                            Visitor Walkway
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ========================================
+                     ENTRANCE
+                ========================================= -->
+
+                <div class="entrance">
+
+                    <div class="entrance-circle">
+
+                        <span class="entrance-arrow">
+                            ↑
+                        </span>
+
+                        <strong>
+                            ENTRANCE
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+    </div>
+
+</div>
+
+
+
+<style>
+
+    /* ==================================================
+       PAGE
+    =================================================== */
+
+    body {
+        background-color: #F8FAFC;
+        color: #051C3E;
+    }
+
+
+    .roadmap-page {
+        max-width: 1250px;
+        margin: 0 auto;
+        padding: 35px 24px 60px;
+    }
+
+
+    #roadmapDownloadArea {
+        background-color: #F8FAFC;
+    }
+
+
+
+    /* ==================================================
+       ROADMAP HEADER
+    =================================================== */
+
+    .roadmap-header {
+        margin-bottom: 34px;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+
+        gap: 30px;
+    }
+
+
+    .roadmap-header-text {
+        flex: 1;
+    }
+
+
+    .roadmap-tag {
+        display: inline-block;
+
+        color: #0079FF;
+
+        font-size: 12px;
+        font-weight: 700;
+
+        letter-spacing: 1.3px;
+
+        margin-bottom: 10px;
+    }
+
+
+    .roadmap-header h1 {
+        color: #051C3E;
+
+        font-size: 38px;
+        font-weight: 700;
+
+        margin-bottom: 9px;
+    }
+
+
+    .roadmap-header p {
+        color: #5F6670;
+
+        font-size: 17px;
+        line-height: 1.6;
+
+        max-width: 800px;
+
+        margin: 0;
+    }
+
+
+
+    /* ==================================================
+       DOWNLOAD BUTTON
+    =================================================== */
+
+    .download-roadmap-button {
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 9px;
+
+        margin-top: 8px;
+
+        padding: 12px 18px;
+
+        background-color: #FFFFFF;
+
+        color: #051C3E;
+
+        border: 1px solid #D9E2EC;
+        border-radius: 8px;
+
+        font-size: 14px;
+        font-weight: 600;
+
+        cursor: pointer;
+
+        white-space: nowrap;
+
+        transition: 0.2s;
+    }
+
+
+    .download-roadmap-button:hover {
+        color: #0079FF;
+
+        border-color: #0079FF;
+
+        background-color: #F4F9FF;
+    }
+
+
+    .download-roadmap-button:disabled {
+        cursor: wait;
+        opacity: 0.65;
+    }
+
+
+    .download-icon {
+        color: #0079FF;
+
+        font-size: 19px;
+        font-weight: 700;
+
+        line-height: 1;
+    }
+
+
+
+    /* ==================================================
+       SECTION HEADINGS
+    =================================================== */
+
+    .section-heading {
+        display: flex;
+
+        justify-content: space-between;
+        align-items: center;
+
+        gap: 20px;
+
+        margin-bottom: 18px;
+    }
+
+
+    .section-heading h2 {
+        color: #051C3E;
+
+        font-size: 24px;
+
+        margin-bottom: 4px;
+    }
+
+
+    .section-heading p {
+        color: #7B8490;
+
+        margin: 0;
+    }
+
+
+
+    /* ==================================================
+       RECOMMENDATION CARDS
+    =================================================== */
+
+    .recommendation-section {
+        margin-bottom: 42px;
+    }
+
+
+    .recommendation-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(auto-fit, minmax(260px, 1fr));
+
+        gap: 16px;
+    }
+
+
+    .recommendation-card {
+        background-color: #FFFFFF;
+
+        border: 1px solid #E2E8F0;
+
+        border-left: 4px solid #0079FF;
+
+        border-radius: 12px;
+
+        padding: 18px 20px;
+    }
+
+
+    .recommendation-card h3 {
+        color: #051C3E;
+
+        font-size: 18px;
+
+        margin-top: 12px;
+        margin-bottom: 6px;
+    }
+
+
+    .type-badge {
+        display: inline-block;
+
+        padding: 5px 10px;
+
+        border-radius: 20px;
+
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+
+    .sponsor-badge {
+        background-color: #EAF8F1;
+        color: #227A52;
+    }
+
+
+    .research-badge {
+        background-color: #EAF4FF;
+        color: #0068D8;
+    }
+
+
+    .organization {
+        color: #5F6670;
+        margin-bottom: 9px;
+    }
+
+
+    .topics {
+        color: #7B8490;
+
+        font-size: 13px;
+        line-height: 1.45;
+
+        margin: 0;
+    }
+
+
+    .empty-state {
+        padding: 20px;
+
+        background-color: #FFFFFF;
+
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+
+        color: #5F6670;
+    }
+
+
+
+    /* ==================================================
+       LEGEND
+    =================================================== */
+
+    .map-legend {
+        display: flex;
+        flex-wrap: wrap;
+
+        gap: 14px;
+    }
+
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+
+        gap: 7px;
+
+        color: #5F6670;
+
+        font-size: 12px;
+    }
+
+
+    .legend-box {
+        width: 13px;
+        height: 13px;
+
+        display: inline-block;
+
+        border-radius: 3px;
+    }
+
+
+    .sponsor-key {
+        background-color: #EAF8F1;
+        border: 1px solid #7FC7A5;
+    }
+
+
+    .research-key {
+        background-color: #EAF4FF;
+        border: 1px solid #80BFFF;
+    }
+
+
+    .recommended-key {
+        background-color: #0079FF;
+        border: 1px solid #005EC7;
+    }
+
+
+
+    /* ==================================================
+       VENUE MAP
+    =================================================== */
+
+    .venue-map {
+        position: relative;
+
+        width: 100%;
+        height: 650px;
+
+        background-color: #FFFFFF;
+
+        border: 1px solid #D9E2EC;
+        border-radius: 15px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 8px 25px rgba(5, 28, 62, 0.05);
+    }
+
+
+
+    /* ==================================================
+       RESEARCH SCREEN HALL
+    =================================================== */
+
+    .screen-hall {
+        position: absolute;
+
+        left: 3%;
+        top: 4%;
+
+        width: 64%;
+        height: 39%;
+
+        background-color: #F5F9FF;
+
+        border: 2px solid #051C3E;
+        border-radius: 8px;
+
+        z-index: 3;
+    }
+
+
+    .screen-hall-title {
+        position: absolute;
+
+        left: 50%;
+        top: 50%;
+
+        transform: translate(-50%, -50%);
+
+        display: flex;
+        flex-direction: column;
+
+        text-align: center;
+    }
+
+
+    .screen-hall-title strong {
+        color: #051C3E;
+        font-size: 19px;
+    }
+
+
+    .screen-hall-title span {
+        color: #7B8490;
+
+        font-size: 12px;
+
+        margin-top: 4px;
+    }
+
+
+
+    /* ==================================================
+       RESEARCH SCREENS
+    =================================================== */
+
+    .screen-row {
+        position: absolute;
+
+        left: 9%;
+        right: 7%;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(12, 1fr);
+
+        gap: 4px;
+    }
+
+
+    .screen-top {
+        top: 12px;
+    }
+
+
+    /*
+        Slightly more room on the left side of
+        the bottom row so R18 and R19 never collide.
+    */
+
+    .screen-bottom {
+        left: 11.5%;
+        right: 7%;
+
+        bottom: 12px;
+    }
+
+
+    .screen-column {
+        position: absolute;
+
+        display: grid;
+
+        gap: 6px;
+    }
+
+
+    .screen-left {
+        left: 12px;
+
+        top: 24%;
+        bottom: 28%;
+
+        width: 45px;
+
+        grid-template-rows:
+            repeat(6, 1fr);
+    }
+
+
+    .research-screen {
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        min-width: 28px;
+
+        padding: 5px 2px;
+
+        background-color: #EAF4FF;
+
+        border: 1px solid #80BFFF;
+        border-radius: 5px;
+
+        color: #205986;
+
+        font-size: 9px;
+        font-weight: 600;
+    }
+
+
+    .screen-left .research-screen {
+        padding: 3px 2px;
+
+        min-height: 20px;
+    }
+
+
+
+    /* ==================================================
+       SCREEN HALL DOOR
+    =================================================== */
+
+    .screen-door {
+        position: absolute;
+
+        right: -28px;
+        top: 40%;
+
+        width: 55px;
+        height: 75px;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        background-color: #FFFFFF;
+
+        z-index: 10;
+    }
+
+
+    .screen-door::before,
+    .screen-door::after {
+        content: "";
+
+        position: absolute;
+
+        left: 25px;
+
+        width: 30px;
+
+        border-top: 2px solid #0079FF;
+    }
+
+
+    .screen-door::before {
+        top: 0;
+    }
+
+
+    .screen-door::after {
+        bottom: 0;
+    }
+
+
+    .screen-door span {
+        color: #0079FF;
+
+        font-size: 9px;
+        font-weight: 700;
+
+        transform: rotate(90deg);
+
+        letter-spacing: 1px;
+    }
+
+
+
+    /* ==================================================
+       MAIN HALL
+    =================================================== */
+
+    .main-hall {
+        position: absolute;
+
+        left: 3%;
+        top: 47%;
+
+        width: 64%;
+        height: 40%;
+
+        background-color: #F4F6F8;
+
+        border: 2px solid #9AA6B2;
+        border-radius: 8px;
+    }
+
+
+    .main-hall-content {
+        position: absolute;
+
+        left: 50%;
+        top: 50%;
+
+        transform: translate(-50%, -50%);
+
+        display: flex;
+        flex-direction: column;
+
+        text-align: center;
+    }
+
+
+    .main-hall-content strong {
+        color: #66717C;
+
+        font-size: 22px;
+    }
+
+
+    .main-hall-content span {
+        color: #9AA4AE;
+
+        font-size: 12px;
+
+        margin-top: 5px;
+    }
+
+
+
+    /* ==================================================
+       SPONSOR HALL
+    =================================================== */
+
+    .sponsor-hall {
+        position: absolute;
+
+        left: 71%;
+        top: 4%;
+
+        width: 24%;
+        height: 78%;
+
+        background-color: #F7FBF9;
+
+        border: 2px solid #051C3E;
+        border-radius: 8px;
+    }
+
+
+    .sponsor-title {
+        position: absolute;
+
+        left: 50%;
+        top: 15px;
+
+        width: 100%;
+
+        transform: translateX(-50%);
+
+        display: flex;
+        flex-direction: column;
+
+        text-align: center;
+    }
+
+
+    .sponsor-title strong {
+        color: #051C3E;
+
+        font-size: 18px;
+
+        white-space: nowrap;
+    }
+
+
+    .sponsor-title span {
+        color: #7B8490;
+
+        font-size: 10px;
+
+        margin-top: 3px;
+
+        white-space: nowrap;
+    }
+
+
+
+    /* ==================================================
+       SPONSOR DOOR ACCESS
+    =================================================== */
+
+    .sponsor-door-clear-zone {
+        position: absolute;
+
+        left: 0;
+        top: 20%;
+
+        width: 36%;
+        height: 15%;
+
+        display: flex;
+        flex-direction: column;
+
+        align-items: center;
+        justify-content: center;
+
+        background:
+            repeating-linear-gradient(
+                45deg,
+                #FFFFFF,
+                #FFFFFF 8px,
+                #F1F5F8 8px,
+                #F1F5F8 16px
+            );
+
+        border-right:
+            1px dashed #CBD5DF;
+
+        color: #8D99A5;
+
+        font-size: 8px;
+
+        text-align: center;
+
+        z-index: 4;
+    }
+
+
+    .sponsor-door-clear-zone span {
+        font-weight: 700;
+    }
+
+
+    .sponsor-door-clear-zone small {
+        font-size: 7px;
+        margin-top: 3px;
+    }
+
+
+
+    /* ==================================================
+       SPONSOR BOOTH COLUMNS
+    =================================================== */
+
+    .sponsor-column {
+        position: absolute;
+
+        display: grid;
+
+        width: 27%;
+
+        gap: 6px;
+    }
+
+
+    .sponsor-left {
+        left: 7%;
+
+        top: 40%;
+        bottom: 7%;
+
+        grid-template-rows:
+            repeat(7, 1fr);
+    }
+
+
+    .sponsor-right {
+        right: 7%;
+
+        top: 17%;
+        bottom: 7%;
+
+        grid-template-rows:
+            repeat(8, 1fr);
+    }
+
+
+
+    /* ==================================================
+       SPONSOR BOOTHS
+    =================================================== */
+
+    .sponsor-booth {
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        background-color: #EAF8F1;
+
+        border: 1px solid #78C6A0;
+        border-radius: 6px;
+
+        color: #27684A;
+
+        font-size: 9px;
+        font-weight: 700;
+
+        min-height: 22px;
+        max-height: 34px;
+    }
+
+
+
+    /* ==================================================
+       VISITOR WALKWAY
+    =================================================== */
+
+    .visitor-corridor {
+        position: absolute;
+
+        left: 40%;
+
+        width: 20%;
+
+        top: 17%;
+        bottom: 7%;
+
+        border-left:
+            1px dashed rgba(0, 121, 255, 0.25);
+
+        border-right:
+            1px dashed rgba(0, 121, 255, 0.25);
+    }
+
+
+    .visitor-corridor span {
+        position: absolute;
+
+        left: 50%;
+        top: 58%;
+
+        transform:
+            translate(-50%, -50%)
+            rotate(90deg);
+
+        white-space: nowrap;
+
+        color: #A7B3BE;
+
+        font-size: 8px;
+
+        letter-spacing: 1px;
+    }
+
+
+
+    /* ==================================================
+       RECOMMENDED LOCATIONS
+    =================================================== */
+
+    .recommended-location {
+        background-color: #0079FF !important;
+
+        color: #FFFFFF !important;
+
+        border: 2px solid #005EC7 !important;
+
+        box-shadow:
+            0 0 0 2px rgba(0, 121, 255, 0.16);
+
+        font-weight: 800;
+    }
+
+
+
+    /* ==================================================
+       ENTRANCE
+    =================================================== */
+
+    .entrance {
+        position: absolute;
+
+        left: 83%;
+
+        bottom: 4.5%;
+
+        transform: translateX(-50%);
+
+        z-index: 10;
+    }
+
+
+    .entrance-circle {
+        width: 105px;
+        height: 65px;
+
+        display: flex;
+
+        flex-direction: column;
+
+        justify-content: center;
+        align-items: center;
+
+        background-color: #FFFFFF;
+
+        border: 2px solid #051C3E;
+
+        border-radius: 50%;
+
+        color: #051C3E;
+    }
+
+
+    .entrance-arrow {
+        color: #0079FF;
+
+        font-size: 22px;
+
+        line-height: 18px;
+    }
+
+
+    .entrance-circle strong {
+        margin-top: 5px;
+
+        font-size: 10px;
+
+        letter-spacing: 0.8px;
+    }
+
+
+
+    /* ==================================================
+       TEMPORARY PDF CAPTURE MODE
+
+       Applied only for the fraction of a second
+       while html2canvas captures the roadmap.
+    =================================================== */
+
+    .pdf-capture-mode {
+        background-color: #FFFFFF !important;
+
+        padding: 20px !important;
+    }
+
+
+    .pdf-capture-mode .download-roadmap-button {
+        display: none !important;
+    }
+
+
+    .pdf-capture-mode .research-screen {
+        background-color: #EAF4FF !important;
+        border-color: #5AA9FF !important;
+        color: #205986 !important;
+    }
+
+
+    .pdf-capture-mode .sponsor-booth {
+        background-color: #EAF8F1 !important;
+        border-color: #46A978 !important;
+        color: #27684A !important;
+    }
+
+
+    /*
+        These rules come AFTER the ordinary booth rules
+        so recommended locations remain strongly blue
+        in the generated image/PDF.
+    */
+
+    .pdf-capture-mode .research-screen.recommended-location,
+    .pdf-capture-mode .sponsor-booth.recommended-location {
+        background-color: #0079FF !important;
+
+        color: #FFFFFF !important;
+
+        border: 3px solid #004FA8 !important;
+
+        box-shadow:
+            inset 0 0 0 1000px #0079FF,
+            0 0 0 2px #B9DCFF !important;
+
+        font-weight: 900 !important;
+    }
+
+
+    .pdf-capture-mode .recommended-key {
+        background-color: #0079FF !important;
+        border-color: #004FA8 !important;
+    }
+
+
+
+    /* ==================================================
+       RESPONSIVE
+    =================================================== */
+
+    @@media (max-width: 900px) {
+
+        .roadmap-page {
+            padding:
+                25px 14px 50px;
+        }
+
+
+        .roadmap-header {
+            flex-direction: column;
+        }
+
+
+        .download-roadmap-button {
+            margin-top: 0;
+        }
+
+
+        .venue-map {
+            height: 580px;
+        }
+
+
+        .section-heading {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+
+        .roadmap-header h1 {
+            font-size: 32px;
+        }
+
+
+        .research-screen {
+            font-size: 7px;
+        }
+
+
+        .sponsor-booth {
+            font-size: 8px;
+        }
+
+    }
+
+</style>
+
+
+
+<!-- ==================================================
+     PDF LIBRARIES
+
+     html2canvas captures the colored roadmap.
+     jsPDF converts the capture to a downloadable PDF.
+=================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/jspdf@3.0.3/dist/jspdf.umd.min.js"></script>
+
+
+
+<script>
+
+    async function downloadRoadmap() {
+
+        const downloadArea =
+            document.getElementById("roadmapDownloadArea");
+
+        const downloadButton =
+            document.getElementById("downloadRoadmapButton");
+
+        const buttonText =
+            document.getElementById("downloadButtonText");
+
+
+        if (!downloadArea ||
+            !downloadButton ||
+            typeof html2canvas === "undefined" ||
+            !window.jspdf) {
+
+            alert(
+                "The roadmap could not be downloaded. Please refresh the page and try again."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            /* ==========================================
+               PREPARE THE PAGE FOR CAPTURE
+            ========================================== */
+
+            downloadButton.disabled = true;
+
+            buttonText.textContent =
+                "Preparing PDF...";
+
+            downloadArea.classList.add(
+                "pdf-capture-mode"
+            );
+
+
+            /*
+                Give the browser a moment to apply
+                the PDF-specific colors/layout.
+            */
+
+            await new Promise(resolve =>
+                setTimeout(resolve, 150)
+            );
+
+
+            /* ==========================================
+               CAPTURE THE ROADMAP
+            ========================================== */
+
+            const canvas =
+                await html2canvas(
+                    downloadArea,
+                    {
+                        scale: 2,
+
+                        backgroundColor:
+                            "#FFFFFF",
+
+                        useCORS: true,
+
+                        logging: false,
+
+                        scrollX: 0,
+
+                        scrollY:
+                            -window.scrollY,
+
+                        windowWidth:
+                            downloadArea.scrollWidth,
+
+                        windowHeight:
+                            downloadArea.scrollHeight
+                    }
+                );
+
+
+            /* ==========================================
+               CREATE PDF
+            ========================================== */
+
+            const { jsPDF } =
+                window.jspdf;
+
+
+            const pdf =
+                new jsPDF({
+                    orientation: "landscape",
+                    unit: "mm",
+                    format: "a4",
+                    compress: true
+                });
+
+
+            const pageWidth =
+                pdf.internal.pageSize.getWidth();
+
+            const pageHeight =
+                pdf.internal.pageSize.getHeight();
+
+
+            const margin =
+                8;
+
+
+            const usableWidth =
+                pageWidth - (margin * 2);
+
+            const usableHeight =
+                pageHeight - (margin * 2);
+
+
+            /*
+                Convert the canvas width to the
+                available PDF width.
+            */
+
+            const scaleFactor =
+                usableWidth / canvas.width;
+
+
+            /*
+                Calculate how many canvas pixels
+                fit vertically on one PDF page.
+            */
+
+            const pageHeightPixels =
+                usableHeight / scaleFactor;
+
+
+            let sourceY =
+                0;
+
+
+            let pageNumber =
+                0;
+
+
+            while (sourceY < canvas.height) {
+
+                const remainingHeight =
+                    canvas.height - sourceY;
+
+
+                const sliceHeight =
+                    Math.min(
+                        pageHeightPixels,
+                        remainingHeight
+                    );
+
+
+                /*
+                    Create a canvas containing only
+                    the portion for this PDF page.
+                */
+
+                const pageCanvas =
+                    document.createElement("canvas");
+
+
+                pageCanvas.width =
+                    canvas.width;
+
+
+                pageCanvas.height =
+                    Math.ceil(sliceHeight);
+
+
+                const pageContext =
+                    pageCanvas.getContext("2d");
+
+
+                pageContext.fillStyle =
+                    "#FFFFFF";
+
+
+                pageContext.fillRect(
+                    0,
+                    0,
+                    pageCanvas.width,
+                    pageCanvas.height
+                );
+
+
+                pageContext.drawImage(
+                    canvas,
+
+                    0,
+                    sourceY,
+                    canvas.width,
+                    sliceHeight,
+
+                    0,
+                    0,
+                    canvas.width,
+                    sliceHeight
+                );
+
+
+                const pageImage =
+                    pageCanvas.toDataURL(
+                        "image/png",
+                        1.0
+                    );
+
+
+                const renderedHeight =
+                    sliceHeight * scaleFactor;
+
+
+                if (pageNumber > 0) {
+                    pdf.addPage();
+                }
+
+
+                pdf.addImage(
+                    pageImage,
+                    "PNG",
+
+                    margin,
+                    margin,
+
+                    usableWidth,
+                    renderedHeight,
+
+                    undefined,
+                    "FAST"
+                );
+
+
+                sourceY +=
+                    sliceHeight;
+
+
+                pageNumber++;
+            }
+
+
+            /* ==========================================
+               DOWNLOAD
+            ========================================== */
+
+            pdf.save(
+                "SAIRH-2026-Personalized-Roadmap.pdf"
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                "Roadmap PDF error:",
+                error
+            );
+
+
+            alert(
+                "The roadmap could not be downloaded. Please try again."
+            );
+
+        }
+        finally {
+
+            /* ==========================================
+               RESTORE THE NORMAL WEBSITE
+            ========================================== */
+
+            downloadArea.classList.remove(
+                "pdf-capture-mode"
+            );
+
+
+            downloadButton.disabled =
+                false;
+
+
+            buttonText.textContent =
+                "Download Roadmap";
+
+        }
+
+    }
+
+</script>

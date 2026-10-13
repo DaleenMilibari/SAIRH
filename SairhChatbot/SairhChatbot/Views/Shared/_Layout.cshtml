@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SAIRH 2026</title>
+
+    <!-- Google Fonts & Bootstrap Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+    <!-- Core Stylesheets -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body style="background-color: #040816; color: #f8fafc; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; display: flex; flex-direction: column;">
+    <!-- Liquid Glass Navbar -->
+    <header style="background: rgba(8, 17, 45, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(56, 189, 248, 0.25); position: sticky; top: 0; z-index: 1030;">
+        <div class="container py-2">
+            <div class="d-flex align-items-center justify-content-between">
+                <a class="navbar-brand d-flex align-items-center gap-2 text-white text-decoration-none fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="d-inline-flex p-2 rounded-3" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);">
+                        <i class="bi bi-robot text-white fs-5"></i>
+                    </span>
+                    <span style="letter-spacing: 0.5px;">SAIRH <span style="color: #38bdf8;">2026</span></span>
+                </a>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="d-none d-md-inline-block text-secondary small">
+                        <i class="bi bi-geo-alt text-info me-1"></i> Grand Hyatt Al Khobar
+                    </span>
+                    <span class="badge px-3 py-2 rounded-pill" style="background: rgba(14, 28, 66, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8;">
+                        <i class="bi bi-broadcast text-danger me-1"></i> AI Assistant Active
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main role="main" class="flex-grow-1">
+        @RenderBody()
+    </main>
+
+    <!-- Liquid Glass Footer -->
+    <footer class="py-4 mt-auto" style="background: rgba(4, 8, 22, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.08);">
+        <div class="container text-center text-secondary small">
+            <div class="mb-2">
+                <span class="text-white fw-semibold">SAIRH 2026</span> &bull; Saudi First AI Summit in Radiology &amp; Health Innovation
+            </div>
+            <div class="text-muted" style="font-size: 0.78rem;">
+                Organized by Imam Abdulrahman Bin Faisal University &bull; College of Medicine &bull; Year of AI 2026
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

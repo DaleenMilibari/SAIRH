@@ -1,0 +1,290 @@
+/* ==========================================================================
+   SAIRH 2026 - Sign in / Register / Profile forms
+   Builds on liquid-glass-theme.css. Uses logical properties so the same
+   rules work for English (LTR) and Arabic (RTL) pages.
+   ========================================================================== */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* The theme adds a bottom margin to inputs inside the auth cards; spacing is handled by .auth-form gap */
+.login-glass-card .auth-field .form-control,
+.register-glass-card .auth-field .form-control,
+.glass-card .auth-field .form-control {
+  margin-bottom: 0;
+}
+
+.auth-field .form-control {
+  font-size: 1rem;      /* >= 16px prevents iOS zoom on focus */
+  min-height: 48px;     /* comfortable tap target */
+}
+
+.auth-field .form-control[readonly] {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.auth-label {
+  color: var(--lg-text-secondary, #cbd5e1);
+  font-weight: 600;
+  margin: 0;
+}
+
+.auth-optional {
+  color: var(--lg-text-muted, #94a3b8);
+  font-weight: 400;
+  font-size: 0.875em;
+}
+
+.auth-hint {
+  color: var(--lg-text-muted, #94a3b8);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.auth-row-between {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.auth-link {
+  color: var(--lg-cyan, #38bdf8);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.auth-link:hover,
+.auth-link:focus-visible {
+  color: var(--lg-cyan-bright, #67e8f9);
+}
+
+/* --- Password field with show/hide toggle ------------------------------ */
+.auth-password {
+  position: relative;
+}
+
+.auth-password .form-control {
+  padding-inline-end: 3.25rem;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--lg-text-muted, #94a3b8);
+  font-size: 1.15rem;
+  cursor: pointer;
+  border-radius: 0 var(--lg-radius-sm, 12px) var(--lg-radius-sm, 12px) 0;
+}
+
+[dir="rtl"] .auth-password-toggle {
+  border-radius: var(--lg-radius-sm, 12px) 0 0 var(--lg-radius-sm, 12px);
+}
+
+.auth-password-toggle:hover {
+  color: var(--lg-cyan, #38bdf8);
+}
+
+.auth-password-toggle:focus-visible,
+.auth-form .form-control:focus-visible,
+.auth-form input[type="submit"]:focus-visible {
+  outline: 3px solid var(--lg-cyan, #38bdf8);
+  outline-offset: 2px;
+}
+
+/* Hide the browser's own reveal button (Edge) so there is only one toggle */
+.auth-password input::-ms-reveal {
+  display: none;
+}
+
+/* --- Validation state (only after the user has interacted) ------------- */
+.auth-form .form-control:user-invalid {
+  border-color: #f87171 !important;
+}
+
+/* --- Alerts -------------------------------------------------------------- */
+.auth-alert {
+  border-radius: var(--lg-radius-sm, 12px);
+  margin-bottom: 1.25rem;
+  font-weight: 500;
+}
+
+.auth-alert.alert-danger {
+  background: rgba(127, 29, 29, 0.35);
+  border: 1px solid rgba(248, 113, 113, 0.55);
+  color: #fecaca !important;
+}
+
+.auth-alert.alert-success {
+  background: rgba(6, 78, 59, 0.35);
+  border: 1px solid rgba(52, 211, 153, 0.55);
+  color: #a7f3d0 !important;
+}
+
+.auth-alert-list {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+
+/* --- Submit button -------------------------------------------------------- */
+.auth-form input[type="submit"] {
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.auth-form input[type="submit"].is-submitting {
+  opacity: 0.7;
+  cursor: progress;
+  pointer-events: none;
+}
+
+.auth-switch {
+  color: var(--lg-text-muted, #94a3b8);
+  text-align: center;
+  margin: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  clip-path: inset(50%);
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  white-space: nowrap;
+}
+
+/* --- Password Strength Meter & Requirement Checklist -------------------- */
+.password-strength-container {
+  margin-top: 0.65rem;
+  padding: 0.85rem 1rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--lg-radius-sm, 12px);
+  backdrop-filter: blur(8px);
+}
+
+.password-strength-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.825rem;
+  color: var(--lg-text-muted, #94a3b8);
+  margin-bottom: 0.45rem;
+}
+
+.password-strength-text {
+  font-weight: 700;
+  font-size: 0.825rem;
+  transition: color 0.25s ease;
+}
+
+.password-strength-text.text-weak { color: #f87171; }
+.password-strength-text.text-fair { color: #fb923c; }
+.password-strength-text.text-good { color: #facc15; }
+.password-strength-text.text-strong { color: #34d399; }
+
+.password-strength-bar-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.password-strength-bar {
+  height: 100%;
+  width: 0%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  border-radius: 4px;
+}
+
+.password-strength-bar.strength-weak {
+  width: 25%;
+  background: #f87171;
+}
+
+.password-strength-bar.strength-fair {
+  width: 50%;
+  background: #fb923c;
+}
+
+.password-strength-bar.strength-good {
+  width: 75%;
+  background: #facc15;
+}
+
+.password-strength-bar.strength-strong {
+  width: 100%;
+  background: #34d399;
+}
+
+.password-req-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.password-req-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--lg-text-muted, #94a3b8);
+  transition: color 0.2s ease;
+}
+
+.password-req-item i {
+  font-size: 0.9rem;
+  color: var(--lg-text-muted, #94a3b8);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.password-req-item.is-valid {
+  color: #34d399;
+}
+
+.password-req-item.is-valid i {
+  color: #34d399;
+  transform: scale(1.1);
+}
+
+.password-match-status {
+  font-size: 0.825rem;
+  margin-top: 0.45rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+  transition: color 0.25s ease;
+}
+
+.password-match-status.match-yes {
+  color: #34d399;
+}
+
+.password-match-status.match-no {
+  color: #f87171;
+}

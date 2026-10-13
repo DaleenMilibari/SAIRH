@@ -1,11 +1,7 @@
-﻿using DBFunction;
-using DevExpress.Web;
 using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Linq;
+using System.Text;
 using System.Web;
-using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace AIE.Ar_Sa
@@ -14,68 +10,75 @@ namespace AIE.Ar_Sa
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            //if (!IsPostBack)
-            //{
-            //    ASPxGridView1.ExpandAll();
-
-            //    ASPxGridView1.SettingsPager.Mode = GridViewPagerMode.ShowAllRecords;
-
-            //    //string URL = "https://www.youtube.com/embed/" + "I9DzrxU_6oM";
-            //    //Iframe1.Attributes.Add("src", URL);
-            //}
-        }
-        protected void BtnViewVideo_Click(object sender, EventArgs e)
-        {
-            //string[] cmdArguments = (sender as LinkButton).CommandArgument.ToString().Split(new char[] { ',' });
-           
-
-            //if (cmdArguments[0].ToString() != "")
-            //{
-            //    Uri uri = new Uri(cmdArguments[0].ToString());
-            //    string path = uri.AbsolutePath;
-
-            //    // Check if the URL is in the format "https://youtu.be/VIDEO_ID"
-            //    if (uri.Host == "youtu.be" && !string.IsNullOrEmpty(path))
-            //    {
-            //        path = path.TrimStart('/');
-            //    }
-
-            //    // Check if the URL is in the format "https://www.youtube.com/watch?v=VIDEO_ID"
-            //    else if (uri.Host == "www.youtube.com" && uri.AbsolutePath == "/watch" && uri.Query.Contains("v="))
-            //    {
-            //        var queryParameters = System.Web.HttpUtility.ParseQueryString(uri.Query);
-            //        path = queryParameters["v"];
-            //    }
-
-
-            //    string videoId = path;
-
-            //    string URL = "https://www.youtube.com/embed/" + videoId;
-            //    viewVideo.Attributes.Add("src", URL);
-
-            //    if (cmdArguments[1].ToString() != "")
-            //    {
-            //        divPDF.Visible = true;
-            //        HyperLink1.NavigateUrl = cmdArguments[1].ToString();
-            //    }
-            //    else
-            //    {
-            //        divPDF.Visible = false;
-            //    }
-            //    //<%--style="background-size: cover; display: block;"--%>
-                
-            //    details1.Attributes.Add("style", "background-size: cover; display: block;");
-            //    details2.Attributes.Add("style", "background-size: cover; display: block;");
-            //    details3.Attributes.Add("style", "background-size: cover; display: block;");
-            //    modal_video.Show();
-            //}
-
+            if (!IsPostBack)
+            {
+                LoadRoadmap();
+            }
         }
 
-        protected void BtnCloseVideo_Click(object sender, EventArgs e)
+        private void LoadRoadmap()
         {
+            try
+            {
+                string email = null;
+                if (DBFunction.Ado.UserDetails != null)
+                {
+                    email = DBFunction.Ado.UserDetails.UserName;
+                }
 
-            //modal_video.Hide();
+                if (string.IsNullOrEmpty(email) && Session["AIE_AttendeeEmail"] != null)
+                {
+                    email = Session["AIE_AttendeeEmail"].ToString();
+                }
+
+                if (string.IsNullOrEmpty(email) && Request.Cookies["sairh_user"] != null)
+                {
+                    email = Request.Cookies["sairh_user"].Value;
+                }
+
+                if (!string.IsNullOrEmpty(email))
+                {
+                    var roadmapCodes = SurveyService.GetUserRoadmap(email);
+                    if (roadmapCodes != null && roadmapCodes.Count > 0)
+                    {
+                        pnlRoadmap.Visible = true;
+                        pnlSurveyCTA.Visible = false;
+
+                        var mapStatus = SurveyService.GetMapStatus(email, true);
+                        var recommendedBooths = mapStatus.Where(b => b.IsRecommended).ToList();
+
+                        var sb = new StringBuilder();
+                        foreach (var b in recommendedBooths)
+                        {
+                            sb.AppendFormat(
+                                "<div class=\"recommended-stop-card\" onclick=\"openBoothModal('{1}')\" style=\"cursor:pointer;\">" +
+                                "<div class=\"d-flex justify-content-between align-items-center mb-1\">" +
+                                "<span class=\"badge badge-info\">{0}</span>" +
+                                "<strong class=\"text-white\">{1}</strong>" +
+                                "</div>" +
+                                "<div class=\"text-white font-weight-bold\">{2}</div>" +
+                                "<div class=\"text-secondary small\">{3}</div>" +
+                                "</div>",
+                                HttpUtility.HtmlEncode(b.Hall),
+                                HttpUtility.HtmlEncode(b.BoothCode),
+                                HttpUtility.HtmlEncode(b.Name),
+                                HttpUtility.HtmlEncode(b.Organization)
+                            );
+                        }
+                        recCardsContainer.InnerHtml = sb.ToString();
+                        return;
+                    }
+                }
+
+                pnlRoadmap.Visible = false;
+                pnlSurveyCTA.Visible = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceWarning("[Ar_Sa/Schedules] LoadRoadmap error: " + ex.Message);
+                pnlRoadmap.Visible = false;
+                pnlSurveyCTA.Visible = true;
+            }
         }
     }
 }

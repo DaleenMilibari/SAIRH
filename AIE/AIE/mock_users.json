@@ -1,0 +1,340 @@
+{
+  "tester@gmail.com": {
+    "fullName": "Tester One",
+    "email": "tester@gmail.com",
+    "mobile": ""
+  },
+  "tester@gmail.con": {
+    "fullName": "tester",
+    "email": "tester@gmail.con",
+    "mobile": ""
+  },
+  "usertwo@gmail.com": {
+    "fullName": "usertwo",
+    "email": "usertwo@gmail.com",
+    "mobile": "",
+    "passwordHash": "PBKDF2-SHA512$210000$YAKuShBaM8frQHQUFQ0nwA==$T0vJtNPieCE/FMsDXNpVHthP8ma9BnESgf5GmpZIkfM="
+  },
+  "admin@sairh.com": {
+    "email": "admin@sairh.com",
+    "fullName": "SAIRH System Administrator",
+    "mobile": "+966 50 000 0001",
+    "organization": "SAIRH Organizing Committee",
+    "jobTitle": "Chief Technology Officer",
+    "specialty": "Health AI",
+    "role": "Administrator",
+    "isAdmin": true,
+    "passwordHash": "PBKDF2-SHA512$210000$SzIEvmPTW7K3sWS0dszu1Q==$EobVOQGvH3Dd3DMdlrWu8NBA2aN/M+03faGIHFnpIMQ=",
+    "linkedIn": "",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$SzIEvmPTW7K3sWS0dszu1Q==$EobVOQGvH3Dd3DMdlrWu8NBA2aN/M+03faGIHFnpIMQ="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-12T08:05:53.075Z",
+    "passwordChangedDate": "2026-10-12T08:05:53.081Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "attendee@sairh.com": {
+    "email": "attendee@sairh.com",
+    "fullName": "Dr. Sarah Al-Ahmad Consultant",
+    "mobile": "+966501234567",
+    "organization": "KFSH & Research Centre",
+    "jobTitle": "Chief AI Radiologist",
+    "specialty": "Pediatric Neuro AI",
+    "role": "Attendee",
+    "isAdmin": false,
+    "passwordHash": "PBKDF2-SHA512$210000$OmA5KPTUEKDSf291nAbGMg==$YCg6a7S9ScfG+99qu+MkHMdfknV4ilgG7lyFhyMky5U=",
+    "linkedIn": "https://linkedin.com/in/drsarah2",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$OmA5KPTUEKDSf291nAbGMg==$YCg6a7S9ScfG+99qu+MkHMdfknV4ilgG7lyFhyMky5U="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-13T05:55:22.498Z",
+    "passwordChangedDate": "2026-10-12T08:05:53.081Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": [],
+    "visitedBooths": [
+      "S1"
+    ]
+  },
+  "dr_radiologist_1791792411661@hospital.org": {
+    "fullName": "Dr. Tariq Radiologist",
+    "email": "dr_radiologist_1791792411661@hospital.org",
+    "mobile": "+966551234567",
+    "organization": "King Fahd Hospital",
+    "jobTitle": "Consultant Radiologist",
+    "specialty": "Abdominal Imaging",
+    "linkedIn": "https://linkedin.com/in/drtariq",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$1hIUh8Onai24LrYusblqJA==$RSRqcuyO3+1hSFmR1IQ3WMJtjgnZFpHwtXIwzSt9UDU=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$1hIUh8Onai24LrYusblqJA==$RSRqcuyO3+1hSFmR1IQ3WMJtjgnZFpHwtXIwzSt9UDU="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-12T08:06:51.762Z",
+    "passwordChangedDate": "2026-10-12T08:06:51.763Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "lockout_target_1791792411834@sairh.test": {
+    "fullName": "Lockout Target",
+    "email": "lockout_target_1791792411834@sairh.test",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$pHdXdSQbkusKOG/dlhkJCw==$W0eAbbVCySEKLV5nFv18oE6I5vK1EA/frMXZWt4BKy8=",
+    "failedAttempts": 5,
+    "lockoutUntil": 1791793312151
+  },
+  "history_target_1791792412152@sairh.test": {
+    "fullName": "History Target",
+    "email": "history_target_1791792412152@sairh.test",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$xI9Q0O/MnjpfY5NCmOwaWg==$SbN5B6ilHDZBh/cTKgwZ+3FP0OuNs7d603SBTqkQkE4=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$xI9Q0O/MnjpfY5NCmOwaWg==$SbN5B6ilHDZBh/cTKgwZ+3FP0OuNs7d603SBTqkQkE4="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null
+  },
+  "reset_target_1791792412306@sairh.test": {
+    "fullName": "Reset Target",
+    "email": "reset_target_1791792412306@sairh.test",
+    "passwordHash": "PBKDF2-SHA512$210000$Yl2vbrZ0V6hfx43bnDJDxw==$ZcexyeRYBzjrDMiXrbO+0za773aMRsKSu4seP3Xwfng=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$Yl2vbrZ0V6hfx43bnDJDxw==$ZcexyeRYBzjrDMiXrbO+0za773aMRsKSu4seP3Xwfng=",
+      "PBKDF2-SHA512$210000$jPnjOJkKdGsc3OjCh38lkg==$1R1tr+/8mka04c/55FuIbi+L7q0J7Kq+sdFdyOEEao0="
+    ],
+    "passwordChangedDate": "2026-10-12T08:06:52.516Z",
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-12T08:06:52.570Z"
+  },
+  "dr_radiologist_1791792443737@hospital.org": {
+    "fullName": "Dr. Tariq Radiologist",
+    "email": "dr_radiologist_1791792443737@hospital.org",
+    "mobile": "+966551234567",
+    "organization": "King Fahd Hospital",
+    "jobTitle": "Consultant Radiologist",
+    "specialty": "Abdominal Imaging",
+    "linkedIn": "https://linkedin.com/in/drtariq",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$Apue0Dcknhe6Vvr240YuEQ==$Qf7Cz+vkFl4gOuPhfWjWEVM275jL9UZp/mYY3K/g2gY=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$Apue0Dcknhe6Vvr240YuEQ==$Qf7Cz+vkFl4gOuPhfWjWEVM275jL9UZp/mYY3K/g2gY="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-12T08:07:23.803Z",
+    "passwordChangedDate": "2026-10-12T08:07:23.805Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "lockout_target_1791792443862@sairh.test": {
+    "fullName": "Lockout Target",
+    "email": "lockout_target_1791792443862@sairh.test",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$1VWeYuJUfQ8onlJeEsrPkw==$N7HeTACNFeGVTJAF03pmcQJkJS93ASUWwPAbBeK4Lmg=",
+    "failedAttempts": 5,
+    "lockoutUntil": 1791793344194
+  },
+  "history_target_1791792444196@sairh.test": {
+    "fullName": "History Target",
+    "email": "history_target_1791792444196@sairh.test",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$9G0a0Ap0JFLi5PHHLaWR6A==$LqXBjqawoRGeaGEGn77LbM94aTtOy5pFrZO7L6N2XRY=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$9G0a0Ap0JFLi5PHHLaWR6A==$LqXBjqawoRGeaGEGn77LbM94aTtOy5pFrZO7L6N2XRY="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null
+  },
+  "reset_target_1791792444355@sairh.test": {
+    "fullName": "Reset Target",
+    "email": "reset_target_1791792444355@sairh.test",
+    "passwordHash": "PBKDF2-SHA512$210000$Saje2jZzuksVDy1bEAKnZA==$j/FgFeHGxsIvmYye3r6a/A7izg2blzPHUghQcYwgbb8=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$Saje2jZzuksVDy1bEAKnZA==$j/FgFeHGxsIvmYye3r6a/A7izg2blzPHUghQcYwgbb8=",
+      "PBKDF2-SHA512$210000$HAUFSGkhKGfmcGYMSlnXAg==$hgL2NmCELiQhjyAtePy8H+xNIa0UchY4IeP3/MKzP4k="
+    ],
+    "passwordChangedDate": "2026-10-12T08:07:24.568Z",
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-12T08:07:24.622Z"
+  },
+  "form_user_1791792444623@sairh.test": {
+    "fullName": "Eng. Khalid Healthcare",
+    "email": "form_user_1791792444623@sairh.test",
+    "mobile": "+966509998877",
+    "organization": "Ministry of Health",
+    "jobTitle": "Lead Clinical AI Engineer",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$M6lwDfkdyjisSAlf5bjDoA==$PaeXnyTrfsl10xtHIkxfcfEwPV2umj2gLCyAbttcDVU=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$M6lwDfkdyjisSAlf5bjDoA==$PaeXnyTrfsl10xtHIkxfcfEwPV2umj2gLCyAbttcDVU="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-12T08:07:24.678Z",
+    "passwordChangedDate": "2026-10-12T08:07:24.678Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "dr_radiologist_1791792526068@hospital.org": {
+    "fullName": "Dr. Tariq Radiologist",
+    "email": "dr_radiologist_1791792526068@hospital.org",
+    "mobile": "+966551234567",
+    "organization": "King Fahd Hospital",
+    "jobTitle": "Consultant Radiologist",
+    "specialty": "Abdominal Imaging",
+    "linkedIn": "https://linkedin.com/in/drtariq",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$kQlRmX65/mgY1RfIL89TCw==$R5KA0njNK1MFbpUTrUErafLBvssEYCo4tYhhQqAJ9uU=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$kQlRmX65/mgY1RfIL89TCw==$R5KA0njNK1MFbpUTrUErafLBvssEYCo4tYhhQqAJ9uU="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-12T08:08:46.122Z",
+    "passwordChangedDate": "2026-10-12T08:08:46.122Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "lockout_target_1791792526176@sairh.test": {
+    "fullName": "Lockout Target",
+    "email": "lockout_target_1791792526176@sairh.test",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$W5a5vekrUbWCg1gW2aMbMQ==$7GbArOSfApr40DiV/TEBBeLMHA3NaNZ/MLfAg9NpPC4=",
+    "failedAttempts": 5,
+    "lockoutUntil": 1791793426488
+  },
+  "history_target_1791792526489@sairh.test": {
+    "fullName": "History Target",
+    "email": "history_target_1791792526489@sairh.test",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$TUgSqzs7SJNss1LG1yESZg==$dn478s4g8DzCV4wAi1D37BmLjZH84SOXxmUNWctI5a0=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$TUgSqzs7SJNss1LG1yESZg==$dn478s4g8DzCV4wAi1D37BmLjZH84SOXxmUNWctI5a0="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null
+  },
+  "reset_target_1791792526697@sairh.test": {
+    "fullName": "Reset Target",
+    "email": "reset_target_1791792526697@sairh.test",
+    "passwordHash": "PBKDF2-SHA512$210000$YCUcp5NevCftZpT3xkTQGQ==$+hdcPUr1KWaCI/9aMxg8+E9MdewnxVE1G3jkfjSzA1s=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$YCUcp5NevCftZpT3xkTQGQ==$+hdcPUr1KWaCI/9aMxg8+E9MdewnxVE1G3jkfjSzA1s=",
+      "PBKDF2-SHA512$210000$8eAwLLFIGXanm4R2iJOk9A==$7FLofpkedS8W2eEA2yOn3rMEVYbxXKNNWA8OMdArQaI="
+    ],
+    "passwordChangedDate": "2026-10-12T08:08:46.934Z",
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-12T08:08:46.987Z"
+  },
+  "form_user_1791792526988@sairh.test": {
+    "fullName": "Eng. Khalid Healthcare",
+    "email": "form_user_1791792526988@sairh.test",
+    "mobile": "+966509998877",
+    "organization": "Ministry of Health",
+    "jobTitle": "Lead Clinical AI Engineer",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$EH2dLRrRlAdvMUQkKK7mXg==$jXDInhqhgFtfb65qW3Q6CsYtbNrnt0WWV/2yiMuwKcA=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$EH2dLRrRlAdvMUQkKK7mXg==$jXDInhqhgFtfb65qW3Q6CsYtbNrnt0WWV/2yiMuwKcA="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-12T08:08:47.042Z",
+    "passwordChangedDate": "2026-10-12T08:08:47.042Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "dr_radiologist_1791870921470@hospital.org": {
+    "fullName": "Dr. Tariq Radiologist",
+    "email": "dr_radiologist_1791870921470@hospital.org",
+    "mobile": "+966551234567",
+    "organization": "King Fahd Hospital",
+    "jobTitle": "Consultant Radiologist",
+    "specialty": "Abdominal Imaging",
+    "linkedIn": "https://linkedin.com/in/drtariq",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$0Nk+z6PdbkDncqt78vUI/w==$Br+c1LB1/9EDa/x/2sNi549l9RMAZEwcJAcOFv662Jw=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$0Nk+z6PdbkDncqt78vUI/w==$Br+c1LB1/9EDa/x/2sNi549l9RMAZEwcJAcOFv662Jw="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-13T05:55:21.524Z",
+    "passwordChangedDate": "2026-10-13T05:55:21.524Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "lockout_target_1791870921578@sairh.test": {
+    "fullName": "Lockout Target",
+    "email": "lockout_target_1791870921578@sairh.test",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$ybXb/po+gwGGNNJJtOXpZQ==$s6sCYrQ7yvgGgX9e2wkjc7fm6vf8hkTviMCtY4FiGkY=",
+    "failedAttempts": 5,
+    "lockoutUntil": 1791871821890
+  },
+  "history_target_1791870921892@sairh.test": {
+    "fullName": "History Target",
+    "email": "history_target_1791870921892@sairh.test",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$y8H+gsXCpYrSC2syc1dSRw==$7GNthRcdqR4kqcvyqUDalg3BtiRtga1CsA+ScN8V4ow=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$y8H+gsXCpYrSC2syc1dSRw==$7GNthRcdqR4kqcvyqUDalg3BtiRtga1CsA+ScN8V4ow="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null
+  },
+  "reset_target_1791870922048@sairh.test": {
+    "fullName": "Reset Target",
+    "email": "reset_target_1791870922048@sairh.test",
+    "passwordHash": "PBKDF2-SHA512$210000$AOGE8dQJLsjj8yVrx542VQ==$3g1xHpeYCNclWfvlMg36HMRVFXdkKYCoVTfCyhdovbQ=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$AOGE8dQJLsjj8yVrx542VQ==$3g1xHpeYCNclWfvlMg36HMRVFXdkKYCoVTfCyhdovbQ=",
+      "PBKDF2-SHA512$210000$T+Td7ND91nnkpr8DVZIn2g==$3iyqC7N2jAu/2hZjRzsmPfanbC318A2omz884LLc8mo="
+    ],
+    "passwordChangedDate": "2026-10-13T05:55:22.285Z",
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-13T05:55:22.338Z"
+  },
+  "speaker@sairh.com": {
+    "fullName": "Dr. Fahad Almsned PhD",
+    "email": "speaker@sairh.com",
+    "mobile": "",
+    "organization": "King Fahad Specialist Hospital Dammam",
+    "jobTitle": "Executive Director of Health Informatics",
+    "specialty": "Thoracic AI Imaging",
+    "linkedIn": "https://linkedin.com/in/fahadalmsned"
+  },
+  "form_user_1791870922339@sairh.test": {
+    "fullName": "Eng. Khalid Healthcare",
+    "email": "form_user_1791870922339@sairh.test",
+    "mobile": "+966509998877",
+    "organization": "Ministry of Health",
+    "jobTitle": "Lead Clinical AI Engineer",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$eAOgflYpfvvogNMk8E+k/Q==$CP/7lbIf+7B0cQBucHwRmQ9PJHpiuQGEWxtigb3P0gk=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$eAOgflYpfvvogNMk8E+k/Q==$CP/7lbIf+7B0cQBucHwRmQ9PJHpiuQGEWxtigb3P0gk="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-13T05:55:22.392Z",
+    "passwordChangedDate": "2026-10-13T05:55:22.392Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  }
+}

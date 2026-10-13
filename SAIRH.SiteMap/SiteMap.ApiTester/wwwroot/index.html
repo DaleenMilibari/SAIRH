@@ -1,0 +1,519 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SAIRH 2026 - Interactive Exhibition Map</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            /* Color Rules */
+            --research-color: #dbeafe; /* Baby Blue */
+            --research-stroke: #93c5fd;
+            --sponsor-color: #dcfce7; /* Light Green */
+            --sponsor-stroke: #86efac;
+            --recommended-color: #0284c7; /* Accent Royal Blue Highlight */
+            --visited-color: #10b981; /* Bright Check Green */
+            --busy-color: #f59e0b; /* Amber / In-use */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header-tag {
+            color: #0284c7;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #0f2744;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+
+        /* Map Legend */
+        .legend-bar {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 24px;
+            background: var(--card-bg);
+            padding: 14px 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            border: 1.5px solid transparent;
+        }
+
+        /* Map Canvas Container */
+        .map-container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+            min-width: 960px;
+            user-select: none;
+        }
+
+        .booth-rect {
+            cursor: pointer;
+            transition: transform 0.15s ease, filter 0.15s ease, stroke-width 0.15s;
+        }
+
+            .booth-rect:hover {
+                filter: brightness(0.94);
+                stroke: #0f172a !important;
+                stroke-width: 2px !important;
+            }
+
+        .booth-label {
+            font-weight: 700;
+            font-size: 11px;
+            fill: #1e293b;
+            pointer-events: none;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+
+            .booth-label.light-text {
+                fill: #ffffff !important;
+            }
+
+        .check-badge {
+            pointer-events: none;
+            fill: #ffffff;
+            font-size: 11px;
+            font-weight: 900;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+
+        /* Detail Modal Card */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-box {
+            background: #ffffff;
+            width: 100%;
+            max-width: 440px;
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+            position: relative;
+            animation: popIn 0.2s ease-out;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #0f2744;
+        }
+
+        .modal-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            line-height: 1;
+        }
+
+        .modal-desc {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .status-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f1f5f9;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .btn-simulate {
+            width: 100%;
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+            .btn-simulate:hover {
+                background: #0369a1;
+            }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-tag">Interactive Site Map</div>
+        <h1 class="title">SAIRH 2026 Exhibition Floor</h1>
+        <p class="subtitle">Click any booth to inspect research details, availability cooldowns, or simulate NFC scans.</p>
+
+        <!-- Legend -->
+        <div class="legend-bar">
+            <div class="legend-item">
+                <div class="color-swatch" style="background: var(--research-color); border-color: var(--research-stroke);"></div>
+                <span>Research Displays (Baby Blue)</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-swatch" style="background: var(--sponsor-color); border-color: var(--sponsor-stroke);"></div>
+                <span>Sponsor Booths (Light Green)</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-swatch" style="background: var(--recommended-color);"></div>
+                <span>Recommended (Roadmap)</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-swatch" style="background: var(--visited-color);"></div>
+                <span>Visited (Checked)</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-swatch" style="background: var(--busy-color);"></div>
+                <span>Busy (5m Cooldown)</span>
+            </div>
+        </div>
+
+        <!-- Map Canvas -->
+        <div class="map-container">
+            <svg id="exhibition-map" viewBox="0 0 1060 520">
+                <!-- Main Frame Enclosures -->
+                <!-- Research Screen Hall Outer Frame -->
+                <rect x="20" y="20" width="670" height="240" rx="14" fill="#ffffff" stroke="#1e293b" stroke-width="2.5" />
+                <text x="355" y="130" font-weight="800" font-size="18" fill="#1e293b" text-anchor="middle">Research Screen Hall</text>
+                <text x="355" y="152" font-weight="600" font-size="12" fill="#64748b" text-anchor="middle">30 Research Project Displays</text>
+
+                <!-- Door Passageway Indicator -->
+                <line x1="690" y1="125" x2="730" y2="125" stroke="#0284c7" stroke-width="3" stroke-dasharray="3 3" />
+                <line x1="690" y1="155" x2="730" y2="155" stroke="#0284c7" stroke-width="3" stroke-dasharray="3 3" />
+                <text x="710" y="142" font-size="9" font-weight="700" fill="#0284c7" text-anchor="middle">DOOR</text>
+
+                <!-- Sponsor Hall Outer Frame -->
+                <rect x="730" y="20" width="310" height="470" rx="14" fill="#ffffff" stroke="#1e293b" stroke-width="2.5" />
+                <text x="885" y="55" font-weight="800" font-size="18" fill="#1e293b" text-anchor="middle">Sponsor Hall</text>
+                <text x="885" y="75" font-weight="600" font-size="12" fill="#64748b" text-anchor="middle">15 Sponsor Booths</text>
+
+                <!-- Main Empty Hall -->
+                <rect x="20" y="280" width="670" height="210" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+                <text x="355" y="375" font-weight="800" font-size="18" fill="#94a3b8" text-anchor="middle">Main Hall</text>
+                <text x="355" y="398" font-weight="500" font-size="12" fill="#94a3b8" text-anchor="middle">No exhibition booths in this area</text>
+
+                <!-- Entrance Arc -->
+                <g transform="translate(885, 490)">
+                    <path d="M -35 -20 A 35 35 0 0 1 35 -20" fill="none" stroke="#0f172a" stroke-width="2.5" />
+                    <text x="0" y="-30" font-size="11" font-weight="800" fill="#0f172a" text-anchor="middle">↑ ENTRANCE</text>
+                </g>
+
+                <!-- SVG Node Container for R1-R30 & S1-S15 -->
+                <g id="booths-layer"></g>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-backdrop" id="boothModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div>
+                    <span class="modal-badge" id="modalBadge">Research Display</span>
+                    <h2 class="modal-title" id="modalTitle">Booth Code</h2>
+                </div>
+                <button class="btn-close" onclick="closeModal()">×</button>
+            </div>
+
+            <p class="modal-desc" id="modalDesc">
+                AI & Digital Technology, Research & Education, Innovations in Machine Learning and Computer Vision.
+            </p>
+
+            <div class="status-row">
+                <span>Current Status:</span>
+                <div class="status-indicator">
+                    <div class="status-dot" id="modalStatusDot"></div>
+                    <span id="modalStatusText">Available</span>
+                </div>
+            </div>
+
+            <button class="btn-simulate" id="btnScan" onclick="simulateNFCScan()">
+                Simulate NFC Tag Tap
+            </button>
+        </div>
+    </div>
+
+    <script>
+    // Coordinates matching the exact PDF floor plan layout
+    const boothLayout = {
+      // Top row R1 to R12
+      R1: { x: 90, y: 35 },  R2: { x: 140, y: 35 }, R3: { x: 190, y: 35 }, R4: { x: 240, y: 35 },
+      R5: { x: 290, y: 35 }, R6: { x: 340, y: 35 }, R7: { x: 390, y: 35 }, R8: { x: 440, y: 35 },
+      R9: { x: 490, y: 35 }, R10: { x: 540, y: 35 }, R11: { x: 590, y: 35 }, R12: { x: 640, y: 35 },
+
+      // Left column R13 to R18
+      R13: { x: 35, y: 70 },  R14: { x: 35, y: 98 },  R15: { x: 35, y: 126 },
+      R16: { x: 35, y: 154 }, R17: { x: 35, y: 182 }, R18: { x: 35, y: 210 },
+
+      // Bottom row R19 to R30
+      R19: { x: 90, y: 220 },  R20: { x: 140, y: 220 }, R21: { x: 190, y: 220 }, R22: { x: 240, y: 220 },
+      R23: { x: 290, y: 220 }, R24: { x: 340, y: 220 }, R25: { x: 390, y: 220 }, R26: { x: 440, y: 220 },
+      R27: { x: 490, y: 220 }, R28: { x: 540, y: 220 }, R29: { x: 590, y: 220 }, R30: { x: 640, y: 220 },
+
+      // Sponsor Hall: Left column (S1 - S7)
+      S1: { x: 755, y: 195 }, S2: { x: 755, y: 235 }, S3: { x: 755, y: 275 },
+      S4: { x: 755, y: 315 }, S5: { x: 755, y: 355 }, S6: { x: 755, y: 395 }, S7: { x: 755, y: 435 },
+
+      // Sponsor Hall: Right column (S8 - S15)
+      S8:  { x: 920, y: 115 }, S9:  { x: 920, y: 155 }, S10: { x: 920, y: 195 }, S11: { x: 920, y: 235 },
+      S12: { x: 920, y: 275 }, S13: { x: 920, y: 315 }, S14: { x: 920, y: 355 }, S15: { x: 920, y: 395 }
+    };
+
+    let activeSelectedBooth = null;
+    let localCache = [];
+
+    // Render floor plan booths dynamically
+    function initSVGFloorPlan() {
+      const container = document.getElementById("booths-layer");
+      let markup = "";
+
+      for (const [code, pos] of Object.entries(boothLayout)) {
+        const isSponsor = code.startsWith("S");
+        const w = isSponsor ? 64 : 42;
+        const h = isSponsor ? 30 : 22;
+
+        markup += `
+          <g id="group-${code}" onclick="openBoothModal('${code}')">
+            <rect id="rect-${code}" class="booth-rect" x="${pos.x}" y="${pos.y}" width="${w}" height="${h}" rx="6" />
+            <text id="text-${code}" class="booth-label" x="${pos.x + w / 2}" y="${pos.y + h / 2}">${code}</text>
+            <circle id="check-bg-${code}" cx="${pos.x + w - 4}" cy="${pos.y + 4}" r="6" fill="#10b981" style="display:none;" />
+            <text id="check-icon-${code}" class="check-badge" x="${pos.x + w - 4}" y="${pos.y + 5}" style="display:none;">✓</text>
+          </g>
+        `;
+      }
+      container.innerHTML = markup;
+    }
+
+    // Fetch live status from your SiteMap ASP.NET Core endpoint
+    async function loadFloorPlanState() {
+      try {
+        const res = await fetch("/api/Map/status");
+        if (!res.ok) return;
+        const booths = await res.json();
+        localCache = booths;
+
+        booths.forEach(b => {
+          const rect = document.getElementById(`rect-${b.boothCode}`);
+          const text = document.getElementById(`text-${b.boothCode}`);
+          const checkBg = document.getElementById(`check-bg-${b.boothCode}`);
+          const checkIcon = document.getElementById(`check-icon-${b.boothCode}`);
+
+          if (!rect) return;
+
+          const isSponsor = b.boothCode.startsWith("S");
+
+          // Visual Priority:
+          // 1. Visited (Bright green with check mark)
+          // 2. Busy (Orange/Amber)
+          // 3. Recommended (Deep Royal Blue Highlight)
+          // 4. Default Category Tint (Research: Baby Blue, Sponsor: Light Green)
+          if (b.isVisitedByCurrentUser) {
+            rect.setAttribute("fill", "var(--visited-color)");
+            rect.setAttribute("stroke", "#059669");
+            text.classList.add("light-text");
+            if (checkBg) checkBg.style.display = "block";
+            if (checkIcon) checkIcon.style.display = "block";
+          } else if (b.status === 1) { // 1 = Busy
+            rect.setAttribute("fill", "var(--busy-color)");
+            rect.setAttribute("stroke", "#d97706");
+            text.classList.add("light-text");
+            if (checkBg) checkBg.style.display = "none";
+            if (checkIcon) checkIcon.style.display = "none";
+          } else if (b.isRecommended) {
+            rect.setAttribute("fill", "var(--recommended-color)");
+            rect.setAttribute("stroke", "#0369a1");
+            text.classList.add("light-text");
+            if (checkBg) checkBg.style.display = "none";
+            if (checkIcon) checkIcon.style.display = "none";
+          } else {
+            // Default hall colors
+            rect.setAttribute("fill", isSponsor ? "var(--sponsor-color)" : "var(--research-color)");
+            rect.setAttribute("stroke", isSponsor ? "var(--sponsor-stroke)" : "var(--research-stroke)");
+            text.classList.remove("light-text");
+            if (checkBg) checkBg.style.display = "none";
+            if (checkIcon) checkIcon.style.display = "none";
+          }
+        });
+      } catch (err) {
+        console.error("Failed to refresh floor plan:", err);
+      }
+    }
+
+    function openBoothModal(boothCode) {
+      activeSelectedBooth = boothCode;
+      const b = localCache.find(x => x.boothCode === boothCode);
+
+      document.getElementById("modalTitle").innerText = boothCode.startsWith("S")
+        ? `Sponsor Booth ${boothCode}`
+        : `Research Display ${boothCode}`;
+
+      const badge = document.getElementById("modalBadge");
+      if (boothCode.startsWith("S")) {
+        badge.innerText = "Sponsor Hall";
+        badge.style.background = "var(--sponsor-color)";
+        badge.style.color = "#166534";
+      } else {
+        badge.innerText = "Research Screen Hall";
+        badge.style.background = "var(--research-color)";
+        badge.style.color = "#1e40af";
+      }
+
+      const dot = document.getElementById("modalStatusDot");
+      const statusText = document.getElementById("modalStatusText");
+
+      if (b && b.status === 1) {
+        dot.style.background = "var(--busy-color)";
+        statusText.innerText = `Busy (Available in ~${Math.ceil(b.remainingBusySeconds / 60)} min)`;
+      } else {
+        dot.style.background = "var(--visited-color)";
+        statusText.innerText = "Available for Visit";
+      }
+
+      document.getElementById("boothModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("boothModal").style.display = "none";
+    }
+
+    // Simulates an NFC tap on this booth
+    async function simulateNFCScan() {
+      if (!activeSelectedBooth) return;
+      await fetch(`/api/Map/scan?boothCode=${activeSelectedBooth}`, { method: "POST" });
+      closeModal();
+      await loadFloorPlanState();
+    }
+
+    // Init & 3-second live polling loop
+    initSVGFloorPlan();
+    loadFloorPlanState();
+    setInterval(loadFloorPlanState, 3000);
+    </script>
+</body>
+</html>

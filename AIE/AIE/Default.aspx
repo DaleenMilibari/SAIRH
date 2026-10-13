@@ -143,7 +143,6 @@
         <div class="container">
             <!-- Section Header -->
             <div class="text-center mb-4">
-                <span class="sairh-track-tag mb-2" style="display: inline-flex;"><i class="bi bi-broadcast"></i> REAL-TIME SUMMIT TELEMETRY</span>
                 <h2 class="text-white font-weight-bold display-5 mb-3">Live Summit Session Hub</h2>
                 <div style="width: 80px; height: 3px; background: linear-gradient(90deg, #38bdf8, #2563eb); margin: 0 auto 20px; border-radius: 2px;"></div>
             </div>

@@ -11,9 +11,9 @@
                     <div class="d-inline-flex mb-3">
                     </div>
                     <div class="h1 text-light font-weight-bold mb-3">
-                        مرحباً <br />
+                        مرحباً بكم <br />
                         <div class="typed-strings">
-                            <p><span class="h1 text-white">القمة السعودية للذكاء الاصطناعي في الاشعة والابتكار الصحي</span></p>
+                            <p><span class="h1 text-white">القمة السعودية الأولى للذكاء الاصطناعي في الأشعة والابتكار الصحي</span></p>
                         </div>
                         <div class="typed text-info"></div>
                     </div>
@@ -24,25 +24,47 @@
                     <div class="login-glass-card">
                         <h3 class="text-white font-weight-bold mb-2 text-center">تسجيل الدخول</h3>
                         <p class="text-secondary text-center mb-4">
-                            تسجيل الدخول باستخدام حساب موجود أو إنشاء حساب جديد <a href="Register" class="text-info font-weight-bold">هنا</a>.
+                            سجّل الدخول إلى حسابك، أو <a href="Register" class="text-info font-weight-bold">أنشئ حساباً جديداً</a>.
                         </p>
 
                         <asp:UpdatePanel ID="UpdatePanel1" runat="server">
                             <ContentTemplate>
-                                <div class="form-border">
-                                    <div class="field-set">
-                                        <asp:TextBox ID="TxtUserName" runat="server" CssClass="form-control" placeholder="البريد الالكتروني"></asp:TextBox>
+                                <div id="divError" class="auth-alert alert alert-danger" runat="server" visible="false" role="alert"></div>
+
+                                <div class="auth-form">
+                                    <div class="auth-field">
+                                        <label for="<%= TxtEmail.ClientID %>" class="auth-label">
+                                            <i class="bi bi-envelope ml-1 text-info"></i> البريد الإلكتروني
+                                        </label>
+                                        <asp:TextBox ID="TxtEmail" runat="server" TextMode="Email" CssClass="form-control" placeholder="name@domain.com" autocomplete="username" required="required"></asp:TextBox>
                                     </div>
 
-                                    <div class="field-set">
-                                        <asp:TextBox ID="TxtPassword" TextMode="Password" runat="server" CssClass="form-control" placeholder="كلمة المرور"></asp:TextBox>
+                                    <div class="auth-field">
+                                        <div class="auth-row-between">
+                                            <label for="<%= TxtPassword.ClientID %>" class="auth-label">
+                                                <i class="bi bi-lock ml-1 text-info"></i> كلمة المرور
+                                            </label>
+                                            <a href="ForgotPassword" class="auth-link small">نسيت كلمة المرور؟</a>
+                                        </div>
+                                        <div class="auth-password">
+                                            <asp:TextBox ID="TxtPassword" runat="server" TextMode="Password" CssClass="form-control" placeholder="أدخل كلمة المرور" autocomplete="current-password" required="required"></asp:TextBox>
+                                            <button type="button" class="auth-password-toggle" data-toggle-password="<%= TxtPassword.ClientID %>" aria-label="إظهار كلمة المرور" data-label-show="إظهار كلمة المرور" data-label-hide="إخفاء كلمة المرور" aria-pressed="false">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3 text-right">
+                                        <div class="form-check p-0">
+                                            <asp:CheckBox ID="ChkRememberMe" runat="server" Text=" تذكرني على هذا الجهاز" CssClass="text-secondary small font-weight-semibold" />
+                                        </div>
                                     </div>
 
-                                    <div class="field-set text-center mt-3">
-                                        <asp:LinkButton ID="BtnLogin" runat="server" CssClass="cyan-glow-btn w-100 py-3" OnClick="Login_Click">تسجيل الدخول</asp:LinkButton>
+                                    <div class="mt-2">
+                                        <asp:Button ID="BtnLogin" runat="server" CssClass="cyan-glow-btn w-100 py-3 text-white font-weight-bold" Text="تسجيل الدخول" OnClick="Login_Click" data-loading-text="جارٍ تسجيل الدخول..." />
                                     </div>
 
-                                    <div id="divError" class="alert alert-danger text-danger mt-3" runat="server" visible="false">Test Messages</div>
+                                    <p class="auth-switch">
+                                        ليس لديك حساب بعد؟ <a href="Register" class="text-info font-weight-bold">سجّل الآن</a>
+                                    </p>
                                 </div>
                             </ContentTemplate>
                         </asp:UpdatePanel>

@@ -22,7 +22,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
     <link href="<%= ResolveUrl("~/Content/css/style.css") %>" rel="stylesheet" type="text/css" />
     <link href="<%= ResolveUrl("~/Content/css/live-dashboard.css") %>" rel="stylesheet" type="text/css" />
-    <link href="<%= ResolveUrl("~/Content/css/liquid-glass-theme.css?v=20261004_no_overlap_v3") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/liquid-glass-theme.css?v=20261005_scroll_all_v7") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/auth.css") %>" rel="stylesheet" type="text/css" />
+    <link href="<%= ResolveUrl("~/Content/css/chat.css?v=20261005_pos") %>" rel="stylesheet" type="text/css" />
     <link href="<%= ResolveUrl("~/Content/images/logo.jpg") %>" rel="icon" />
 
     <asp:ContentPlaceHolder ID="head" runat="server">
@@ -50,10 +52,9 @@
                                 <li><a href="~/" runat="server" id="linkHome"><i class="bi bi-house-door"></i> <span>Home</span></a></li>
                                 <li><a href="Ceremony" runat="server" id="linkCeremony"><i class="bi bi-calendar2-check"></i> <span>Program &amp; Tracks</span></a></li>
                                 <li><a href="Schedules" runat="server" id="linkSchedules"><i class="bi bi-buildings"></i> <span>Exhibition</span></a></li>
-                                <li><a href="Judges" runat="server" id="linkJudges"><i class="bi bi-people"></i> <span>Speakers</span></a></li>
+                                <li><a href="Speakers" runat="server" id="linkSpeakers"><i class="bi bi-people"></i> <span>Speakers</span></a></li>
                                 <li><a href="Sponsors" runat="server" id="linkSponsors"><i class="bi bi-award"></i> <span>Sponsors</span></a></li>
                                 <li><a href="ContactUs" runat="server" id="linkContactUs"><i class="bi bi-envelope"></i> <span>Contact</span></a></li>
-                                <li style="display:none;"><a href="Publication" runat="server" id="linkPublication" aria-hidden="true"></a></li>
                             </ul>
 
                             <!-- Account & Language Switcher Group -->
@@ -80,8 +81,8 @@
                                             <i class="bi bi-person-badge"></i> <span>My Profile &amp; Pass</span>
                                         </asp:LinkButton>
                                         <span runat="server" id="liDashboard" style="display:none;">
-                                            <asp:LinkButton ID="BtnDashboard" runat="server" PostBackUrl="~/Dashboard.aspx" CssClass="user-dropdown-item">
-                                                <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                                            <asp:LinkButton ID="BtnDashboard" runat="server" PostBackUrl="~/Admin/ManageSummit.aspx" CssClass="user-dropdown-item">
+                                                <i class="bi bi-shield-lock"></i> <span>Manage Summit (Admin)</span>
                                             </asp:LinkButton>
                                         </span>
                                         <div class="user-dropdown-divider"></div>
@@ -249,8 +250,66 @@
 
         <!-- Live Dashboard & Scroll Reveal Scripts -->
         <script src="<%= ResolveUrl("~/Scripts/dashboard.js") %>"></script>
-        <script src="<%= ResolveUrl("~/Scripts/scroll-reveal.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Scripts/scroll-reveal.js?v=20261005_scroll_all_v7") %>"></script>
         <script src="<%= ResolveUrl("~/Scripts/hero-slider.js") %>"></script>
+        <script src="<%= ResolveUrl("~/Content/js/auth.js") %>"></script>
+
+        <!-- SAIRH AI Chatbot Interactive Floating Action Button & Window -->
+        <div id="sairh-chat-fab-container" class="sairh-chat-fab-wrap">
+            <button type="button" id="chat-toggle-btn" class="sairh-chat-fab" aria-label="Open SAIRH AI Chatbot" onclick="toggleChatWindow()">
+                <span class="sairh-chat-fab-icon-wrap">
+                    <i class="bi bi-chat-dots-fill sairh-icon-chat"></i>
+                    <i class="bi bi-x-lg sairh-icon-close"></i>
+                </span>
+                <span class="sairh-chat-fab-badge"><i class="bi bi-stars"></i></span>
+            </button>
+        </div>
+
+        <div id="chat-popup-window" class="sairh-chat-window" aria-hidden="true" dir="ltr">
+            <div class="sairh-chat-header">
+                <div class="sairh-chat-header-info">
+                    <div class="sairh-chat-avatar">
+                        <i class="bi bi-robot"></i>
+                        <span class="sairh-chat-status-dot" title="Online"></span>
+                    </div>
+                    <div class="sairh-chat-header-text">
+                        <h4 id="chat-title" class="sairh-chat-title">SAIRH AI Assistant</h4>
+                        <span id="chat-status" class="sairh-chat-status">Online &bull; 2026 Summit Guide</span>
+                    </div>
+                </div>
+                <div class="sairh-chat-header-actions">
+                    <button type="button" id="lang-toggle" class="sairh-chat-lang-btn" onclick="toggleLanguage()" aria-label="Switch Language">
+                        <i class="bi bi-globe"></i>
+                        <span id="lang-toggle-text">العربية</span>
+                    </button>
+                    <button type="button" class="sairh-chat-close-btn" onclick="toggleChatWindow()" aria-label="Close Chat">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sairh-chat-banner">
+                <i class="bi bi-info-circle-fill"></i>
+                <span id="chat-banner-text">Official AI Summit Guide for SAIRH 2026</span>
+            </div>
+
+            <div class="sairh-chat-messages" id="chat-messages" role="log" aria-live="polite">
+            </div>
+
+            <div class="sairh-chat-footer">
+                <div class="sairh-chat-input-bar">
+                    <input type="text" id="user-input" class="sairh-chat-input" maxlength="500" placeholder="Ask about sessions, venue, registration..." autocomplete="off" />
+                    <button type="button" id="send-btn" class="sairh-chat-send-btn" onclick="submitUserQuery()" aria-label="Send Message">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+                <div class="sairh-chat-watermark">
+                    <span>SAIRH 2026 &bull; Year of Artificial Intelligence</span>
+                </div>
+            </div>
+        </div>
+
+        <script src="<%= ResolveUrl("~/Scripts/chat.js?v=20261004") %>"></script>
     </form>
 </body>
 </html>

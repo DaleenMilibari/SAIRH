@@ -1,1105 +1,839 @@
 -- ============================================================================
--- SAIRH 2026 - Speaker Photos & CVs Mapping Script
+-- SAIRH 2026 - Official Normalized Database Setup: Speakers & Sessions
 -- Database: SAIRH
--- Updates existing speakers or inserts full profile with photos and CVs
+-- noinspection SqlResolve
+-- noinspection SqlInsertValues
+-- Structure:
+--   1. [dbo].[Speakers] - Speaker profile information only
+--   2. [dbo].[Sessions] - Scientific sessions with Foreign Key (SpeakerID),
+--                         title, room, track, day, time, and speaker role.
+--   3. [dbo].[vw_SummitSpeakers] - Comprehensive VIEW joining Speakers & Sessions
 -- ============================================================================
 
 USE [SAIRH];
 GO
 
--- Set IDENTITY_INSERT ON in case we insert new speakers
--- ----------------------------------------------------------------------------
-
--- ----------------------------------------------------------------------------
--- 1. Dr. Fahad Almsned (د. فهد المسند)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Almsned%' OR [FullNameAr] LIKE '%المسند%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Fahad Almsned',
-        [FullNameAr] = N'د. فهد المسند',
-        [JobTitleEn] = N'Director of Research Operations',
-        [JobTitleAr] = N'مدير العمليات البحثية',
-        [OrganizationEn] = N'King Fahad Specialist Hospital - Dammam',
-        [OrganizationAr] = N'مستشفى الملك فهد التخصصي - الدمام',
-        [ImagePath] = N'~/Content/images/speakers/Fahad-Almsned-Photo.jpeg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Fahad-Almsned-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 1,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Almsned%' OR [FullNameAr] LIKE '%المسند%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Fahad Almsned', N'د. فهد المسند', N'Director of Research Operations', N'مدير العمليات البحثية', 
-        N'King Fahad Specialist Hospital - Dammam', N'مستشفى الملك فهد التخصصي - الدمام', N'~/Content/images/speakers/Fahad-Almsned-Photo.jpeg', N'~/Content/docs/speakers/Fahad-Almsned-CV.pdf', 
-        0, 1, 1
-    );
-END
+-- 1. Drop existing views and tables if they exist (Clean Start)
+IF OBJECT_ID(N'[dbo].[vw_SummitSpeakers]', N'V') IS NOT NULL DROP VIEW [dbo].[vw_SummitSpeakers];
+IF OBJECT_ID(N'[dbo].[Judges]', N'V') IS NOT NULL DROP VIEW [dbo].[Judges];
 GO
 
--- ----------------------------------------------------------------------------
--- 2. Dr. Eman Alshehri (د. إيمان الشهري)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Alshehri%' OR [FullNameAr] LIKE '%الشهري%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Eman Alshehri',
-        [FullNameAr] = N'د. إيمان الشهري',
-        [JobTitleEn] = N'Assistant Professor, Computer Department',
-        [JobTitleAr] = N'أستاذ مساعد، قسم الحاسب الآلي',
-        [OrganizationEn] = N'Imam Abdulrahman Bin Faisal University',
-        [OrganizationAr] = N'جامعة الإمام عبدالرحمن بن فيصل',
-        [ImagePath] = N'~/Content/images/speakers/Speaker-Photo.png',
-        [CvPdfPath] = N'~/Content/docs/speakers/Eman-Alshehri-CV.pdf',
-        [Category] = 1,
-        [Sorting] = 2,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Alshehri%' OR [FullNameAr] LIKE '%الشهري%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Eman Alshehri', N'د. إيمان الشهري', N'Assistant Professor, Computer Department', N'أستاذ مساعد، قسم الحاسب الآلي', 
-        N'Imam Abdulrahman Bin Faisal University', N'جامعة الإمام عبدالرحمن بن فيصل', N'~/Content/images/speakers/Speaker-Photo.png', N'~/Content/docs/speakers/Eman-Alshehri-CV.pdf', 
-        1, 2, 1
-    );
-END
+-- Drop any foreign key constraints pointing to Speakers
+DECLARE @sqlFK NVARCHAR(MAX) = N'';
+SELECT @sqlFK += N'ALTER TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name) 
+               + N' DROP CONSTRAINT ' + QUOTENAME(f.name) + N';' + CHAR(13)
+FROM sys.foreign_keys f
+INNER JOIN sys.tables t ON f.parent_object_id = t.object_id
+INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
+WHERE f.referenced_object_id = OBJECT_ID(N'[dbo].[Speakers]');
+IF @sqlFK <> N'' EXEC sp_executesql @sqlFK;
 GO
 
--- ----------------------------------------------------------------------------
--- 3. Ms. Fadwa AlBawardi, MSc (أ. فدوى البواردي)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%MSc%' OR [FullNameAr] LIKE '%البواردي%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Ms. Fadwa AlBawardi, MSc',
-        [FullNameAr] = N'أ. فدوى البواردي',
-        [JobTitleEn] = N'Founder & CEO',
-        [JobTitleAr] = N'المؤسس والرئيس التنفيذي',
-        [OrganizationEn] = N'FSK Advisory',
-        [OrganizationAr] = N'استشارات FSK',
-        [ImagePath] = N'~/Content/images/speakers/Fadwa-AlBawardi-Photo.jpg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Fadwa-AlBawardi-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 3,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%MSc%' OR [FullNameAr] LIKE '%البواردي%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Ms. Fadwa AlBawardi, MSc', N'أ. فدوى البواردي', N'Founder & CEO', N'المؤسس والرئيس التنفيذي', 
-        N'FSK Advisory', N'استشارات FSK', N'~/Content/images/speakers/Fadwa-AlBawardi-Photo.jpg', N'~/Content/docs/speakers/Fadwa-AlBawardi-CV.pdf', 
-        0, 3, 1
-    );
-END
+IF OBJECT_ID(N'[dbo].[Sessions]', N'U') IS NOT NULL DROP TABLE [dbo].[Sessions];
+IF OBJECT_ID(N'[dbo].[Speakers]', N'U') IS NOT NULL DROP TABLE [dbo].[Speakers];
 GO
 
--- ----------------------------------------------------------------------------
--- 4. Dr. Aseel Aldawood (د. أصيل الداوود)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Aldawood%' OR [FullNameAr] LIKE '%الداوود%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Aseel Aldawood',
-        [FullNameAr] = N'د. أصيل الداوود',
-        [JobTitleEn] = N'Assistant Professor of Health Informatics',
-        [JobTitleAr] = N'أستاذ مساعد في المعلوماتية الصحية',
-        [OrganizationEn] = N'King Saud University',
-        [OrganizationAr] = N'جامعة الملك سعود',
-        [ImagePath] = N'~/Content/images/speakers/Speaker-Photo.png',
-        [CvPdfPath] = N'~/Content/docs/speakers/Aseel-Addawood-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 4,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Aldawood%' OR [FullNameAr] LIKE '%الداوود%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Aseel Aldawood', N'د. أصيل الداوود', N'Assistant Professor of Health Informatics', N'أستاذ مساعد في المعلوماتية الصحية', 
-        N'King Saud University', N'جامعة الملك سعود', N'~/Content/images/speakers/Speaker-Photo.png', N'~/Content/docs/speakers/Aseel-Addawood-CV.pdf', 
-        0, 4, 1
-    );
-END
+-- 2. Create [dbo].[Speakers] Table (Profile data only)
+CREATE TABLE [dbo].[Speakers] (
+    [SpeakerID]         INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [FullNameEn]        NVARCHAR(150) NOT NULL,
+    [FullNameAr]        NVARCHAR(150) NOT NULL,
+    [JobTitleEn]        NVARCHAR(250) NULL,
+    [JobTitleAr]        NVARCHAR(250) NULL,
+    [OrganizationEn]    NVARCHAR(250) NULL,
+    [OrganizationAr]    NVARCHAR(250) NULL,
+    [Sector]            NVARCHAR(50) NOT NULL DEFAULT 'clinical',
+    [SectorNameEn]      NVARCHAR(100) NULL,
+    [SectorNameAr]      NVARCHAR(100) NULL,
+    [Region]            NVARCHAR(50) NOT NULL DEFAULT 'national',
+    [RegionNameEn]      NVARCHAR(100) NULL,
+    [RegionNameAr]      NVARCHAR(100) NULL,
+    [ImagePath]         NVARCHAR(500) NOT NULL DEFAULT '/Content/images/speakers/Speaker-Photo.png',
+    [CvPdfPath]         NVARCHAR(500) NULL,
+    [Flag]              NVARCHAR(20) NULL DEFAULT N'🇸🇦',
+    [Initials]          NVARCHAR(10) NULL,
+    [Sorting]           INT NOT NULL DEFAULT 0,
+    [IsActive]          BIT NOT NULL DEFAULT 1
+);
 GO
 
--- ----------------------------------------------------------------------------
--- 5. Dr. Mustafa Yoldash (د. مصطفى يلدش)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Yoldash%' OR [FullNameAr] LIKE '%يلدش%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Mustafa Yoldash',
-        [FullNameAr] = N'د. مصطفى يلدش',
-        [JobTitleEn] = N'Consultant Clinical Radiologist',
-        [JobTitleAr] = N'استشاري الأشعة الإكلينيكية',
-        [OrganizationEn] = N'King Fahad Hospital',
-        [OrganizationAr] = N'مستشفى الملك فهد',
-        [ImagePath] = N'~/Content/images/speakers/Speaker-Photo.png',
-        [CvPdfPath] = N'~/Content/docs/speakers/Mustafa-Yoldash-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 5,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Yoldash%' OR [FullNameAr] LIKE '%يلدش%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Mustafa Yoldash', N'د. مصطفى يلدش', N'Consultant Clinical Radiologist', N'استشاري الأشعة الإكلينيكية', 
-        N'King Fahad Hospital', N'مستشفى الملك فهد', N'~/Content/images/speakers/Speaker-Photo.png', N'~/Content/docs/speakers/Mustafa-Yoldash-CV.pdf', 
-        0, 5, 1
-    );
-END
+CREATE INDEX IX_Speakers_Sorting ON [dbo].[Speakers]([Sorting]);
 GO
 
--- ----------------------------------------------------------------------------
--- 6. Mr. Yazeed Alsudays, MBA (أ. يزيد السديس)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%MBA%' OR [FullNameAr] LIKE '%السديس%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Mr. Yazeed Alsudays, MBA',
-        [FullNameAr] = N'أ. يزيد السديس',
-        [JobTitleEn] = N'Healthcare AI Strategy Consultant',
-        [JobTitleAr] = N'مستشار استراتيجيات الذكاء الاصطناعي الصحي',
-        [OrganizationEn] = N'Digital Health Center of Excellence',
-        [OrganizationAr] = N'مركز التميز للصحة الرقمية',
-        [ImagePath] = N'~/Content/images/speakers/Yazeed-Alsudays-Photo.jpg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Yazeed-Alsudays-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 6,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%MBA%' OR [FullNameAr] LIKE '%السديس%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Mr. Yazeed Alsudays, MBA', N'أ. يزيد السديس', N'Healthcare AI Strategy Consultant', N'مستشار استراتيجيات الذكاء الاصطناعي الصحي', 
-        N'Digital Health Center of Excellence', N'مركز التميز للصحة الرقمية', N'~/Content/images/speakers/Yazeed-Alsudays-Photo.jpg', N'~/Content/docs/speakers/Yazeed-Alsudays-CV.pdf', 
-        0, 6, 1
-    );
-END
+-- 3. Create [dbo].[Sessions] Table (Session metadata with Foreign Key to Speaker)
+CREATE TABLE [dbo].[Sessions] (
+    [SessionID]         INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [SpeakerID]         INT NULL,                               -- Foreign Key to [dbo].[Speakers]
+    [TitleEn]           NVARCHAR(500) NOT NULL,                 -- عنوان الجلسة بالإنجليزية
+    [TitleAr]           NVARCHAR(500) NOT NULL,                 -- عنوان الجلسة بالعربية
+    [Track]             NVARCHAR(50) NOT NULL DEFAULT 'track-a', -- المسار (track-a, track-b, track-c)
+    [TrackNameEn]       NVARCHAR(200) NULL,
+    [TrackNameAr]       NVARCHAR(200) NULL,
+    [RoomEn]            NVARCHAR(100) NOT NULL,                 -- القاعة (Hall 1, Hall 2, Hall 3)
+    [RoomAr]            NVARCHAR(100) NOT NULL,                 -- القاعة الأولى، الثانية، الثالثة
+    [DayNumber]         INT NOT NULL DEFAULT 1,                 -- اليوم (اليوم الأول، إلخ)
+    [StartTime]         VARCHAR(20) NULL DEFAULT '09:00 AM',    -- وقت البدء (مثال: 09:00 AM)
+    [EndTime]           VARCHAR(20) NULL DEFAULT '09:40 AM',    -- وقت الانتهاء (مثال: 09:40 AM)
+    [StartDateTime]     DATETIME NULL DEFAULT '2026-12-13 09:00:00', -- تاريخ ووقت البدء الفعلي
+    [EndDateTime]       DATETIME NULL DEFAULT '2026-12-13 09:40:00', -- تاريخ ووقت الانتهاء الفعلي
+    [RoleEn]            NVARCHAR(100) NOT NULL DEFAULT 'Speaker',-- الدور (Keynote Speaker, Speaker, ...)
+    [RoleAr]            NVARCHAR(100) NOT NULL DEFAULT N'متحدث',  -- الدور بالعربية (متحدث رئيسي، متحدث، ...)
+    [DescriptionEn]     NVARCHAR(MAX) NULL,
+    [DescriptionAr]     NVARCHAR(MAX) NULL,
+    [Sorting]           INT NOT NULL DEFAULT 0,
+    [IsActive]          BIT NOT NULL DEFAULT 1,
+
+    CONSTRAINT FK_Sessions_Speakers FOREIGN KEY ([SpeakerID])
+        REFERENCES [dbo].[Speakers]([SpeakerID])
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
+);
 GO
 
--- ----------------------------------------------------------------------------
--- 7. Dr. Abeer Alalmaie (د. عبير الألمعي)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Alalmaie%' OR [FullNameAr] LIKE '%الألمعي%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Abeer Alalmaie',
-        [FullNameAr] = N'د. عبير الألمعي',
-        [JobTitleEn] = N'Consultant Radiologist & Breast Imaging Lead',
-        [JobTitleAr] = N'استشارية أشعة ورئيسة تصوير الثدي',
-        [OrganizationEn] = N'King Faisal Specialist Hospital & Research Centre',
-        [OrganizationAr] = N'مستشفى الملك فيصل التخصصي ومركز الأبحاث',
-        [ImagePath] = N'~/Content/images/speakers/Abeer-Alalmaie-Photo.png',
-        [CvPdfPath] = N'~/Content/docs/speakers/Abeer-Alalmaie-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 7,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Alalmaie%' OR [FullNameAr] LIKE '%الألمعي%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Abeer Alalmaie', N'د. عبير الألمعي', N'Consultant Radiologist & Breast Imaging Lead', N'استشارية أشعة ورئيسة تصوير الثدي', 
-        N'King Faisal Specialist Hospital & Research Centre', N'مستشفى الملك فيصل التخصصي ومركز الأبحاث', N'~/Content/images/speakers/Abeer-Alalmaie-Photo.png', N'~/Content/docs/speakers/Abeer-Alalmaie-CV.pdf', 
-        0, 7, 1
-    );
-END
+CREATE INDEX IX_Sessions_SpeakerID ON [dbo].[Sessions]([SpeakerID]);
+CREATE INDEX IX_Sessions_Track ON [dbo].[Sessions]([Track]);
+CREATE INDEX IX_Sessions_DayNumber ON [dbo].[Sessions]([DayNumber]);
 GO
 
--- ----------------------------------------------------------------------------
--- 8. Dr. Clare Rainey (د. كلير ريني)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Rainey%' OR [FullNameAr] LIKE '%ريني%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Clare Rainey',
-        [FullNameAr] = N'د. كلير ريني',
-        [JobTitleEn] = N'Lecturer in Radiography & Health Sciences',
-        [JobTitleAr] = N'محاضرة في علوم الأشعة والعلوم الصحية',
-        [OrganizationEn] = N'Ulster University',
-        [OrganizationAr] = N'جامعة أولستر',
-        [ImagePath] = N'~/Content/images/speakers/Clare-Rainey-Photo.jpg.png',
-        [CvPdfPath] = N'~/Content/docs/speakers/Clare-Rainey-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 8,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Rainey%' OR [FullNameAr] LIKE '%ريني%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Clare Rainey', N'د. كلير ريني', N'Lecturer in Radiography & Health Sciences', N'محاضرة في علوم الأشعة والعلوم الصحية', 
-        N'Ulster University', N'جامعة أولستر', N'~/Content/images/speakers/Clare-Rainey-Photo.jpg.png', N'~/Content/docs/speakers/Clare-Rainey-CV.pdf', 
-        0, 8, 1
-    );
-END
+-- 4. Create [dbo].[vw_SummitSpeakers] VIEW joining Speakers with Sessions
+CREATE VIEW [dbo].[vw_SummitSpeakers] AS
+SELECT
+    s.[SpeakerID],
+    s.[FullNameEn],
+    s.[FullNameAr],
+    s.[JobTitleEn],
+    s.[JobTitleAr],
+    s.[OrganizationEn],
+    s.[OrganizationAr],
+    s.[ImagePath],
+    s.[CvPdfPath],
+    s.[Sector],
+    s.[SectorNameEn],
+    s.[SectorNameAr],
+    s.[Region],
+    s.[RegionNameEn],
+    s.[RegionNameAr],
+    s.[Flag],
+    s.[Initials],
+    s.[Sorting],
+    s.[IsActive],
+    sess.[SessionID],
+    sess.[TitleEn] AS [LectureTitleEn],
+    sess.[TitleAr] AS [LectureTitleAr],
+    sess.[Track],
+    sess.[TrackNameEn],
+    sess.[TrackNameAr],
+    sess.[RoomEn],
+    sess.[RoomAr],
+    sess.[DayNumber],
+    sess.[StartTime],
+    sess.[EndTime],
+    sess.[StartDateTime],
+    sess.[EndDateTime],
+    sess.[RoleEn] AS [SessionRoleEn],
+    sess.[RoleAr] AS [SessionRoleAr]
+FROM [dbo].[Speakers] s
+LEFT JOIN [dbo].[Sessions] sess ON s.[SpeakerID] = sess.[SpeakerID]
+WHERE s.[IsActive] = 1;
 GO
 
--- ----------------------------------------------------------------------------
--- 9. Dr. Rebecca Vaz (د. ريبيكا فاز)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Vaz%' OR [FullNameAr] LIKE '%فاز%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Rebecca Vaz',
-        [FullNameAr] = N'د. ريبيكا فاز',
-        [JobTitleEn] = N'Senior Medical Imaging Specialist',
-        [JobTitleAr] = N'أخصائية أولى في التصوير الطبي',
-        [OrganizationEn] = N'Health Innovation Network',
-        [OrganizationAr] = N'شبكة الابتكار الصحي',
-        [ImagePath] = N'~/Content/images/speakers/Rebeca-Queiroz-Photo.JPG',
-        [CvPdfPath] = N'~/Content/docs/speakers/Rebeca-Queiroz-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 9,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Vaz%' OR [FullNameAr] LIKE '%فاز%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Rebecca Vaz', N'د. ريبيكا فاز', N'Senior Medical Imaging Specialist', N'أخصائية أولى في التصوير الطبي', 
-        N'Health Innovation Network', N'شبكة الابتكار الصحي', N'~/Content/images/speakers/Rebeca-Queiroz-Photo.JPG', N'~/Content/docs/speakers/Rebeca-Queiroz-CV.pdf', 
-        0, 9, 1
-    );
-END
+-- 5. Insert Speakers Data (Profiles Only)
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Fahad Almsned', N'د. فهد المسند', N'Director of Research Operations', N'مدير العمليات البحثية',
+    N'King Fahad Specialist Hospital - Dammam', N'مستشفى الملك فهد التخصصي - الدمام', N'clinical', N'Hospitals &amp; Healthcare', N'رعاية صحية ومستشفيات',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Fahad-Almsned-Photo.jpeg', N'/Content/docs/speakers/Fahad-Almsned-CV.pdf',
+    N'🇸🇦', N'FA', 1, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Eman Alshehri', N'د. إيمان الشهري', N'Assistant Professor, Computer Department', N'أستاذ مساعد، قسم الحاسب الآلي',
+    N'Imam Abdulrahman Bin Faisal University', N'جامعة الإمام عبدالرحمن بن فيصل', N'academic', N'Academic &amp; Universities', N'أكاديمي وجامعي',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Speaker-Photo.png', N'/Content/docs/speakers/Eman-Alshehri-CV.pdf',
+    N'🇸🇦', N'EA', 2, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Ms. Fadwa AlBawardi, MSc', N'أ. فدوى البواردي', N'Founder and CEO', N'المؤسس والرئيس التنفيذي',
+    N'FSAB Consulting', N'إف إس إيه بي للاستشارات', N'industry', N'Industry &amp; Consulting', N'استشارات وتقنية',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Fadwa-AlBawardi-Photo.jpg', N'/Content/docs/speakers/Fadwa-AlBawardi-CV.pdf',
+    N'🇸🇦', N'FB', 3, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Aseel Aldawood', N'د. أسيل الداوود', N'KSA Leader, EMEA AI Center of Excellence', N'قائد المملكة لمركز التميز للذكاء الاصطناعي في أوروبا والشرق الأوسط وأفريقيا',
+    N'EMEA AI Center of Excellence', N'مركز التميز للذكاء الاصطناعي (EMEA)', N'industry', N'Industry &amp; AI Leadership', N'قطاع التقنية والذكاء الاصطناعي',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Speaker-Photo.png', N'/Content/docs/speakers/Aseel-Addawood-CV.pdf',
+    N'🇸🇦', N'AA', 4, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Mostafa Youldash', N'د. مصطفى يلدش', N'Assistant Professor, Department Chairperson (Computer Engineering)', N'أستاذ مساعد، رئيس قسم هندسة الحاسب الآلي',
+    N'Imam Abdulrahman Bin Faisal University, Dammam', N'جامعة الإمام عبدالرحمن بن فيصل - الدمام', N'academic', N'Academic &amp; Universities', N'أكاديمي وجامعي',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Speaker-Photo.png', N'/Content/docs/speakers/Mustafa-Yoldash-CV.pdf',
+    N'🇸🇦', N'MY', 5, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Mr. Yazeed Alsudays, MBA', N'أ. يزيد السديس', N'Strategic Account Manager', N'مدير الحسابات الاستراتيجية',
+    N'Solventum', N'سولفنتوم', N'industry', N'Healthcare Technology', N'تقنية الرعاية الصحية',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Yazeed-Alsudays-Photo.jpg', N'/Content/docs/speakers/Yazeed-Alsudays-CV.pdf',
+    N'🇸🇦', N'YA', 6, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Abeer Alalmaie', N'د. عبير الألمعي', N'Advisor to the President of King Khalid University for IP Commercialization', N'مستشار رئيس جامعة الملك خالد لتسويق الملكية الفكرية',
+    N'King Khalid University', N'جامعة الملك خالد', N'academic', N'Academic &amp; Innovation', N'أكاديمي وابتكار',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Abeer-Alalmaie-Photo.png', N'/Content/docs/speakers/Abeer-Alalmaie-CV.pdf',
+    N'🇸🇦', N'AA', 7, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Clare Rainey', N'د. كلير ريني', N'Lecturer in Medical Imaging and Radiation Therapy', N'محاضر في التصوير الطبي والعلاج الإشعاعي',
+    N'University College Cork, Ireland', N'كلية جامعة كورك - أيرلندا', N'international', N'International Faculty', N'هيئة تدريس دولية',
+    N'international', N'Ireland', N'أيرلندا', N'/Content/images/speakers/Clare-Rainey-Photo.jpg.png', N'/Content/docs/speakers/Clare-Rainey-CV.pdf',
+    N'🇮🇪', N'CR', 8, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Rebecca Vaz', N'د. ريبيكا فاز', N'Clinical Research Officer', N'مسؤولة الأبحاث السريرية',
+    N'Voithy', N'فويثي', N'international', N'Clinical Research', N'أبحاث سريرية',
+    N'international', N'Brazil', N'البرازيل', N'/Content/images/speakers/Rebeca-Queiroz-Photo.JPG', N'/Content/docs/speakers/Rebeca-Queiroz-CV.pdf',
+    N'🇧🇷', N'RV', 9, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Moath Ameer', N'معاذ أمير', N'Medical Student', N'طالب بكلية الطب',
+    N'Imam Abdulrahman Bin Faisal University', N'جامعة الإمام عبدالرحمن بن فيصل - كلية الطب', N'academic', N'Student Innovation', N'ابتكار طلابي',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Speaker-Photo.png', NULL,
+    N'🇸🇦', N'MA', 10, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Amna Kashgari', N'د. آمنة كاشقري', N'Head of Radiology AI Transformation, Medical Imaging Department', N'رئيسة التحول الرقمي للذكاء الاصطناعي في الأشعة، قسم التصوير الطبي',
+    N'King Abdulaziz Medical City (MNGHA)', N'مدينة الملك عبدالعزيز الطبية - الحرس الوطني', N'clinical', N'Hospitals &amp; Healthcare', N'رعاية صحية ومستشفيات',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Amna-Kashgari-Photo.jpg', N'/Content/docs/speakers/Amna-Kashgari-CV.pdf',
+    N'🇸🇦', N'AK', 11, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Prof. Karen Knapp', N'بروفيسور كارين ناب', N'Professor of Musculoskeletal Imaging, Head of Health and Care Professions', N'أستاذة التصوير العضلي الهيكلي، رئيسة المهن الصحية والرعاية',
+    N'University of Exeter, UK', N'جامعة إكستر - المملكة المتحدة', N'international', N'International Faculty', N'هيئة تدريس دولية',
+    N'international', N'United Kingdom', N'المملكة المتحدة', N'/Content/images/speakers/Karen-Knapp-Photo.jpg', N'/Content/docs/speakers/Karen-Knapp-CV.pdf',
+    N'🇬🇧', N'KK', 12, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Mohammed Asiri', N'د. محمد عسيري', N'Assistant Professor', N'أستاذ مساعد',
+    N'Taif University', N'جامعة الطائف', N'academic', N'Academic &amp; Universities', N'أكاديمي وجامعي',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Mohammed-Asiri-Photo.jpeg', N'/Content/docs/speakers/Mohammed-Asiri-CV.pdf',
+    N'🇸🇦', N'MA', 13, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Yasser Hadi', N'د. ياسر هادي', N'Senior CT Technologist', N'أخصائي أول أشعة مقطعية',
+    N'King Abdullah Medical City (KAMC)', N'مدينة الملك عبدالله الطبية', N'clinical', N'Hospitals &amp; Healthcare', N'رعاية صحية ومستشفيات',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Yasser-Hadi-Photo.JPG', N'/Content/docs/speakers/Yasser-Hadi.pdf',
+    N'🇸🇦', N'YH', 14, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Abdulkarem Alqahtani', N'د. عبدالكريم القحطاني', N'Lecturer in Medical Ultrasound', N'محاضر في الموجات فوق الصوتية الطبية',
+    N'Taibah University', N'جامعة طيبة', N'academic', N'Academic &amp; Universities', N'أكاديمي وجامعي',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Abdulkareem-Alqahtani-Photo.jpeg', N'/Content/docs/speakers/Abdulkareem-Alqahtani-CV.pdf',
+    N'🇸🇦', N'AA', 15, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Abdulaziz Almulhim', N'د. عبدالعزيز الملحم', N'Vascular and Interventional Radiology Consultant', N'استشاري الأشعة التداخلية والقسطرة الوعائية',
+    N'Eastern Province &ndash; Alahsa Health Cluster', N'تجمع الأحساء الصحي &ndash; المنطقة الشرقية', N'clinical', N'Hospitals &amp; Healthcare', N'رعاية صحية ومستشفيات',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Abdulaziz-Almulhim-Photo.png', N'/Content/docs/speakers/Abdulaziz-AlMulhim-CV.pdf',
+    N'🇸🇦', N'AA', 16, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Sonyia McFadden', N'د. سونيا ماكفادين', N'Senior Lecturer (Diagnostic Imaging)', N'محاضر أول (التصوير التشخيصي)',
+    N'Ulster University, UK', N'جامعة أولستر - المملكة المتحدة', N'international', N'International Faculty', N'هيئة تدريس دولية',
+    N'international', N'United Kingdom', N'المملكة المتحدة', N'/Content/images/speakers/Sonyia-McFadden-Photo.jpg', N'/Content/docs/speakers/Sonyia-McFadden-CV.pdf',
+    N'🇬🇧', N'SM', 17, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Raid Alshinibr', N'د. رائد الشنيبر', N'Head of Radiology', N'رئيس قسم الأشعة',
+    N'Care Medical Group - AlSalam Hospital', N'مستشفى السلام - مجموعة رعاية الطبية', N'clinical', N'Hospitals &amp; Healthcare', N'رعاية صحية ومستشفيات',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Raid-Alshinibr-Photo.png', N'/Content/docs/speakers/Raid-Alshinibr-CV.pdf',
+    N'🇸🇦', N'RA', 18, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Minyar Sassi', N'د. منيار الساسي', N'Full Professor in Computer Science', N'أستاذة في علوم الحاسب الآلي',
+    N'National Engineering School of Tunis, Tunis El Manar University, Tunisia', N'المدرسة الوطنية للمهندسين بتونس - جامعة تونس المنار', N'international', N'International Faculty', N'هيئة تدريس دولية',
+    N'international', N'Tunisia', N'تونس', N'/Content/images/speakers/Minyar-Hidr-Photo.jpg', N'/Content/docs/speakers/Minyar-Hidr-CV.pdf',
+    N'🇹🇳', N'MS', 19, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Hairil Abdul Razak', N'د. هيريل عبدالرزاق', N'Senior Lecturer, Medical Imaging', N'محاضر أول، التصوير الطبي',
+    N'University of Exeter, UK', N'جامعة إكستر - المملكة المتحدة', N'international', N'International Faculty', N'هيئة تدريس دولية',
+    N'international', N'United Kingdom', N'المملكة المتحدة', N'/Content/images/speakers/Hairil-AbdulRazak-Photo.jpg', N'/Content/docs/speakers/Hairil-AbdulRazak-CV.pdf',
+    N'🇬🇧', N'HR', 20, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Abdulaziz M. Al-Sharydah', N'د. عبدالعزيز محمد الشريدة', N'Associate Professor - Chairman of Radiology Department', N'أستاذ مشارك - رئيس قسم الأشعة',
+    N'Imam Abdulrahman Bin Faisal University', N'جامعة الإمام عبدالرحمن بن فيصل', N'academic', N'Academic &amp; Hospitals', N'أكاديمي ورعاية صحية',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Speaker-Photo.png', NULL,
+    N'🇸🇦', N'AA', 21, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Mohammede Alsaadi', N'د. محمد السعدي', N'Associate Professor in Radiology and Medical Imaging', N'أستاذ مشارك في الأشعة والتصوير الطبي',
+    N'Prince Sattam bin Abdulaziz University', N'جامعة الأمير سطام بن عبدالعزيز', N'academic', N'Academic &amp; Universities', N'أكاديمي وجامعي',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Mohammed-Saadi-Photo.jpeg', N'/Content/docs/speakers/Mohammed-Saadi-CV.pdf',
+    N'🇸🇦', N'MA', 22, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Oun Al-iedani', N'د. عون العيداني', N'Postdoctoral Researcher, MS Fellow, School of Biomedical Sciences and Pharmacy', N'باحث ما بعد الدكتوراه وزميل التصلب المتعدد، كلية العلوم الطبية الحيوية والصيدلة',
+    N'University of Newcastle, Australia', N'جامعة نيوكاسل - أستراليا', N'international', N'International Research', N'أبحاث دولية',
+    N'international', N'Australia', N'أستراليا', N'/Content/images/speakers/Oun-Aliedani-Photo.jpg', N'/Content/docs/speakers/Oun-Aliedani-CV.pdf',
+    N'🇦🇺', N'OA', 23, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Amal Alsalamah', N'د. أمل السلامة', N'Head of Radiological Sciences Program', N'رئيسة برنامج العلوم الإشعاعية',
+    N'Batterjee Medical College', N'كلية بترجي الطبية', N'academic', N'Academic &amp; Innovation', N'أكاديمي وابتكار',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Amal-Alsalamah-Photo.jpeg', N'/Content/docs/speakers/Amal-Alsalamah-CV.pdf',
+    N'🇸🇦', N'AA', 24, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Rasha Alafaleg', N'د. رشا العفالق', N'Assistant Professor of Dental Education and Basic Oral Medical Science', N'أستاذ مساعد في تعليم طب الأسنان والعلوم الطبية الأساسية للفم',
+    N'University of Qassim', N'جامعة القصيم', N'academic', N'Academic &amp; Universities', N'أكاديمي وجامعي',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Rasha-Alafaleg-Photo.jpeg', N'/Content/docs/speakers/Rasha-Alafaleg-CV.pdf',
+    N'🇸🇦', N'RA', 25, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Ali Alhailiy', N'د. علي الهيلي', N'Head of Radiology and Medical Imaging Department', N'رئيس قسم الأشعة والتصوير الطبي',
+    N'Prince Sattam Bin AbdulAziz University', N'جامعة الأمير سطام بن عبدالعزيز', N'academic', N'Academic &amp; Universities', N'أكاديمي وجامعي',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Ali-Alhaili-Photo.jpg', N'/Content/docs/speakers/Ali-Alhailiy-CV.pdf',
+    N'🇸🇦', N'AA', 26, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Mr. Fahad Alsadan, MSc', N'أ. فهد السعدان', N'Innovation and Scientific Partnership, Innovation Center Manager', N'مدير مركز الابتكار والشراكات العلمية',
+    N'Siemens Healthineers', N'سيمنز هيلثينيرز', N'industry', N'Healthcare Industry', N'قطاع التقنية الصحية',
+    N'national', N'Saudi Arabia', N'المملكة العربية السعودية', N'/Content/images/speakers/Fahad-Alsadan-Photo.jpg', N'/Content/docs/speakers/Fahad-Alsadan-CV.pdf',
+    N'🇸🇦', N'FA', 27, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Prof. Mark McEntee', N'بروفيسور مارك ماكنتي', N'Vice Head of Learning and Teaching, UCC College of Medicine and Health', N'نائب رئيس التعليم والتعلم، كلية الطب والصحة بجامعة كورك',
+    N'University College Cork, Ireland', N'كلية جامعة كورك - أيرلندا', N'international', N'International Faculty', N'هيئة تدريس دولية',
+    N'international', N'Ireland', N'أيرلندا', N'/Content/images/speakers/Mark-McEntee-Photo.jpeg', N'/Content/docs/speakers/Mark-McEntee-CV.pdf',
+    N'🇮🇪', N'MM', 28, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Laura McLaughlin', N'د. لورا ماكلوغلين', N'Lecturer in Diagnostic Radiography and Imaging', N'محاضر في التصوير الإشعاعي التشخيصي',
+    N'Ulster University, UK', N'جامعة أولستر - المملكة المتحدة', N'international', N'International Faculty', N'هيئة تدريس دولية',
+    N'international', N'United Kingdom', N'المملكة المتحدة', N'/Content/images/speakers/Laura-McLaughlin-Photo.jpg', N'/Content/docs/speakers/Laura-McLaughlin-CV.pdf',
+    N'🇬🇧', N'LM', 29, 1
+);
+INSERT INTO [dbo].[Speakers] (
+    [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr],
+    [OrganizationEn], [OrganizationAr], [Sector], [SectorNameEn], [SectorNameAr],
+    [Region], [RegionNameEn], [RegionNameAr], [ImagePath], [CvPdfPath],
+    [Flag], [Initials], [Sorting], [IsActive]
+) VALUES (
+    N'Dr. Andrew England', N'د. أندرو إنغلاند', N'Senior Lecturer in Medical Imaging / Radiation Therapy', N'محاضر أول في التصوير الطبي والعلاج الإشعاعي',
+    N'University College Cork, Ireland', N'كلية جامعة كورك - أيرلندا', N'international', N'International Faculty', N'هيئة تدريس دولية',
+    N'international', N'Ireland', N'أيرلندا', N'/Content/images/speakers/Speaker-Photo.png', N'/Content/docs/speakers/Andrew-England-CV.pdf',
+    N'🇮🇪', N'AE', 30, 1
+);
+
+GO
+-- 6. Insert Sessions Data (Linked via SpeakerID Foreign Key)
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    1, N'THE FUTURE OF DATA-DRIVEN MEDICINE IS BEING WRITTEN TODAY &mdash; Moving from ''AI Hype'' to ''Integrated Clinical Reality''', N'مستقبل الطب المبني على البيانات يُكتب اليوم &mdash; الانتقال من ضجيج الذكاء الاصطناعي إلى واقع سريري متكامل',
+    N'track-a', N'Track A &ndash; AI &amp; Digital Technology Transformation', N'المسار أ &ndash; الذكاء الاصطناعي والتحول التقني الرقمي',
+    N'Hall 1', N'القاعة الأولى', 1,
+    N'09:00 AM', N'09:40 AM',
+    '2026-12-13 09:00:00', '2026-12-13 09:40:00', N'Keynote Speaker', N'متحدث رئيسي',
+    1, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    2, N'Artificial Intelligence in Medical Imaging: From Data-Driven Insights to Clinical Impact', N'الذكاء الاصطناعي في التصوير الطبي: من الرؤى المعتمدة على البيانات إلى التأثير السريري',
+    N'track-a', N'Track A &ndash; AI &amp; Digital Technology Transformation', N'المسار أ &ndash; الذكاء الاصطناعي والتحول التقني الرقمي',
+    N'Hall 1', N'القاعة الأولى', 1,
+    N'09:45 AM', N'10:15 AM',
+    '2026-12-13 09:45:00', '2026-12-13 10:15:00', N'Speaker', N'متحدث',
+    2, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    3, N'AI vs. The Human Eye: Spotting Hidden Fractures', N'الذكاء الاصطناعي في مواجهة العين البشرية: اكتشاف الكسور الخفية',
+    N'track-a', N'Track A &ndash; AI &amp; Digital Technology Transformation', N'المسار أ &ndash; الذكاء الاصطناعي والتحول التقني الرقمي',
+    N'Hall 1', N'القاعة الأولى', 1,
+    N'10:20 AM', N'10:50 AM',
+    '2026-12-13 10:20:00', '2026-12-13 10:50:00', N'Speaker', N'متحدث',
+    3, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    4, N'From AI Pilots to Clinical Impact', N'من المشاريع التجريبية للذكاء الاصطناعي إلى الأثر السريري الملموس',
+    N'track-a', N'Track A &ndash; AI &amp; Digital Technology Transformation', N'المسار أ &ndash; الذكاء الاصطناعي والتحول التقني الرقمي',
+    N'Hall 1', N'القاعة الأولى', 1,
+    N'11:00 AM', N'11:30 AM',
+    '2026-12-13 11:00:00', '2026-12-13 11:30:00', N'Speaker', N'متحدث',
+    4, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    5, N'Transforming Radiology with AI and Agentic AI', N'تحول طب الأشعة بالذكاء الاصطناعي والذكاء الاصطناعي الوكيل',
+    N'track-a', N'Track A &ndash; AI &amp; Digital Technology Transformation', N'المسار أ &ndash; الذكاء الاصطناعي والتحول التقني الرقمي',
+    N'Hall 1', N'القاعة الأولى', 1,
+    N'11:35 AM', N'12:05 PM',
+    '2026-12-13 11:35:00', '2026-12-13 12:05:00', N'Speaker', N'متحدث',
+    5, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    6, N'Practical Use of AI in Dental Panoramic Imaging', N'التطبيقات العملية للذكاء الاصطناعي في التصوير البانورامي للأسنان',
+    N'track-a', N'Track A &ndash; AI &amp; Digital Technology Transformation', N'المسار أ &ndash; الذكاء الاصطناعي والتحول التقني الرقمي',
+    N'Hall 1', N'القاعة الأولى', 1,
+    N'01:00 PM', N'01:30 PM',
+    '2026-12-13 12:10:00', '2026-12-13 12:40:00', N'Speaker', N'متحدث',
+    6, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    7, N'Integrating Neuro-AI for Brain and Behaviour Analysis', N'دمج الذكاء العصبي الاصطناعي لتحليل الدماغ والسلوك',
+    N'track-a', N'Track A &ndash; AI &amp; Digital Technology Transformation', N'المسار أ &ndash; الذكاء الاصطناعي والتحول التقني الرقمي',
+    N'Hall 1', N'القاعة الأولى', 1,
+    N'01:35 PM', N'02:05 PM',
+    '2026-12-13 13:00:00', '2026-12-13 13:30:00', N'Speaker', N'متحدث',
+    7, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    8, N'Human-Computer Collaboration and Ethical AI Principles', N'التعاون بين الإنسان والحاسوب ومبادئ الذكاء الاصطناعي الأخلاقي',
+    N'track-a', N'Track A &ndash; AI &amp; Digital Technology Transformation', N'المسار أ &ndash; الذكاء الاصطناعي والتحول التقني الرقمي',
+    N'Hall 1', N'القاعة الأولى', 1,
+    N'02:10 PM', N'02:40 PM',
+    '2026-12-13 13:35:00', '2026-12-13 14:05:00', N'Speaker', N'متحدث',
+    8, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    9, N'Convolutional Neural Networks as a Tool for Oral Cancer Diagnosis', N'الشبكات العصبية الالتفافية كأداة لتشخيص سرطان الفم',
+    N'track-a', N'Track A &ndash; AI &amp; Digital Technology Transformation', N'المسار أ &ndash; الذكاء الاصطناعي والتحول التقني الرقمي',
+    N'Hall 1', N'القاعة الأولى', 1,
+    N'02:45 PM', N'03:15 PM',
+    '2026-12-13 14:10:00', '2026-12-13 14:40:00', N'Speaker', N'متحدث',
+    9, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    10, N'Student Innovations in AI', N'ابتكارات طلابية في الذكاء الاصطناعي',
+    N'track-a', N'Track A &ndash; AI &amp; Digital Technology Transformation', N'المسار أ &ndash; الذكاء الاصطناعي والتحول التقني الرقمي',
+    N'Hall 1', N'القاعة الأولى', 1,
+    N'03:20 PM', N'03:45 PM',
+    '2026-12-13 14:45:00', '2026-12-13 15:15:00', N'Student Innovator', N'مبتكر طلابي',
+    10, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    11, N'Radiology AI Adaptations: From Dependency to Empowerment', N'تبني الذكاء الاصطناعي في الأشعة: من التبعية إلى التمكين',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'09:00 AM', N'09:40 AM',
+    '2026-12-13 09:00:00', '2026-12-13 09:30:00', N'Keynote Speaker', N'متحدث رئيسي',
+    11, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    12, N'Clinical Risk Factors for Fracture Prediction', N'عوامل الخطر السريرية للتنبؤ بالكسور',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'09:45 AM', N'10:15 AM',
+    '2026-12-13 09:35:00', '2026-12-13 10:05:00', N'Keynote Speaker', N'متحدث رئيسي',
+    12, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    13, N'Advanced Ultrasound Applications in Bone Health Assessment', N'تطبيقات الموجات فوق الصوتية المتقدمة في تقييم صحة العظام',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'10:20 AM', N'10:45 AM',
+    '2026-12-13 10:10:00', '2026-12-13 10:40:00', N'Speaker', N'متحدث',
+    13, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    14, N'Positioning in CT: Is Automation Likely to be Helpful?', N'تموضع المريض في الأشعة المقطعية: هل الأتمتة مفيدة سريرياً؟',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'10:50 AM', N'11:15 AM',
+    '2026-12-13 10:45:00', '2026-12-13 11:15:00', N'Speaker', N'متحدث',
+    14, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    15, N'The Future of AI-Driven Ultrasound', N'مستقبل الموجات فوق الصوتية المدعومة بالذكاء الاصطناعي',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'11:20 AM', N'11:45 AM',
+    '2026-12-13 11:20:00', '2026-12-13 11:50:00', N'Speaker', N'متحدث',
+    15, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    16, N'The Smart Angio Suite with AI for Interventional Radiologists', N'جناح القسطرة الذكي المدعوم بالذكاء الاصطناعي للأشعة التداخلية',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'11:50 AM', N'12:15 PM',
+    '2026-12-13 11:55:00', '2026-12-13 12:25:00', N'Speaker', N'متحدث',
+    16, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    17, N'AI in the lung cancer pathway: a cross sectional survey and interview study.', N'الذكاء الاصطناعي في مسار سرطان الرئة: دراسة مسحية ومقابلات مستعرضة',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'01:00 PM', N'01:25 PM',
+    '2026-12-13 12:30:00', '2026-12-13 13:00:00', N'Speaker', N'متحدث',
+    17, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    18, N'Beyond Automation: Integrating AI into Clinical Radiology Workflows', N'ما بعد الأتمتة: دمج الذكاء الاصطناعي في مسارات عمل الأشعة السريرية',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'01:30 PM', N'01:55 PM',
+    '2026-12-13 13:15:00', '2026-12-13 13:45:00', N'Speaker', N'متحدث',
+    18, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    19, N'AI Ethics, Bias, and Governance in Radiology AI', N'أخلاقيات الذكاء الاصطناعي والتحيز وحوكمة الذكاء الاصطناعي في الأشعة',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'02:00 PM', N'02:25 PM',
+    '2026-12-13 13:50:00', '2026-12-13 14:20:00', N'Speaker', N'متحدث',
+    19, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    20, N'The Role of FDG PET/CT Imaging in Detecting Air-Borne Diseases', N'دور التصوير المقطعي بالإصدار البوزيتروني FDG PET/CT في الكشف عن الأمراض المنقولة جواً',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'02:30 PM', N'02:55 PM',
+    '2026-12-13 14:25:00', '2026-12-13 14:55:00', N'Speaker', N'متحدث',
+    20, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    21, N'Current State and Future of Artificial Intelligence in Pediatric Interventional Radiology: A Narrative Review', N'واقع ومستقبل الذكاء الاصطناعي في الأشعة التداخلية للأطفال: مراجعة سردية',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'03:00 PM', N'03:25 PM',
+    '2026-12-13 15:00:00', '2026-12-13 15:30:00', N'Speaker', N'متحدث',
+    21, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    22, N'Updates in Emergency Ultrasound', N'مستجدات الموجات فوق الصوتية في حالات الطوارئ',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'03:30 PM', N'03:55 PM',
+    '2026-12-13 15:35:00', '2026-12-13 16:05:00', N'Speaker', N'متحدث',
+    22, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    23, N'Multi-Modal MRI Post-Processing Method for AI-Driven Prediction of Multiple Sclerosis Progression: A Translational Imaging Framework', N'طريقة معالجة الرنين المغناطيسي متعدد الوسائط للتنبؤ بتطور التصلب المتعدد بالذكاء الاصطناعي',
+    N'track-b', N'Track B &ndash; Advanced Clinical Radiology', N'المسار ب &ndash; الأشعة السريرية المتقدمة',
+    N'Hall 2', N'القاعة الثانية', 1,
+    N'04:00 PM', N'04:25 PM',
+    '2026-12-13 16:10:00', '2026-12-13 16:40:00', N'Speaker', N'متحدث',
+    23, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    24, N'Evaluation of the Face Validity of a Smart MRI Simulator', N'تقييم الصدق الظاهري لمحاكي الرنين المغناطيسي الذكي',
+    N'track-c', N'Track C &ndash; Health Innovation', N'المسار ج &ndash; الابتكار الصحي',
+    N'Hall 3', N'القاعة الثالثة', 1,
+    N'09:00 AM', N'09:40 AM',
+    '2026-12-13 09:00:00', '2026-12-13 09:40:00', N'Keynote Speaker', N'متحدث رئيسي',
+    24, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    25, N'The Role of AI in Dental Imaging in Education', N'دور الذكاء الاصطناعي في تصوير الأسنان التعليمي',
+    N'track-c', N'Track C &ndash; Health Innovation', N'المسار ج &ndash; الابتكار الصحي',
+    N'Hall 3', N'القاعة الثالثة', 1,
+    N'09:45 AM', N'10:15 AM',
+    '2026-12-13 09:45:00', '2026-12-13 10:15:00', N'Speaker', N'متحدث',
+    25, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    26, N'Functional and Radiomic Biomarkers in Virtual Colonoscopy', N'المؤشرات الحيوية الوظيفية والراديومية في تنظير القولون الافتراضي',
+    N'track-c', N'Track C &ndash; Health Innovation', N'المسار ج &ndash; الابتكار الصحي',
+    N'Hall 3', N'القاعة الثالثة', 1,
+    N'10:20 AM', N'10:50 AM',
+    '2026-12-13 10:20:00', '2026-12-13 10:50:00', N'Speaker', N'متحدث',
+    26, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    27, N'Barriers and Opportunities in Scaling Innovation in Saudi Arabia', N'عوائق وفرص توسيع نطاق الابتكار في المملكة العربية السعودية',
+    N'track-c', N'Track C &ndash; Health Innovation', N'المسار ج &ndash; الابتكار الصحي',
+    N'Hall 3', N'القاعة الثالثة', 1,
+    N'11:00 AM', N'11:30 AM',
+    '2026-12-13 11:00:00', '2026-12-13 11:30:00', N'Speaker', N'متحدث',
+    27, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    28, N'AI and the Future Challenges for Medical Imaging Education', N'الذكاء الاصطناعي والتحديات المستقبلية لتعليم التصوير الطبي',
+    N'track-c', N'Track C &ndash; Health Innovation', N'المسار ج &ndash; الابتكار الصحي',
+    N'Hall 3', N'القاعة الثالثة', 1,
+    N'11:35 AM', N'12:05 PM',
+    '2026-12-13 11:35:00', '2026-12-13 12:05:00', N'Keynote Speaker', N'متحدث رئيسي',
+    28, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    29, N'Research AI and MRI Tools for Image Interpretation', N'أدوات أبحاث الذكاء الاصطناعي والرنين المغناطيسي لتفسير الصور',
+    N'track-c', N'Track C &ndash; Health Innovation', N'المسار ج &ndash; الابتكار الصحي',
+    N'Hall 3', N'القاعة الثالثة', 1,
+    N'01:00 PM', N'01:30 PM',
+    '2026-12-13 13:00:00', '2026-12-13 13:30:00', N'Speaker', N'متحدث',
+    29, 1
+);
+INSERT INTO [dbo].[Sessions] (
+    [SpeakerID], [TitleEn], [TitleAr], [Track], [TrackNameEn], [TrackNameAr],
+    [RoomEn], [RoomAr], [DayNumber], [StartTime], [EndTime], [StartDateTime], [EndDateTime], [RoleEn], [RoleAr],
+    [Sorting], [IsActive]
+) VALUES (
+    30, N'Grant Writing, Publishing & Research Innovation', N'كتابة المنح والنشر والابتكار البحثي',
+    N'track-c', N'Track C &ndash; Health Innovation', N'المسار ج &ndash; الابتكار الصحي',
+    N'Hall 3', N'القاعة الثالثة', 1,
+    N'01:35 PM', N'02:05 PM',
+    '2026-12-13 13:35:00', '2026-12-13 14:05:00', N'Speaker', N'متحدث',
+    30, 1
+);
 GO
 
--- ----------------------------------------------------------------------------
--- 10. Dr. Amna Kashgari (د. آمنة كاشغري)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Kashgari%' OR [FullNameAr] LIKE '%كاشغري%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Amna Kashgari',
-        [FullNameAr] = N'د. آمنة كاشغري',
-        [JobTitleEn] = N'Consultant Radiologist & Neuroradiology Fellow',
-        [JobTitleAr] = N'استشارية أشعة وزميلة أشعة الأعصاب',
-        [OrganizationEn] = N'Ministry of National Guard - Health Affairs',
-        [OrganizationAr] = N'الشؤون الصحية بوزارة الحرس الوطني',
-        [ImagePath] = N'~/Content/images/speakers/Amna-Kashgari-Photo.jpg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Amna-Kashgari-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 10,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Kashgari%' OR [FullNameAr] LIKE '%كاشغري%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Amna Kashgari', N'د. آمنة كاشغري', N'Consultant Radiologist & Neuroradiology Fellow', N'استشارية أشعة وزميلة أشعة الأعصاب', 
-        N'Ministry of National Guard - Health Affairs', N'الشؤون الصحية بوزارة الحرس الوطني', N'~/Content/images/speakers/Amna-Kashgari-Photo.jpg', N'~/Content/docs/speakers/Amna-Kashgari-CV.pdf', 
-        0, 10, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 11. Prof. Karen Knapp (بروفيسور كارين ناب)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Knapp%' OR [FullNameAr] LIKE '%ناب%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Prof. Karen Knapp',
-        [FullNameAr] = N'بروفيسور كارين ناب',
-        [JobTitleEn] = N'Professor of Musculoskeletal Imaging',
-        [JobTitleAr] = N'أستاذة تصوير الجهاز العضلي الهيكلي',
-        [OrganizationEn] = N'University of Exeter',
-        [OrganizationAr] = N'جامعة إكستر',
-        [ImagePath] = N'~/Content/images/speakers/Karen-Knapp-Photo.jpg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Karen-Knapp-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 11,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Knapp%' OR [FullNameAr] LIKE '%ناب%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Prof. Karen Knapp', N'بروفيسور كارين ناب', N'Professor of Musculoskeletal Imaging', N'أستاذة تصوير الجهاز العضلي الهيكلي', 
-        N'University of Exeter', N'جامعة إكستر', N'~/Content/images/speakers/Karen-Knapp-Photo.jpg', N'~/Content/docs/speakers/Karen-Knapp-CV.pdf', 
-        0, 11, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 12. Dr. Mohammed Asiri (د. محمد عسيري)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Asiri%' OR [FullNameAr] LIKE '%عسيري%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Mohammed Asiri',
-        [FullNameAr] = N'د. محمد عسيري',
-        [JobTitleEn] = N'Consultant Clinical Radiologist',
-        [JobTitleAr] = N'استشاري أشعة سريرية',
-        [OrganizationEn] = N'Armed Forces Hospitals Southern Region',
-        [OrganizationAr] = N'مستشفيات القوات المسلحة بالمنطقة الجنوبية',
-        [ImagePath] = N'~/Content/images/speakers/Mohammed-Asiri-Photo.jpeg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Mohammed-Asiri-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 12,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Asiri%' OR [FullNameAr] LIKE '%عسيري%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Mohammed Asiri', N'د. محمد عسيري', N'Consultant Clinical Radiologist', N'استشاري أشعة سريرية', 
-        N'Armed Forces Hospitals Southern Region', N'مستشفيات القوات المسلحة بالمنطقة الجنوبية', N'~/Content/images/speakers/Mohammed-Asiri-Photo.jpeg', N'~/Content/docs/speakers/Mohammed-Asiri-CV.pdf', 
-        0, 12, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 13. Dr. Yasser Hadi (د. ياسر هادي)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Hadi%' OR [FullNameAr] LIKE '%هادي%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Yasser Hadi',
-        [FullNameAr] = N'د. ياسر هادي',
-        [JobTitleEn] = N'Consultant Diagnostic Radiologist',
-        [JobTitleAr] = N'استشاري أشعة تشخيصية',
-        [OrganizationEn] = N'Jazan University',
-        [OrganizationAr] = N'جامعة جازان',
-        [ImagePath] = N'~/Content/images/speakers/Yasser-Hadi-Photo.JPG',
-        [CvPdfPath] = N'~/Content/docs/speakers/Yasser-Hadi.pdf',
-        [Category] = 0,
-        [Sorting] = 13,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Hadi%' OR [FullNameAr] LIKE '%هادي%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Yasser Hadi', N'د. ياسر هادي', N'Consultant Diagnostic Radiologist', N'استشاري أشعة تشخيصية', 
-        N'Jazan University', N'جامعة جازان', N'~/Content/images/speakers/Yasser-Hadi-Photo.JPG', N'~/Content/docs/speakers/Yasser-Hadi.pdf', 
-        0, 13, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 14. Dr. Abdulkarem Alqahtani (د. عبدالكريم القحطاني)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Alqahtani%' OR [FullNameAr] LIKE '%القحطاني%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Abdulkarem Alqahtani',
-        [FullNameAr] = N'د. عبدالكريم القحطاني',
-        [JobTitleEn] = N'Consultant Diagnostic & Interventional Radiologist',
-        [JobTitleAr] = N'استشاري أشعة تشخيصية وتداخلية',
-        [OrganizationEn] = N'King Fahad Specialist Hospital - Dammam',
-        [OrganizationAr] = N'مستشفى الملك فهد التخصصي - الدمام',
-        [ImagePath] = N'~/Content/images/speakers/Abdulkareem-Alqahtani-Photo.jpeg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Abdulkareem-Alqahtani-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 14,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Alqahtani%' OR [FullNameAr] LIKE '%القحطاني%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Abdulkarem Alqahtani', N'د. عبدالكريم القحطاني', N'Consultant Diagnostic & Interventional Radiologist', N'استشاري أشعة تشخيصية وتداخلية', 
-        N'King Fahad Specialist Hospital - Dammam', N'مستشفى الملك فهد التخصصي - الدمام', N'~/Content/images/speakers/Abdulkareem-Alqahtani-Photo.jpeg', N'~/Content/docs/speakers/Abdulkareem-Alqahtani-CV.pdf', 
-        0, 14, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 15. Dr. Abdulaziz Almulhim (د. عبدالعزيز الملحم)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Almulhim%' OR [FullNameAr] LIKE '%الملحم%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Abdulaziz Almulhim',
-        [FullNameAr] = N'د. عبدالعزيز الملحم',
-        [JobTitleEn] = N'Consultant Pediatric Radiologist',
-        [JobTitleAr] = N'استشاري أشعة الأطفال',
-        [OrganizationEn] = N'King Fahad Medical City',
-        [OrganizationAr] = N'مدينة الملك فهد الطبية',
-        [ImagePath] = N'~/Content/images/speakers/Abdulaziz-Almulhim-Photo.png',
-        [CvPdfPath] = N'~/Content/docs/speakers/Abdulaziz-AlMulhim-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 15,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Almulhim%' OR [FullNameAr] LIKE '%الملحم%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Abdulaziz Almulhim', N'د. عبدالعزيز الملحم', N'Consultant Pediatric Radiologist', N'استشاري أشعة الأطفال', 
-        N'King Fahad Medical City', N'مدينة الملك فهد الطبية', N'~/Content/images/speakers/Abdulaziz-Almulhim-Photo.png', N'~/Content/docs/speakers/Abdulaziz-AlMulhim-CV.pdf', 
-        0, 15, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 16. Dr. Sonyia McFadden (د. سونيا مكفادين)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%McFadden%' OR [FullNameAr] LIKE '%مكفادين%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Sonyia McFadden',
-        [FullNameAr] = N'د. سونيا مكفادين',
-        [JobTitleEn] = N'Reader in Diagnostic Radiography',
-        [JobTitleAr] = N'قارئة في الأشعة التشخيصية',
-        [OrganizationEn] = N'Ulster University',
-        [OrganizationAr] = N'جامعة أولستر',
-        [ImagePath] = N'~/Content/images/speakers/Sonyia-McFadden-Photo.jpg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Sonyia-McFadden-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 16,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%McFadden%' OR [FullNameAr] LIKE '%مكفادين%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Sonyia McFadden', N'د. سونيا مكفادين', N'Reader in Diagnostic Radiography', N'قارئة في الأشعة التشخيصية', 
-        N'Ulster University', N'جامعة أولستر', N'~/Content/images/speakers/Sonyia-McFadden-Photo.jpg', N'~/Content/docs/speakers/Sonyia-McFadden-CV.pdf', 
-        0, 16, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 17. Dr. Raid Alshinibr (د. رائد الشنيبر)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Alshinibr%' OR [FullNameAr] LIKE '%الشنيبر%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Raid Alshinibr',
-        [FullNameAr] = N'د. رائد الشنيبر',
-        [JobTitleEn] = N'Director of Healthcare Innovation',
-        [JobTitleAr] = N'مدير الابتكار في الرعاية الصحية',
-        [OrganizationEn] = N'National Center for Health Information (NHIC)',
-        [OrganizationAr] = N'المركز الوطني للمعلومات الصحية',
-        [ImagePath] = N'~/Content/images/speakers/Raid-Alshinibr-Photo.png',
-        [CvPdfPath] = N'~/Content/docs/speakers/Raid-Alshinibr-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 17,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Alshinibr%' OR [FullNameAr] LIKE '%الشنيبر%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Raid Alshinibr', N'د. رائد الشنيبر', N'Director of Healthcare Innovation', N'مدير الابتكار في الرعاية الصحية', 
-        N'National Center for Health Information (NHIC)', N'المركز الوطني للمعلومات الصحية', N'~/Content/images/speakers/Raid-Alshinibr-Photo.png', N'~/Content/docs/speakers/Raid-Alshinibr-CV.pdf', 
-        0, 17, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 18. Prof. Minyar Sassi (بروفيسور منيار ساسي)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Sassi%' OR [FullNameAr] LIKE '%ساسي%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Prof. Minyar Sassi',
-        [FullNameAr] = N'بروفيسور منيار ساسي',
-        [JobTitleEn] = N'Professor of AI in Medical Imaging',
-        [JobTitleAr] = N'أستاذ الذكاء الاصطناعي في التصوير الطبي',
-        [OrganizationEn] = N'Imam Abdulrahman Bin Faisal University',
-        [OrganizationAr] = N'جامعة الإمام عبدالرحمن بن فيصل',
-        [ImagePath] = N'~/Content/images/speakers/Minyar-Hidr-Photo.jpg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Minyar-Hidr-CV.pdf',
-        [Category] = 1,
-        [Sorting] = 18,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Sassi%' OR [FullNameAr] LIKE '%ساسي%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Prof. Minyar Sassi', N'بروفيسور منيار ساسي', N'Professor of AI in Medical Imaging', N'أستاذ الذكاء الاصطناعي في التصوير الطبي', 
-        N'Imam Abdulrahman Bin Faisal University', N'جامعة الإمام عبدالرحمن بن فيصل', N'~/Content/images/speakers/Minyar-Hidr-Photo.jpg', N'~/Content/docs/speakers/Minyar-Hidr-CV.pdf', 
-        1, 18, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 19. Dr. Abdul Razak Hairil (د. عبد الرزاق هيريل)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Hairil%' OR [FullNameAr] LIKE '%هيريل%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Abdul Razak Hairil',
-        [FullNameAr] = N'د. عبد الرزاق هيريل',
-        [JobTitleEn] = N'Senior Medical Physicist & AI Researcher',
-        [JobTitleAr] = N'فيزيائي طبي أول وباحث ذكاء اصطناعي',
-        [OrganizationEn] = N'International Atomic Energy Agency Collaborating Center',
-        [OrganizationAr] = N'المركز المتعاون مع الوكالة الدولية للطاقة الذرية',
-        [ImagePath] = N'~/Content/images/speakers/Hairil-AbdulRazak-Photo.jpg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Hairil-AbdulRazak-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 19,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Hairil%' OR [FullNameAr] LIKE '%هيريل%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Abdul Razak Hairil', N'د. عبد الرزاق هيريل', N'Senior Medical Physicist & AI Researcher', N'فيزيائي طبي أول وباحث ذكاء اصطناعي', 
-        N'International Atomic Energy Agency Collaborating Center', N'المركز المتعاون مع الوكالة الدولية للطاقة الذرية', N'~/Content/images/speakers/Hairil-AbdulRazak-Photo.jpg', N'~/Content/docs/speakers/Hairil-AbdulRazak-CV.pdf', 
-        0, 19, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 20. Dr. Mohammed Alsaadi (د. محمد السعدي)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Alsaadi%' OR [FullNameAr] LIKE '%السعدي%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Mohammed Alsaadi',
-        [FullNameAr] = N'د. محمد السعدي',
-        [JobTitleEn] = N'Consultant Clinical Radiologist',
-        [JobTitleAr] = N'استشاري أشعة سريرية',
-        [OrganizationEn] = N'King Fahad University Hospital',
-        [OrganizationAr] = N'مستشفى الملك فهد الجامعي',
-        [ImagePath] = N'~/Content/images/speakers/Mohammed-Saadi-Photo.jpeg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Mohammed-Saadi-CV.pdf',
-        [Category] = 1,
-        [Sorting] = 20,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Alsaadi%' OR [FullNameAr] LIKE '%السعدي%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Mohammed Alsaadi', N'د. محمد السعدي', N'Consultant Clinical Radiologist', N'استشاري أشعة سريرية', 
-        N'King Fahad University Hospital', N'مستشفى الملك فهد الجامعي', N'~/Content/images/speakers/Mohammed-Saadi-Photo.jpeg', N'~/Content/docs/speakers/Mohammed-Saadi-CV.pdf', 
-        1, 20, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 21. Dr. Oun Al-iedani (د. عون العيداني)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Al-iedani%' OR [FullNameAr] LIKE '%العيداني%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Oun Al-iedani',
-        [FullNameAr] = N'د. عون العيداني',
-        [JobTitleEn] = N'Senior Lecturer in Medical Imaging',
-        [JobTitleAr] = N'محاضر أول في التصوير الطبي',
-        [OrganizationEn] = N'Deakin University',
-        [OrganizationAr] = N'جامعة ديكين',
-        [ImagePath] = N'~/Content/images/speakers/Oun-Aliedani-Photo.jpg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Oun-Aliedani-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 21,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Al-iedani%' OR [FullNameAr] LIKE '%العيداني%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Oun Al-iedani', N'د. عون العيداني', N'Senior Lecturer in Medical Imaging', N'محاضر أول في التصوير الطبي', 
-        N'Deakin University', N'جامعة ديكين', N'~/Content/images/speakers/Oun-Aliedani-Photo.jpg', N'~/Content/docs/speakers/Oun-Aliedani-CV.pdf', 
-        0, 21, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 22. Dr. Amal Alsalamah (د. أمل السلامة)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Alsalamah%' OR [FullNameAr] LIKE '%السلامة%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Amal Alsalamah',
-        [FullNameAr] = N'د. أمل السلامة',
-        [JobTitleEn] = N'Assistant Professor of Health Informatics',
-        [JobTitleAr] = N'أستاذ مساعد في المعلوماتية الصحية',
-        [OrganizationEn] = N'Princess Nourah bint Abdulrahman University',
-        [OrganizationAr] = N'جامعة الأميرة نورة بنت عبدالرحمن',
-        [ImagePath] = N'~/Content/images/speakers/Amal-Alsalamah-Photo.jpeg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Amal-Alsalamah-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 22,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Alsalamah%' OR [FullNameAr] LIKE '%السلامة%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Amal Alsalamah', N'د. أمل السلامة', N'Assistant Professor of Health Informatics', N'أستاذ مساعد في المعلوماتية الصحية', 
-        N'Princess Nourah bint Abdulrahman University', N'جامعة الأميرة نورة بنت عبدالرحمن', N'~/Content/images/speakers/Amal-Alsalamah-Photo.jpeg', N'~/Content/docs/speakers/Amal-Alsalamah-CV.pdf', 
-        0, 22, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 23. Dr. Rasha Alafaleg (د. رشا العفالق)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Alafaleg%' OR [FullNameAr] LIKE '%العفالق%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Rasha Alafaleg',
-        [FullNameAr] = N'د. رشا العفالق',
-        [JobTitleEn] = N'Consultant Diagnostic Radiologist',
-        [JobTitleAr] = N'استشارية أشعة تشخيصية',
-        [OrganizationEn] = N'King Fahad Hospital of the University',
-        [OrganizationAr] = N'مستشفى الملك فهد الجامعي',
-        [ImagePath] = N'~/Content/images/speakers/Rasha-Alafaleg-Photo.jpeg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Rasha-Alafaleg-CV.pdf',
-        [Category] = 1,
-        [Sorting] = 23,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Alafaleg%' OR [FullNameAr] LIKE '%العفالق%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Rasha Alafaleg', N'د. رشا العفالق', N'Consultant Diagnostic Radiologist', N'استشارية أشعة تشخيصية', 
-        N'King Fahad Hospital of the University', N'مستشفى الملك فهد الجامعي', N'~/Content/images/speakers/Rasha-Alafaleg-Photo.jpeg', N'~/Content/docs/speakers/Rasha-Alafaleg-CV.pdf', 
-        1, 23, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 24. Dr. Ali Alhailiy (د. علي الهيلي)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Alhailiy%' OR [FullNameAr] LIKE '%الهيلي%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Ali Alhailiy',
-        [FullNameAr] = N'د. علي الهيلي',
-        [JobTitleEn] = N'Assistant Professor of Radiology',
-        [JobTitleAr] = N'أستاذ مساعد في الأشعة',
-        [OrganizationEn] = N'Taibah University',
-        [OrganizationAr] = N'جامعة طيبة',
-        [ImagePath] = N'~/Content/images/speakers/Ali-Alhaili-Photo.jpg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Ali-Alhailiy-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 24,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Alhailiy%' OR [FullNameAr] LIKE '%الهيلي%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Ali Alhailiy', N'د. علي الهيلي', N'Assistant Professor of Radiology', N'أستاذ مساعد في الأشعة', 
-        N'Taibah University', N'جامعة طيبة', N'~/Content/images/speakers/Ali-Alhaili-Photo.jpg', N'~/Content/docs/speakers/Ali-Alhailiy-CV.pdf', 
-        0, 24, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 25. Mr. Fahad Alsadan, MSc (أ. فهد السعدان)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%MSc%' OR [FullNameAr] LIKE '%السعدان%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Mr. Fahad Alsadan, MSc',
-        [FullNameAr] = N'أ. فهد السعدان',
-        [JobTitleEn] = N'Clinical Imaging Informatics Specialist',
-        [JobTitleAr] = N'أخصائي معلوماتية التصوير الطبي السريري',
-        [OrganizationEn] = N'King Saud University Medical City',
-        [OrganizationAr] = N'المدينة الطبية بجامعة الملك سعود',
-        [ImagePath] = N'~/Content/images/speakers/Fahad-Alsadan-Photo.jpg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Fahad-Alsadan-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 25,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%MSc%' OR [FullNameAr] LIKE '%السعدان%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Mr. Fahad Alsadan, MSc', N'أ. فهد السعدان', N'Clinical Imaging Informatics Specialist', N'أخصائي معلوماتية التصوير الطبي السريري', 
-        N'King Saud University Medical City', N'المدينة الطبية بجامعة الملك سعود', N'~/Content/images/speakers/Fahad-Alsadan-Photo.jpg', N'~/Content/docs/speakers/Fahad-Alsadan-CV.pdf', 
-        0, 25, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 26. Prof. Mark McEntee (بروفيسور مارك ماكنتي)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%McEntee%' OR [FullNameAr] LIKE '%ماكنتي%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Prof. Mark McEntee',
-        [FullNameAr] = N'بروفيسور مارك ماكنتي',
-        [JobTitleEn] = N'Professor of Diagnostic Radiography',
-        [JobTitleAr] = N'أستاذ الأشعة التشخيصية',
-        [OrganizationEn] = N'University College Cork',
-        [OrganizationAr] = N'جامعة كوليدج كورك',
-        [ImagePath] = N'~/Content/images/speakers/Mark-McEntee-Photo.jpeg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Mark-McEntee-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 26,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%McEntee%' OR [FullNameAr] LIKE '%ماكنتي%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Prof. Mark McEntee', N'بروفيسور مارك ماكنتي', N'Professor of Diagnostic Radiography', N'أستاذ الأشعة التشخيصية', 
-        N'University College Cork', N'جامعة كوليدج كورك', N'~/Content/images/speakers/Mark-McEntee-Photo.jpeg', N'~/Content/docs/speakers/Mark-McEntee-CV.pdf', 
-        0, 26, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 27. Dr. Laura McLaughlin (د. لورا ماكلوغلين)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%McLaughlin%' OR [FullNameAr] LIKE '%ماكلوغلين%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Laura McLaughlin',
-        [FullNameAr] = N'د. لورا ماكلوغلين',
-        [JobTitleEn] = N'Senior Lecturer in Medical Imaging',
-        [JobTitleAr] = N'محاضرة أولى في التصوير الطبي',
-        [OrganizationEn] = N'Ulster University',
-        [OrganizationAr] = N'جامعة أولستر',
-        [ImagePath] = N'~/Content/images/speakers/Laura-McLaughlin-Photo.jpg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Laura-McLaughlin-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 27,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%McLaughlin%' OR [FullNameAr] LIKE '%ماكلوغلين%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Laura McLaughlin', N'د. لورا ماكلوغلين', N'Senior Lecturer in Medical Imaging', N'محاضرة أولى في التصوير الطبي', 
-        N'Ulster University', N'جامعة أولستر', N'~/Content/images/speakers/Laura-McLaughlin-Photo.jpg', N'~/Content/docs/speakers/Laura-McLaughlin-CV.pdf', 
-        0, 27, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 28. Dr. Andrew England (د. أندرو إنجلاند)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%England%' OR [FullNameAr] LIKE '%إنجلاند%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Andrew England',
-        [FullNameAr] = N'د. أندرو إنجلاند',
-        [JobTitleEn] = N'Senior Lecturer in Radiography',
-        [JobTitleAr] = N'محاضر أول في علوم الأشعة',
-        [OrganizationEn] = N'Keele University',
-        [OrganizationAr] = N'جامعة كيلي',
-        [ImagePath] = N'~/Content/images/speakers/Speaker-Photo.png',
-        [CvPdfPath] = N'~/Content/docs/speakers/Andrew-England-CV.pdf',
-        [Category] = 0,
-        [Sorting] = 28,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%England%' OR [FullNameAr] LIKE '%إنجلاند%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Andrew England', N'د. أندرو إنجلاند', N'Senior Lecturer in Radiography', N'محاضر أول في علوم الأشعة', 
-        N'Keele University', N'جامعة كيلي', N'~/Content/images/speakers/Speaker-Photo.png', N'~/Content/docs/speakers/Andrew-England-CV.pdf', 
-        0, 28, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 29. Dr. Hussain Alarfaj (د. حسين العرفج)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Alarfaj%' OR [FullNameAr] LIKE '%العرفج%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Hussain Alarfaj',
-        [FullNameAr] = N'د. حسين العرفج',
-        [JobTitleEn] = N'Consultant Clinical Radiologist',
-        [JobTitleAr] = N'استشاري أشعة سريرية',
-        [OrganizationEn] = N'Imam Abdulrahman Bin Faisal University',
-        [OrganizationAr] = N'جامعة الإمام عبدالرحمن بن فيصل',
-        [ImagePath] = N'~/Content/images/speakers/Hussain-Alarfaj-Photo.jpg',
-        [CvPdfPath] = N'~/Content/docs/speakers/Hussain-Alarfaj-CV.pdf',
-        [Category] = 1,
-        [Sorting] = 29,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Alarfaj%' OR [FullNameAr] LIKE '%العرفج%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Hussain Alarfaj', N'د. حسين العرفج', N'Consultant Clinical Radiologist', N'استشاري أشعة سريرية', 
-        N'Imam Abdulrahman Bin Faisal University', N'جامعة الإمام عبدالرحمن بن فيصل', N'~/Content/images/speakers/Hussain-Alarfaj-Photo.jpg', N'~/Content/docs/speakers/Hussain-Alarfaj-CV.pdf', 
-        1, 29, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 30. Dr. Qurain Alqurain (د. قرين القرين)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Alqurain%' OR [FullNameAr] LIKE '%القرين%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Qurain Alqurain',
-        [FullNameAr] = N'د. قرين القرين',
-        [JobTitleEn] = N'Consultant Radiologist',
-        [JobTitleAr] = N'استشاري أشعة',
-        [OrganizationEn] = N'Imam Abdulrahman Bin Faisal University',
-        [OrganizationAr] = N'جامعة الإمام عبدالرحمن بن فيصل',
-        [ImagePath] = N'~/Content/images/speakers/Qurain-Alqurain-Photo.png',
-        [CvPdfPath] = N'~/Content/docs/speakers/Qurain-Alqurain-CV.pdf',
-        [Category] = 1,
-        [Sorting] = 30,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Alqurain%' OR [FullNameAr] LIKE '%القرين%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Qurain Alqurain', N'د. قرين القرين', N'Consultant Radiologist', N'استشاري أشعة', 
-        N'Imam Abdulrahman Bin Faisal University', N'جامعة الإمام عبدالرحمن بن فيصل', N'~/Content/images/speakers/Qurain-Alqurain-Photo.png', N'~/Content/docs/speakers/Qurain-Alqurain-CV.pdf', 
-        1, 30, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 31. Moath Ameer (معاذ أمير)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Moath%Ameer%' OR [FullNameAr] LIKE '%معاذ%أمير%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Moath Ameer',
-        [FullNameAr] = N'معاذ أمير',
-        [JobTitleEn] = N'Medical Student & AI Innovator',
-        [JobTitleAr] = N'طالب طب ومبتكر في الذكاء الاصطناعي',
-        [OrganizationEn] = N'Imam Abdulrahman Bin Faisal University',
-        [OrganizationAr] = N'جامعة الإمام عبدالرحمن بن فيصل',
-        [ImagePath] = N'~/Content/images/speakers/Speaker-Photo.png',
-        [CvPdfPath] = NULL,
-        [Category] = 0,
-        [Sorting] = 31,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Moath%Ameer%' OR [FullNameAr] LIKE '%معاذ%أمير%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Moath Ameer', N'معاذ أمير', N'Medical Student & AI Innovator', N'طالب طب ومبتكر في الذكاء الاصطناعي', 
-        N'Imam Abdulrahman Bin Faisal University', N'جامعة الإمام عبدالرحمن بن فيصل', N'~/Content/images/speakers/Speaker-Photo.png', NULL, 
-        0, 31, 1
-    );
-END
-GO
-
--- ----------------------------------------------------------------------------
--- 32. Dr. Abdulaziz M. Al-Sharydah (د. عبدالعزيز محمد الشريدة)
--- ----------------------------------------------------------------------------
-IF EXISTS (SELECT 1 FROM [dbo].[Speakers] WHERE [FullNameEn] LIKE '%Al-Sharydah%' OR [FullNameAr] LIKE '%الشريدة%')
-BEGIN
-    UPDATE [dbo].[Speakers]
-    SET 
-        [FullNameEn] = N'Dr. Abdulaziz M. Al-Sharydah',
-        [FullNameAr] = N'د. عبدالعزيز محمد الشريدة',
-        [JobTitleEn] = N'Associate Professor & Chairman of Radiology',
-        [JobTitleAr] = N'أستاذ مشارك ورئيس قسم الأشعة',
-        [OrganizationEn] = N'Imam Abdulrahman Bin Faisal University',
-        [OrganizationAr] = N'جامعة الإمام عبدالرحمن بن فيصل',
-        [ImagePath] = N'~/Content/images/speakers/Speaker-Photo.png',
-        [CvPdfPath] = NULL,
-        [Category] = 1,
-        [Sorting] = 32,
-        [IsActive] = 1
-    WHERE [FullNameEn] LIKE '%Al-Sharydah%' OR [FullNameAr] LIKE '%الشريدة%';
-END
-ELSE
-BEGIN
-    INSERT INTO [dbo].[Speakers] (
-        [FullNameEn], [FullNameAr], [JobTitleEn], [JobTitleAr], 
-        [OrganizationEn], [OrganizationAr], [ImagePath], [CvPdfPath], 
-        [Category], [Sorting], [IsActive]
-    ) VALUES (
-        N'Dr. Abdulaziz M. Al-Sharydah', N'د. عبدالعزيز محمد الشريدة', N'Associate Professor & Chairman of Radiology', N'أستاذ مشارك ورئيس قسم الأشعة', 
-        N'Imam Abdulrahman Bin Faisal University', N'جامعة الإمام عبدالرحمن بن فيصل', N'~/Content/images/speakers/Speaker-Photo.png', NULL, 
-        1, 32, 1
-    );
-END
-GO
-
--- Verification query
-SELECT [SpeakerID], [FullNameEn], [FullNameAr], [ImagePath], [CvPdfPath]
-FROM [dbo].[Speakers]
-ORDER BY [Sorting];
+-- 7. Verification Queries
+SELECT Track, COUNT(*) AS TotalSpeakers FROM [dbo].[vw_SummitSpeakers] GROUP BY Track ORDER BY Track;
+SELECT SpeakerID, FullNameEn, LectureTitleEn, RoomEn, StartTime, EndTime, SessionRoleEn FROM [dbo].[vw_SummitSpeakers] ORDER BY SpeakerID;
 GO

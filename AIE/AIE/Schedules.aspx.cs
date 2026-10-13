@@ -1,5 +1,7 @@
-﻿using DevExpress.Web;
 using System;
+using System.Linq;
+using System.Text;
+using System.Web;
 using System.Web.UI.WebControls;
 
 namespace AIE
@@ -8,66 +10,75 @@ namespace AIE
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            //if (!IsPostBack)
-            //{
-            //    ASPxGridView1.ExpandAll();
-
-            //    ASPxGridView1.SettingsPager.Mode = GridViewPagerMode.ShowAllRecords;
-            //}
-
+            if (!IsPostBack)
+            {
+                LoadRoadmap();
+            }
         }
 
-        protected void BtnViewVideo_Click(object sender, EventArgs e)
+        private void LoadRoadmap()
         {
-            //string[] cmdArguments = (sender as LinkButton).CommandArgument.ToString().Split(new char[] { ',' });
-            
+            try
+            {
+                string email = null;
+                if (DBFunction.Ado.UserDetails != null)
+                {
+                    email = DBFunction.Ado.UserDetails.UserName;
+                }
 
-            //if (cmdArguments[0].ToString() != "")
-            //{
-            //    Uri uri = new Uri(cmdArguments[0].ToString());
-            //    string path = uri.AbsolutePath;
+                if (string.IsNullOrEmpty(email) && Session["AIE_AttendeeEmail"] != null)
+                {
+                    email = Session["AIE_AttendeeEmail"].ToString();
+                }
 
-            //    // Check if the URL is in the format "https://youtu.be/VIDEO_ID"
-            //    if (uri.Host == "youtu.be" && !string.IsNullOrEmpty(path))
-            //    {
-            //        path = path.TrimStart('/');
-            //    }
+                if (string.IsNullOrEmpty(email) && Request.Cookies["sairh_user"] != null)
+                {
+                    email = Request.Cookies["sairh_user"].Value;
+                }
 
-            //    // Check if the URL is in the format "https://www.youtube.com/watch?v=VIDEO_ID"
-            //    else if (uri.Host == "www.youtube.com" && uri.AbsolutePath == "/watch" && uri.Query.Contains("v="))
-            //    {
-            //        var queryParameters = System.Web.HttpUtility.ParseQueryString(uri.Query);
-            //        path = queryParameters["v"];
-            //    }
+                if (!string.IsNullOrEmpty(email))
+                {
+                    var roadmapCodes = SurveyService.GetUserRoadmap(email);
+                    if (roadmapCodes != null && roadmapCodes.Count > 0)
+                    {
+                        pnlRoadmap.Visible = true;
+                        pnlSurveyCTA.Visible = false;
 
+                        var mapStatus = SurveyService.GetMapStatus(email, false);
+                        var recommendedBooths = mapStatus.Where(b => b.IsRecommended).ToList();
 
-            //    string videoId = path;
+                        var sb = new StringBuilder();
+                        foreach (var b in recommendedBooths)
+                        {
+                            sb.AppendFormat(
+                                "<div class=\"recommended-stop-card\" onclick=\"openBoothModal('{1}')\" style=\"cursor:pointer;\">" +
+                                "<div class=\"d-flex justify-content-between align-items-center mb-1\">" +
+                                "<span class=\"badge badge-info\">{0}</span>" +
+                                "<strong class=\"text-white\">{1}</strong>" +
+                                "</div>" +
+                                "<div class=\"text-white font-weight-bold\">{2}</div>" +
+                                "<div class=\"text-secondary small\">{3}</div>" +
+                                "</div>",
+                                HttpUtility.HtmlEncode(b.Hall),
+                                HttpUtility.HtmlEncode(b.BoothCode),
+                                HttpUtility.HtmlEncode(b.Name),
+                                HttpUtility.HtmlEncode(b.Organization)
+                            );
+                        }
+                        recCardsContainer.InnerHtml = sb.ToString();
+                        return;
+                    }
+                }
 
-            //    string URL = "https://www.youtube.com/embed/" + videoId;
-            //    viewVideo.Attributes.Add("src", URL);
-            //    if (cmdArguments[1].ToString() != "")
-            //    {
-            //        divPDF.Visible = true;
-            //        HyperLink1.NavigateUrl = cmdArguments[1].ToString();
-            //    }
-            //    else
-            //    {
-            //        divPDF.Visible = false;
-            //    }
-
-            //    details1.Attributes.Add("style", "background-size: cover; display: block;");
-            //    details2.Attributes.Add("style", "background-size: cover; display: block;");
-            //    details3.Attributes.Add("style", "background-size: cover; display: block;");
-            //    modal_video.Show();
-            //}
-
-
-        }
-
-        protected void BtnCloseVideo_Click(object sender, EventArgs e)
-        {
-
-            //modal_video.Hide();
+                pnlRoadmap.Visible = false;
+                pnlSurveyCTA.Visible = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceWarning("[Schedules] LoadRoadmap error: " + ex.Message);
+                pnlRoadmap.Visible = false;
+                pnlSurveyCTA.Visible = true;
+            }
         }
     }
 }

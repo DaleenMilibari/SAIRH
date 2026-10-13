@@ -157,13 +157,18 @@
     <Content Include="Ar_Sa\Dashboard.aspx" />
     <Content Include="Ar_Sa\Default.aspx" />
     <Content Include="Ar_Sa\DefaultAr.aspx" />
-    <Content Include="Ar_Sa\Judges.aspx" />
+    <Content Include="Ar_Sa\Speakers.aspx" />
     <Content Include="Ar_Sa\Login.aspx" />
     <Content Include="Ar_Sa\Profile.aspx" />
     <Content Include="Ar_Sa\Publication.aspx" />
     <Content Include="Ar_Sa\Register.aspx" />
     <Content Include="Ar_Sa\Schedules.aspx" />
     <Content Include="Ar_Sa\Sponsors.aspx" />
+    <Content Include="Ar_Sa\Survey.aspx" />
+    <Content Include="Ar_Sa\ForgotPassword.aspx" />
+    <Content Include="Ar_Sa\ResetPassword.aspx" />
+    <Content Include="Ar_Sa\BoothVisit.aspx" />
+    <Content Include="Ar_Sa\Admin\ManageSummit.aspx" />
     <Content Include="Ceremony.aspx" />
     <Content Include="ContactUs.aspx" />
     <Content Include="Content\css\animate.css" />
@@ -187,6 +192,9 @@
     <Content Include="Content\css\jquery.countdown.css" />
     <Content Include="Content\css\live-dashboard.css" />
     <Content Include="Content\css\liquid-glass-theme.css" />
+    <Content Include="Content\css\auth.css" />
+    <Content Include="Database\SAIRH_Auth_Account_Management.sql" />
+    <Content Include="Content\css\chat.css" />
     <Content Include="Content\css\magnific-popup.css" />
     <Content Include="Content\css\owl.carousel.css" />
     <Content Include="Content\css\owl.theme.css" />
@@ -988,6 +996,7 @@
     <Content Include="Content\images\video-ss\5.jpg" />
     <Content Include="Content\images\video-ss\6.jpg" />
     <Content Include="Content\js\app.js" />
+    <Content Include="Content\js\auth.js" />
     <Content Include="Content\js\bootstrap.min.js" />
     <Content Include="Content\js\countdown-custom.js" />
     <Content Include="Content\js\designesia_ar.js" />
@@ -1068,10 +1077,14 @@
     <Content Include="Content\fonts\font-awesome\scss\_screen-reader.scss" />
     <Content Include="Content\fonts\font-awesome\scss\_stacked.scss" />
     <Content Include="Content\fonts\font-awesome\scss\_variables.scss" />
-    <Content Include="Judges.aspx" />
+    <Content Include="Speakers.aspx" />
     <Content Include="Judges_m.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="Profile.aspx" />
+    <Content Include="BoothVisit.aspx" />
+    <Content Include="Admin\ManageSummit.aspx" />
+    <Content Include="Content\css\admin.css" />
+    <Content Include="Content\css\booth-visit.css" />
     <Content Include="Public.Master" />
     <Content Include="Content\css\font\Amiri-Bold.ttf" />
     <Content Include="Content\css\font\Amiri-BoldSlanted.ttf" />
@@ -1117,6 +1130,9 @@
     <Content Include="Scripts\scroll-reveal.js" />
     <Content Include="Scripts\hero-slider.js" />
     <Content Include="Scripts\speakers.js" />
+    <Content Include="Scripts\chat.js" />
+    <Content Include="Content\js\chat.js" />
+    <Content Include="Content\data\faqs.json" />
     <Content Include="Content\images\speakers\.DS_Store" />
     <Content Include="Content\images\speakers\Abdulaziz-Almulhim-Photo.png" />
     <Content Include="Content\images\speakers\Abdulkareem-Alqahtani-Photo.jpeg" />
@@ -1198,6 +1214,8 @@
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
     <Content Include="Site.Master" />
     <Content Include="Survey.aspx" />
+    <Content Include="ForgotPassword.aspx" />
+    <Content Include="ResetPassword.aspx" />
     <Content Include="ViewSwitcher.ascx" />
     <Content Include="Web.config" />
     <Content Include="Bundle.config" />
@@ -1208,6 +1226,8 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\ChatController.cs" />
+    <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Ar_Sa\Ceremony.aspx.cs">
       <DependentUpon>Ceremony.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -1243,12 +1263,12 @@
     <Compile Include="Ar_Sa\DefaultAr.aspx.designer.cs">
       <DependentUpon>DefaultAr.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Ar_Sa\Judges.aspx.cs">
-      <DependentUpon>Judges.aspx</DependentUpon>
+    <Compile Include="Ar_Sa\Speakers.aspx.cs">
+      <DependentUpon>Speakers.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Ar_Sa\Judges.aspx.designer.cs">
-      <DependentUpon>Judges.aspx</DependentUpon>
+    <Compile Include="Ar_Sa\Speakers.aspx.designer.cs">
+      <DependentUpon>Speakers.aspx</DependentUpon>
     </Compile>
     <Compile Include="Ar_Sa\Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>
@@ -1263,6 +1283,20 @@
     </Compile>
     <Compile Include="Ar_Sa\Profile.aspx.designer.cs">
       <DependentUpon>Profile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Ar_Sa\BoothVisit.aspx.cs">
+      <DependentUpon>BoothVisit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Ar_Sa\BoothVisit.aspx.designer.cs">
+      <DependentUpon>BoothVisit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Ar_Sa\Admin\ManageSummit.aspx.cs">
+      <DependentUpon>ManageSummit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Ar_Sa\Admin\ManageSummit.aspx.designer.cs">
+      <DependentUpon>ManageSummit.aspx</DependentUpon>
     </Compile>
     <Compile Include="Ar_Sa\Publication.aspx.cs">
       <DependentUpon>Publication.aspx</DependentUpon>
@@ -1292,6 +1326,27 @@
     <Compile Include="Ar_Sa\Sponsors.aspx.designer.cs">
       <DependentUpon>Sponsors.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Ar_Sa\Survey.aspx.cs">
+      <DependentUpon>Survey.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Ar_Sa\Survey.aspx.designer.cs">
+      <DependentUpon>Survey.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Ar_Sa\ForgotPassword.aspx.cs">
+      <DependentUpon>ForgotPassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Ar_Sa\ForgotPassword.aspx.designer.cs">
+      <DependentUpon>ForgotPassword.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Ar_Sa\ResetPassword.aspx.cs">
+      <DependentUpon>ResetPassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Ar_Sa\ResetPassword.aspx.designer.cs">
+      <DependentUpon>ResetPassword.aspx</DependentUpon>
+    </Compile>
     <Compile Include="BasicAuthenticationAttribute.cs" />
     <Compile Include="Ceremony.aspx.cs">
       <DependentUpon>Ceremony.aspx</DependentUpon>
@@ -1307,7 +1362,10 @@
     <Compile Include="ContactUs.aspx.designer.cs">
       <DependentUpon>ContactUs.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Content\classes\AuthService.cs" />
     <Compile Include="Content\classes\DBFunction.cs" />
+    <Compile Include="Content\classes\SpeakerService.cs" />
+    <Compile Include="Content\classes\SurveyService.cs" />
     <Compile Include="Content\Models\APICountDown.cs">
       <DependentUpon>ModelApi.tt</DependentUpon>
     </Compile>
@@ -1356,12 +1414,12 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Judges.aspx.cs">
-      <DependentUpon>Judges.aspx</DependentUpon>
+    <Compile Include="Speakers.aspx.cs">
+      <DependentUpon>Speakers.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Judges.aspx.designer.cs">
-      <DependentUpon>Judges.aspx</DependentUpon>
+    <Compile Include="Speakers.aspx.designer.cs">
+      <DependentUpon>Speakers.aspx</DependentUpon>
     </Compile>
     <Compile Include="Judges_m.aspx.cs">
       <DependentUpon>Judges_m.aspx</DependentUpon>
@@ -1383,6 +1441,20 @@
     </Compile>
     <Compile Include="Profile.aspx.designer.cs">
       <DependentUpon>Profile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BoothVisit.aspx.cs">
+      <DependentUpon>BoothVisit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BoothVisit.aspx.designer.cs">
+      <DependentUpon>BoothVisit.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\ManageSummit.aspx.cs">
+      <DependentUpon>ManageSummit.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\ManageSummit.aspx.designer.cs">
+      <DependentUpon>ManageSummit.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Public.Master.cs">
@@ -1475,6 +1547,20 @@
     </Compile>
     <Compile Include="Survey.aspx.designer.cs">
       <DependentUpon>Survey.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ForgotPassword.aspx.cs">
+      <DependentUpon>ForgotPassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ForgotPassword.aspx.designer.cs">
+      <DependentUpon>ForgotPassword.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="ResetPassword.aspx.cs">
+      <DependentUpon>ResetPassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ResetPassword.aspx.designer.cs">
+      <DependentUpon>ResetPassword.aspx</DependentUpon>
     </Compile>
     <Compile Include="ViewSwitcher.ascx.cs">
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>

@@ -22,7 +22,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
     <link href="/Content/css/style.css" rel="stylesheet" type="text/css" />
     <link href="/Content/css/live-dashboard.css" rel="stylesheet" type="text/css" />
-    <link href="/Content/css/liquid-glass-theme.css?v=20261004_no_overlap_v3" rel="stylesheet" type="text/css" />
+    <link href="/Content/css/liquid-glass-theme.css?v=20261005_scroll_all_v7" rel="stylesheet" type="text/css" />
+    <link href="/Content/css/auth.css" rel="stylesheet" type="text/css" />
+    <link href="/Content/css/chat.css?v=20261005_pos" rel="stylesheet" type="text/css" />
     <link href="/Content/images/logo.jpg" rel="icon" />
 
     
@@ -30,11 +32,11 @@
 </head>
 
 <body>
-    <form id="form1" runat="server">
+    <form id="form1" method="post" action="">
         <div id="wrapper">
             <!-- Merged Sticky Liquid Glass Header (Unified Navbar with Icons & Actions) -->
             <header class="header-dark">
-                <div class="container">
+                <div class="container-fluid header-container">
                     <div class="header-inner">
                         <!-- Logo -->
                         <div id="logo">
@@ -50,16 +52,15 @@
                                 <li><a href="/Ar_Sa/" runat="server" id="linkHomeAr" class="active"><i class="bi bi-house-door"></i> <span>الرئيسية</span></a></li>
                                 <li><a href="Ceremony" runat="server" id="linkCeremonyAr"><i class="bi bi-calendar2-check"></i> <span>البرنامج والمسارات</span></a></li>
                                 <li><a href="Schedules" runat="server" id="linkSchedulesAr"><i class="bi bi-buildings"></i> <span>المعرض</span></a></li>
-                                <li><a href="Judges" runat="server" id="linkJudgesAr"><i class="bi bi-people"></i> <span>المتحدثون</span></a></li>
+                                <li><a href="Speakers" runat="server" id="linkSpeakersAr"><i class="bi bi-people"></i> <span>المتحدثون</span></a></li>
                                 <li><a href="Sponsors" runat="server" id="linkSponsorsAr"><i class="bi bi-award"></i> <span>الرعاة</span></a></li>
                                 <li><a href="ContactUs" runat="server" id="linkContactUsAr"><i class="bi bi-envelope"></i> <span>اتصل بنا</span></a></li>
-                                <li style="display:none;"><a href="Publication" runat="server" id="linkPublicationAr" aria-hidden="true"></a></li>
                             </ul>
 
                             <!-- Account & Language Switcher Group -->
                             <div class="header-actions">
                                 <!-- قائمة حساب المستخدم بعد تسجيل الدخول -->
-                                <div class="header-user-dropdown" runat="server" id="liProfile" ClientIDMode="Static">
+                                <div class="header-user-dropdown" runat="server" id="liProfile" style="display:none;" ClientIDMode="Static">
                                     <button type="button" class="action-pill user-dropdown-toggle" id="userDropdownTriggerAr" aria-label="قائمة الحساب" aria-haspopup="true">
                                         <i class="bi bi-person-circle"></i>
                                         <span>حسابي</span>
@@ -86,7 +87,7 @@
                                         </span>
                                         <div class="user-dropdown-divider"></div>
                                         <span runat="server" id="liLogOut">
-                                            <a href="/Ar_Sa/Login" id="BtnSignOut" class="user-dropdown-item user-dropdown-item-danger">
+                                            <a href="/Ar_Sa/Login?logout=1" id="BtnSignOut" class="user-dropdown-item user-dropdown-item-danger">
                                                 <i class="bi bi-box-arrow-right"></i> <span>تسجيل الخروج</span>
                                             </a>
                                         </span>
@@ -171,8 +172,7 @@
                 
                 
     <!-- Hero Section (Arabic, AI-Powered Liquid Glass Hero) -->
-    <section aria-label="Summit Hero" class="landing-hero-section text-light" style="background-image: linear-gradient(to right, rgba(4, 8, 22, 0.94) 0%, rgba(4, 8, 22, 0.82) 36%, rgba(4, 8, 22, 0.15) 68%, transparent 100%), linear-gradient(to bottom, transparent 75%, #040816 100%), url('/Content/images/background/hero-ai-bg.png') !important; background-position: right center !important; background-size: cover !important; background-repeat: no-repeat !important;">
-        <!-- Edge Slider Navigation Controls (Middle of Most Left & Right of Section) -->
+    <section aria-label="Summit Hero" class="landing-hero-section text-light" style="background-image: linear-gradient(to left, rgba(4, 8, 22, 0.75) 0%, rgba(4, 8, 22, 0.45) 35%, rgba(4, 8, 22, 0.05) 65%, transparent 100%), linear-gradient(to bottom, transparent 80%, #040816 100%), url('/Content/images/background/hero-ai-ar-bg.png') !important; background-position: left center !important; background-size: cover !important; background-repeat: no-repeat !important;">
         <button type="button" class="hero-arrow-btn hero-arrow-left" aria-label="الشريحة السابقة">
             <i class="bi bi-chevron-left"></i>
         </button>
@@ -185,7 +185,7 @@
                 <div class="carousel-inner">
                     <!-- Slide 1: Main Summit Overview (Existing Hero with Typed 2026 Effect) -->
                     <div class="carousel-item active" data-slide-index="0">
-                        <div class="row align-items-center">
+                        <div class="row align-items-center justify-content-start">
                             <div class="col-lg-8 col-xl-8 hero-text-col text-right">
                                 <div class="hero-slide-stage">
                                     <h1 class="hero-slide-title font-weight-bold text-white mb-2">
@@ -231,7 +231,7 @@
 
                     <!-- Slide 2: Summit Inauguration Live Countdown Timer (13 December, 09:00 AM AST) -->
                     <div class="carousel-item" data-slide-index="1">
-                        <div class="row align-items-center">
+                        <div class="row align-items-center justify-content-start">
                             <div class="col-lg-8 col-xl-8 hero-text-col text-right">
                                 <div class="hero-slide-stage">
                                     <h2 class="hero-slide-title font-weight-bold text-white mb-2">
@@ -267,7 +267,7 @@
 
                     <!-- Slide 3: Royal Quote & Portrait of HRH Crown Prince Mohammed bin Salman -->
                     <div class="carousel-item" data-slide-index="2">
-                        <div class="row align-items-center">
+                        <div class="row align-items-center justify-content-start">
                             <div class="col-lg-8 col-xl-8 hero-text-col text-right">
                                 <div class="hero-slide-stage">
                                     <div class="royal-quote-wrapper">
@@ -313,7 +313,6 @@
         <div class="container">
             <!-- Section Title -->
             <div class="text-center mb-4">
-                <span class="sairh-track-tag mb-2" style="display: inline-flex;"><i class="bi bi-broadcast"></i> المتابعة الفورية لفعاليات القمة</span>
                 <h2 class="text-white font-weight-bold display-5 mb-3">لوحة المتابعة الحية للمؤتمر</h2>
                 <div style="width: 80px; height: 3px; background: linear-gradient(90deg, #38bdf8, #2563eb); margin: 0 auto 20px; border-radius: 2px;"></div>
             </div>
@@ -343,8 +342,8 @@
                 <div class="sairh-slider">
                     <!-- الجلسة 1 -->
                     <article class="sairh-session-slide active"
-                             data-start="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T07:00:00"
-                             data-end="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T07:45:00"
+                             data-start="2026-10-01T07:00:00"
+                             data-end="2026-10-01T07:45:00"
                              data-language="ar">
                         <aside class="sairh-speaker-card">
                             <div class="sairh-speaker-avatar-wrap">
@@ -411,8 +410,8 @@
 
                     <!-- الجلسة 2 -->
                     <article class="sairh-session-slide"
-                             data-start="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T08:00:00"
-                             data-end="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T08:45:00"
+                             data-start="2026-10-01T08:00:00"
+                             data-end="2026-10-01T08:45:00"
                              data-language="ar">
                         <aside class="sairh-speaker-card">
                             <div class="sairh-speaker-avatar-wrap">
@@ -479,8 +478,8 @@
 
                     <!-- الجلسة 3 -->
                     <article class="sairh-session-slide"
-                             data-start="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T09:00:00"
-                             data-end="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T09:50:00"
+                             data-start="2026-10-01T09:00:00"
+                             data-end="2026-10-01T09:50:00"
                              data-language="ar">
                         <aside class="sairh-speaker-card">
                             <div class="sairh-speaker-avatar-wrap">
@@ -547,8 +546,8 @@
 
                     <!-- الجلسة 4 -->
                     <article class="sairh-session-slide"
-                             data-start="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T10:15:00"
-                             data-end="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T11:00:00"
+                             data-start="2026-10-01T10:15:00"
+                             data-end="2026-10-01T11:00:00"
                              data-language="ar">
                         <aside class="sairh-speaker-card">
                             <div class="sairh-speaker-avatar-wrap">
@@ -615,8 +614,8 @@
 
                     <!-- الجلسة 5 -->
                     <article class="sairh-session-slide"
-                             data-start="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T11:30:00"
-                             data-end="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T12:15:00"
+                             data-start="2026-10-01T11:30:00"
+                             data-end="2026-10-01T12:15:00"
                              data-language="ar">
                         <aside class="sairh-speaker-card">
                             <div class="sairh-speaker-avatar-wrap">
@@ -683,8 +682,8 @@
 
                     <!-- الجلسة 6 -->
                     <article class="sairh-session-slide"
-                             data-start="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T13:00:00"
-                             data-end="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T13:50:00"
+                             data-start="2026-10-01T13:00:00"
+                             data-end="2026-10-01T13:50:00"
                              data-language="ar">
                         <aside class="sairh-speaker-card">
                             <div class="sairh-speaker-avatar-wrap">
@@ -751,8 +750,8 @@
 
                     <!-- الجلسة 7 -->
                     <article class="sairh-session-slide"
-                             data-start="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T14:15:00"
-                             data-end="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T15:00:00"
+                             data-start="2026-10-01T14:15:00"
+                             data-end="2026-10-01T15:00:00"
                              data-language="ar">
                         <aside class="sairh-speaker-card">
                             <div class="sairh-speaker-avatar-wrap">
@@ -819,8 +818,8 @@
 
                     <!-- الجلسة 8 -->
                     <article class="sairh-session-slide"
-                             data-start="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T16:00:00"
-                             data-end="<%= DateTime.Today.ToString("yyyy-MM-dd") %>T16:45:00"
+                             data-start="2026-10-01T16:00:00"
+                             data-end="2026-10-01T16:45:00"
                              data-language="ar">
                         <aside class="sairh-speaker-card">
                             <div class="sairh-speaker-avatar-wrap">
@@ -1154,8 +1153,66 @@
 
         <!-- Live Dashboard & Scroll Reveal Scripts -->
         <script src="/Scripts/dashboard.js"></script>
-        <script src="/Scripts/scroll-reveal.js"></script>
+        <script src="/Scripts/scroll-reveal.js?v=20261005_scroll_all_v7"></script>
         <script src="/Scripts/hero-slider.js"></script>
+        <script src="/Content/js/auth.js"></script>
+
+        <!-- SAIRH AI Chatbot Interactive Floating Action Button & Window -->
+        <div id="sairh-chat-fab-container" class="sairh-chat-fab-wrap">
+            <button type="button" id="chat-toggle-btn" class="sairh-chat-fab" aria-label="فتح المساعد الذكي SAIRH" onclick="toggleChatWindow()">
+                <span class="sairh-chat-fab-icon-wrap">
+                    <i class="bi bi-chat-dots-fill sairh-icon-chat"></i>
+                    <i class="bi bi-x-lg sairh-icon-close"></i>
+                </span>
+                <span class="sairh-chat-fab-badge"><i class="bi bi-stars"></i></span>
+            </button>
+        </div>
+
+        <div id="chat-popup-window" class="sairh-chat-window" aria-hidden="true" dir="rtl">
+            <div class="sairh-chat-header">
+                <div class="sairh-chat-header-info">
+                    <div class="sairh-chat-avatar">
+                        <i class="bi bi-robot"></i>
+                        <span class="sairh-chat-status-dot" title="متصل"></span>
+                    </div>
+                    <div class="sairh-chat-header-text">
+                        <h4 id="chat-title" class="sairh-chat-title">مساعد SAIRH الذكي</h4>
+                        <span id="chat-status" class="sairh-chat-status">متصل &bull; دليل القمة 2026</span>
+                    </div>
+                </div>
+                <div class="sairh-chat-header-actions">
+                    <button type="button" id="lang-toggle" class="sairh-chat-lang-btn" onclick="toggleLanguage()" aria-label="تغيير اللغة">
+                        <i class="bi bi-globe"></i>
+                        <span id="lang-toggle-text">English</span>
+                    </button>
+                    <button type="button" class="sairh-chat-close-btn" onclick="toggleChatWindow()" aria-label="إغلاق المحادثة">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sairh-chat-banner">
+                <i class="bi bi-info-circle-fill"></i>
+                <span id="chat-banner-text">الدليل الذكي الرسمي لقمة SAIRH 2026</span>
+            </div>
+
+            <div class="sairh-chat-messages" id="chat-messages" role="log" aria-live="polite">
+            </div>
+
+            <div class="sairh-chat-footer">
+                <div class="sairh-chat-input-bar">
+                    <input type="text" id="user-input" class="sairh-chat-input" maxlength="500" placeholder="اسأل عن الجلسات، المقر، التسجيل..." autocomplete="off" />
+                    <button type="button" id="send-btn" class="sairh-chat-send-btn" onclick="submitUserQuery()" aria-label="إرسال">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+                <div class="sairh-chat-watermark">
+                    <span>SAIRH 2026 &bull; عام الذكاء الاصطناعي</span>
+                </div>
+            </div>
+        </div>
+
+        <script src="/Scripts/chat.js?v=20261004"></script>
     </form>
 </body>
 </html>

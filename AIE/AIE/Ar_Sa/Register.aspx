@@ -1,7 +1,5 @@
 <%@ Page Title="تسجيل حساب - SAIRH 2026" Language="C#" MasterPageFile="~/Ar_Sa/PublicAr.Master" AutoEventWireup="true" CodeBehind="Register.aspx.cs" Inherits="AIE.Ar_Sa.Register" %>
 
-<%@ Register Assembly="DevExpress.Web.Bootstrap.v20.2, Version=20.2.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Namespace="DevExpress.Web.Bootstrap" TagPrefix="dx" %>
-
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
 
@@ -22,91 +20,123 @@
             <section class="py-5" aria-label="نموذج التسجيل">
                 <div class="container">
                     <div class="row justify-content-center">
-                        <div class="col-lg-8">
+                        <div class="col-lg-7 col-md-9">
                             <div class="register-glass-card">
                                 <div class="text-center mb-4 pb-3 border-bottom border-secondary">
-                                    <h3 class="text-white font-weight-bold mb-2">بيانات التسجيل</h3>
+                                    <h3 class="text-white font-weight-bold mb-2">تسجيل المشتركين</h3>
                                     <p class="text-secondary mb-0">
                                         لديك حساب بالفعل؟ <a href="Login" class="text-info font-weight-bold">سجّل دخولك من هنا</a>.
                                     </p>
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-person ml-1 text-info"></i> الاسم الكامل</label>
-                                            <asp:TextBox ID="TxtFullName" runat="server" CssClass="form-control" placeholder="أدخل اسمك الكامل"></asp:TextBox>
+                                <div id="divError" class="auth-alert alert" runat="server" visible="false" role="alert"></div>
+
+                                <div class="auth-form">
+                                    <div class="auth-field">
+                                        <label for="<%= TxtFullName.ClientID %>" class="auth-label">
+                                            <i class="bi bi-person ml-1 text-info"></i> الاسم الكامل
+                                        </label>
+                                        <asp:TextBox ID="TxtFullName" runat="server" CssClass="form-control" placeholder="مثال: د. سارة الأحمد" autocomplete="name" required="required"></asp:TextBox>
+                                    </div>
+
+                                    <div class="auth-field">
+                                        <label for="<%= TxtEmail.ClientID %>" class="auth-label">
+                                            <i class="bi bi-envelope ml-1 text-info"></i> البريد الإلكتروني
+                                        </label>
+                                        <asp:TextBox ID="TxtEmail" runat="server" TextMode="Email" CssClass="form-control" placeholder="name@domain.com" autocomplete="username" required="required"></asp:TextBox>
+                                    </div>
+
+                                    <div class="auth-field">
+                                        <div class="auth-row-between">
+                                            <label for="<%= TxtMobile.ClientID %>" class="auth-label">
+                                                <i class="bi bi-telephone ml-1 text-info"></i> رقم الجوال
+                                            </label>
+                                            <span class="auth-optional">اختياري</span>
+                                        </div>
+                                        <asp:TextBox ID="TxtMobile" runat="server" TextMode="Phone" CssClass="form-control" placeholder="مثال: 0501234567" autocomplete="tel"></asp:TextBox>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="auth-field">
+                                                <div class="auth-row-between">
+                                                    <label for="<%= TxtOrganization.ClientID %>" class="auth-label">
+                                                        <i class="bi bi-building ml-1 text-info"></i> جهة العمل / المنظمة
+                                                    </label>
+                                                    <span class="auth-optional">اختياري</span>
+                                                </div>
+                                                <asp:TextBox ID="TxtOrganization" runat="server" CssClass="form-control" placeholder="مستشفى / جامعة / شركة" autocomplete="organization"></asp:TextBox>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="auth-field">
+                                                <div class="auth-row-between">
+                                                    <label for="<%= TxtJobTitle.ClientID %>" class="auth-label">
+                                                        <i class="bi bi-briefcase ml-1 text-info"></i> المسمى الوظيفي / التخصص
+                                                    </label>
+                                                    <span class="auth-optional">اختياري</span>
+                                                </div>
+                                                <asp:TextBox ID="TxtJobTitle" runat="server" CssClass="form-control" placeholder="مثال: طبيب أشعة، باحث ذكاء اصطناعي"></asp:TextBox>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-telephone ml-1 text-info"></i> رقم الجوال</label>
-                                            <asp:TextBox ID="TxtMobile" runat="server" CssClass="form-control" placeholder="أدخل رقم الجوال"></asp:TextBox>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3 mb-md-0">
+                                            <div class="auth-field">
+                                                <label for="<%= TxtPassword.ClientID %>" class="auth-label">
+                                                    <i class="bi bi-lock ml-1 text-info"></i> كلمة المرور
+                                                </label>
+                                                <div class="auth-password">
+                                                    <asp:TextBox ID="TxtPassword" runat="server" TextMode="Password" CssClass="form-control" placeholder="8 أحرف كحد أدنى" autocomplete="new-password" required="required"></asp:TextBox>
+                                                    <button type="button" class="auth-password-toggle" data-toggle-password="<%= TxtPassword.ClientID %>" aria-label="إظهار كلمة المرور" data-label-show="إظهار كلمة المرور" data-label-hide="إخفاء كلمة المرور" aria-pressed="false">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="auth-field">
+                                                <label for="<%= TxtPasswordAgain.ClientID %>" class="auth-label">
+                                                    <i class="bi bi-check-all ml-1 text-info"></i> تأكيد كلمة المرور
+                                                </label>
+                                                <div class="auth-password">
+                                                    <asp:TextBox ID="TxtPasswordAgain" runat="server" TextMode="Password" CssClass="form-control" placeholder="تأكيد كلمة المرور" autocomplete="new-password" required="required"></asp:TextBox>
+                                                    <button type="button" class="auth-password-toggle" data-toggle-password="<%= TxtPasswordAgain.ClientID %>" aria-label="إظهار كلمة المرور" data-label-show="إظهار كلمة المرور" data-label-hide="إخفاء كلمة المرور" aria-pressed="false">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                </div>
+                                                <div id="pwdMatchMsg" class="password-match-status" style="display: none;"></div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-gender-ambiguous ml-1 text-info"></i> الجنس</label>
-                                            <asp:RadioButtonList ID="TxtGender" runat="server" CssClass="form-control radio-list" RepeatDirection="Horizontal" Height="40px">
-                                                <asp:ListItem Value="Male">ذكر</asp:ListItem>
-                                                <asp:ListItem Value="Female">أنثى</asp:ListItem>
-                                            </asp:RadioButtonList>
+                                    <!-- Interactive Password Strength Meter (Arabic) -->
+                                    <div class="password-strength-container" id="pwdStrengthBox" style="display: none;">
+                                        <div class="password-strength-label">
+                                            <span>قوة كلمة المرور:</span>
+                                            <span class="password-strength-text" id="pwdStrengthText">ضعيفة</span>
                                         </div>
+                                        <div class="password-strength-bar-track">
+                                            <div class="password-strength-bar" id="pwdStrengthBar"></div>
+                                        </div>
+                                        <ul class="password-req-list">
+                                            <li class="password-req-item" id="reqLen"><i class="bi bi-circle"></i> 8 أحرف على الأقل</li>
+                                            <li class="password-req-item" id="reqUpper"><i class="bi bi-circle"></i> حرف كبير (A-Z)</li>
+                                            <li class="password-req-item" id="reqLower"><i class="bi bi-circle"></i> حرف صغير (a-z)</li>
+                                            <li class="password-req-item" id="reqNum"><i class="bi bi-circle"></i> رقم (0-9)</li>
+                                            <li class="password-req-item" id="reqSpecial"><i class="bi bi-circle"></i> رمز خاص (!@#$%^&*...)</li>
+                                        </ul>
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-flag ml-1 text-info"></i> الجنسية</label>
-                                            <dx:BootstrapComboBox ID="Nationality" runat="server" DataSourceID="ds_Countries" EnableTheming="true" CssClass="form-control"
-                                                ValueField="CountryID" ValueType="System.String">
-                                                <Fields>
-                                                    <dx:BootstrapListBoxField FieldName="NationalityAr"></dx:BootstrapListBoxField>
-                                                </Fields>
-                                            </dx:BootstrapComboBox>
-                                            <asp:SqlDataSource runat="server" ID="ds_Countries" ConnectionString='<%$ ConnectionStrings:AIEConnectionString %>' 
-                                                SelectCommand="SELECT [CountryID], [NationalityAr], [PathLocation] FROM [qryCountries] ORDER BY [Sorting]"></asp:SqlDataSource>
-                                        </div>
+                                    <div class="mt-3">
+                                        <asp:Button ID="BtnRegister" runat="server" CssClass="cyan-glow-btn w-100 py-3 text-white font-weight-bold" Text="تسجيل الحساب الآن" OnClick="BtnRegister_Click" data-loading-text="جارٍ إنشاء الحساب..." />
                                     </div>
 
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-envelope ml-1 text-info"></i> البريد الإلكتروني</label>
-                                            <asp:TextBox ID="TxtEmail" runat="server" CssClass="form-control" placeholder="name@domain.com"></asp:TextBox>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-linkedin ml-1 text-info"></i> حساب LinkedIn</label>
-                                            <asp:TextBox ID="TxtLinkedin" runat="server" CssClass="form-control" placeholder="https://linkedin.com/in/username"></asp:TextBox>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-lock ml-1 text-info"></i> كلمة المرور</label>
-                                            <asp:TextBox ID="TxtPassword" TextMode="Password" runat="server" CssClass="form-control" placeholder="أدخل كلمة المرور"></asp:TextBox>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 mb-4">
-                                        <div class="form-group">
-                                            <label class="text-secondary font-weight-semibold"><i class="bi bi-check-all ml-1 text-info"></i> تأكيد كلمة المرور</label>
-                                            <asp:TextBox ID="TxtPasswordAgain" TextMode="Password" runat="server" CssClass="form-control" placeholder="تأكيد كلمة المرور"></asp:TextBox>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12 mt-2">
-                                        <div class="d-flex justify-content-center">
-                                            <asp:LinkButton ID="BtnRegister" runat="server" CssClass="cyan-glow-btn px-5 py-3 text-white font-weight-bold" OnClick="BtnRegister_Click">
-                                                <i class="bi bi-person-plus ml-1"></i> تسجيل الحساب الآن
-                                            </asp:LinkButton>
-                                        </div>
-
-                                        <div id="divError" class="text-danger text-center mt-3" runat="server"></div>
-                                    </div>
+                                    <p class="auth-switch">
+                                        لديك حساب بالفعل؟ <a href="Login" class="text-info font-weight-bold">سجّل دخولك من هنا</a>
+                                    </p>
                                 </div>
                             </div>
                         </div>

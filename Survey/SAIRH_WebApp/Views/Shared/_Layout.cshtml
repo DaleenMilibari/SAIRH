@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] - SAIRH 2026</title>
+
+    <script type="importmap"></script>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/SAIRH_WebApp.styles.css"
+          asp-append-version="true" />
+
+
+    <style>
+
+        :root {
+            --sairh-blue: #0079FF;
+            --sairh-navy: #051C3E;
+            --sairh-white: #FFFFFF;
+            --sairh-black: #1C1F1F;
+            --sairh-light: #F8FAFC;
+            --sairh-border: #E2E8F0;
+        }
+
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+
+            background-color: var(--sairh-light);
+            color: var(--sairh-navy);
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+
+        body {
+            min-height: 100vh;
+        }
+
+
+        /* ========================================
+           PAGE CONTENT
+        ======================================== */
+
+        .sairh-main {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+
+        .sairh-content {
+            width: 100%;
+
+            margin: 0;
+            padding: 0;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ========================================
+         SURVEY / ROADMAP CONTENT ONLY
+    ========================================= -->
+
+    <main class="sairh-main">
+
+        <div class="sairh-content">
+
+            @RenderBody()
+
+        </div>
+
+    </main>
+
+
+
+    <!-- ========================================
+         SCRIPTS
+    ========================================= -->
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
+
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+
+</body>
+
+</html>

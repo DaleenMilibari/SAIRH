@@ -1,86 +1,75 @@
-﻿using DBFunction;
+using DBFunction;
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
+using System.Collections.Generic;
 
 namespace AIE.Ar_Sa
 {
     public partial class Register : System.Web.UI.Page
     {
-        DataView dv = new DataView();
-
         protected void Page_Load(object sender, EventArgs e)
         {
-            divError.Visible = false;
-            divError.Attributes["class"] = "error_input";
-        }
+            if (Ado.UserDetails != null)
+            {
+                Response.Redirect("~/Ar_Sa/Profile.aspx");
+                return;
+            }
 
-        public bool IsValidEmailAddress(string email)
-        {
-            if (!string.IsNullOrEmpty(email) && new EmailAddressAttribute().IsValid(email))
-                return true;
-            else
-                return false;
+            divError.Visible = false;
         }
 
         protected void BtnRegister_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(TxtFullName.Text))
+            string fullName = AuthService.NormalizeName(TxtFullName.Text);
+            string email = AuthService.NormalizeEmail(TxtEmail.Text);
+            string mobile = AuthService.NormalizeMobile(TxtMobile.Text);
+            string password = TxtPassword.Text ?? string.Empty;
+            string passwordAgain = TxtPasswordAgain.Text ?? string.Empty;
+
+            List<string> errors = AuthService.ValidateRegistration(fullName, email, mobile, password, passwordAgain);
+            if (errors.Count > 0)
             {
-                divError.Visible = true;
-                divError.InnerHtml = "Name is required";
-                return;
-            }
-            if (TxtGender.SelectedIndex == -1)
-            {
-                divError.Visible = true;
-                divError.InnerHtml = "Gender is required";
-                return;
-            }
-            if (Nationality.SelectedIndex == -1)
-            {
-                divError.Visible = true;
-                divError.InnerHtml = "Nationality is required";
+                ShowError(AuthMessages.RenderHtml(errors, true));
                 return;
             }
 
-            if (!IsValidEmailAddress(TxtEmail.Text))
-            {
-                divError.Visible = true;
-                divError.InnerHtml = "Email format not valid";
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(TxtPassword.Text))
-            {
-                divError.Visible = true;
-                divError.InnerHtml = "Password is required";
-                return;
-            }
-            if (TxtPassword.Text != TxtPasswordAgain.Text)
-            {
-                divError.Visible = true;
-                divError.InnerHtml = "Password does not match";
-                return;
-            }
-            dv = Ado.UsersGetByEmail(TxtEmail.Text);
-            if (dv.Count > 0)
-            {
-                divError.Visible = true;
-                divError.InnerHtml = "Username exist";
-                return;
-            }
+            string organization = (TxtOrganization?.Text ?? string.Empty).Trim();
+            string jobTitle = (TxtJobTitle?.Text ?? string.Empty).Trim();
 
+            try
+            {
+                AuthService.Account account;
+                AuthService.RegisterStatus status = AuthService.Register(
+                    fullName, email, mobile, password,
+                    organization, jobTitle, null, null, null,
+                    out account);
 
-            Ado.UsersInsertV2(TxtFullName.Text, TxtEmail.Text, TxtPassword.Text, TxtMobile.Text, TxtGender.SelectedItem.Value.ToString(), Nationality.Value.ToString(), TxtLinkedin.Text);
+                if (status == AuthService.RegisterStatus.EmailTaken)
+                {
+                    ShowError(AuthMessages.Get("EmailTaken", true));
+                    return;
+                }
+
+                if (status == AuthService.RegisterStatus.Success && account != null)
+                {
+                    AuthService.StartSession(account);
+                    Response.Redirect("~/Ar_Sa/Survey.aspx?first=1");
+                    return;
+                }
+
+                ShowError(AuthMessages.Get("GenericError", true));
+            }
+            catch (Exception ex)
+            {
+                AuthService.LogError("Ar_Sa Register_Click", ex);
+                ShowError(AuthMessages.Get("GenericError", true));
+            }
+        }
+
+        private void ShowError(string html)
+        {
             divError.Visible = true;
-            divError.Attributes["class"] = "alert alert-success";
-            divError.InnerHtml = "Successfully Registered";
-
-            TxtFullName.Text = "";
-            TxtMobile.Text = "";
-            TxtEmail.Text = "";
-            Nationality.SelectedIndex = -1;
-            TxtGender.SelectedIndex = -1;
+            divError.Attributes["class"] = "auth-alert alert alert-danger";
+            divError.InnerHtml = html;
         }
     }
 }

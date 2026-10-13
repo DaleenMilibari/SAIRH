@@ -1,93 +1,187 @@
 /**
- * SAIRH Platform - Liquid Glass Scroll Reveal (Once)
- * Reveals content elements smoothly on scroll using IntersectionObserver.
- * Each element animates only once when it enters the viewport.
+ * SAIRH Platform - Comprehensive Liquid Glass Scroll Reveal System
+ * Reveals container and main elements smoothly across all pages using IntersectionObserver.
+ * Speakers page: reveals header, filter container, and speaker cards row-by-row (no inner-card animation).
+ * All pages: strictly targets container/main blocks, never inner sub-elements.
  */
 (function () {
   'use strict';
 
-  // All selectors that should animate on scroll
+  // Container & Main Elements Only (No inner/sub-elements)
   var REVEAL_SELECTORS = [
+    // Generic Liquid Glass marker (if explicitly set on a card)
     '.reveal-on-scroll',
-    'section:not(.simpler-main-bg):not(.hero-no-reveal)',
-    '.glass-card',
-    '.liquid-glass',
-    '.vision-pillar-card',
-    '.venue-showcase-card',
-    '.qr-pass-container',
-    '.hub-track-card',
+
+    // Page Header Containers & Section Header Blocks
+    '.simpler-main-bg > .container',
+    'section:not(.landing-hero-section):not(.simpler-main-bg) > .container > .text-center:first-child',
+
+    // Speakers Page: Header, Filter Container, and Speaker Cards per row
+    '.speakers-filter-container',
+    '.speaker-card',
+
+    // Landing Page Main Containers
     '.sairh-live-widget',
-    '.de-team-list',
+    '.hero-countdown-card',
+    '.vision-pillar-card',
+    '.qr-pass-container',
+    '.venue-showcase-card',
+
+    // Ceremony & Publication Track Cards & Agenda Containers
     '.track-deck-card',
-    '.pavilion-card',
-    '.partner-block',
+    '.agenda-day-tabs',
+    '.track-filter-bar',
     '.session-item',
+
+    // Exhibition Containers
+    '.expo-meta-banner',
+    '.pavilion-card',
+
+    // Sponsors / Partners Containers
+    '.partner-block',
+    '.alliances-ribbon',
+
+    // Contact Containers
     '.contact-info-card',
     '.contact-form-glass',
-    '.speakers-intro-card',
-    '.roster-card',
-    '.expo-meta-banner',
-    '.alliances-ribbon',
-    '.login-glass-card',
-    '.register-glass-card',
+
+    // Dashboard & Profile Containers
     '.profile-user-card',
+    '.dash-nav-pills',
     '.dash-content-card',
-    '.dash-nav-pills'
+    '.glass-card',
+
+    // Auth Containers
+    '.login-glass-card',
+    '.register-glass-card'
   ];
 
   function initScrollReveal() {
-    // Respect reduced-motion preference
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      var all = document.querySelectorAll(REVEAL_SELECTORS.join(', '));
-      all.forEach(function (el) { el.classList.add('is-revealed'); });
+    var selectorStr = REVEAL_SELECTORS.join(', ');
+
+    // Fallback if IntersectionObserver is unsupported
+    if (!('IntersectionObserver' in window)) {
+      document.querySelectorAll(selectorStr).forEach(function (el) {
+        el.classList.add('is-revealed');
+      });
       return;
     }
 
-    var targets = document.querySelectorAll(REVEAL_SELECTORS.join(', '));
+    // Respect reduced-motion preference
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll(selectorStr).forEach(function (el) {
+        el.classList.add('is-revealed');
+      });
+      return;
+    }
+
+    var targets = document.querySelectorAll(selectorStr);
     if (!targets || targets.length === 0) return;
 
-    // Ensure base class is applied
+    // Apply base reveal class to all matched container targets
     targets.forEach(function (el) {
       if (!el.classList.contains('is-revealed')) {
         el.classList.add('reveal-on-scroll');
       }
     });
 
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    // Responsive rootMargin: -40px on desktop, -20px on mobile for natural on-screen triggering
+    var bottomMargin = vh > 650 ? '-40px' : '-20px';
+
     var observerOptions = {
       root: null,
-      rootMargin: '0px 0px -50px 0px',
-      threshold: 0.08
+      rootMargin: '0px 0px ' + bottomMargin + ' 0px',
+      threshold: 0.05
     };
 
     var observer = new IntersectionObserver(function (entries, obs) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
-          // Add stagger delay for sibling elements
-          var parent = entry.target.parentElement;
+          var target = entry.target;
+
+          var parent = target.parentElement;
           if (parent) {
-            var siblings = parent.querySelectorAll(':scope > .reveal-on-scroll:not(.is-revealed)');
-            var idx = Array.prototype.indexOf.call(siblings, entry.target);
-            if (idx > 0) {
-              entry.target.style.transitionDelay = (idx * 0.07) + 's';
+            // Speakers grid: row-based stagger (3 columns on desktop, 2 on tablet, 1 on mobile)
+            if (parent.classList.contains('speakers-grid')) {
+              var allCards = Array.prototype.slice.call(parent.children);
+              var cardIdx = allCards.indexOf(target);
+              if (cardIdx >= 0) {
+                var colsPerRow = window.innerWidth > 991 ? 3 : (window.innerWidth > 640 ? 2 : 1);
+                var colInRow = cardIdx % colsPerRow;
+                target.style.transitionDelay = (colInRow * 0.16) + 's';
+              }
+            } else {
+              // General sibling stagger for card decks / grids
+              var siblings = parent.querySelectorAll(':scope > .reveal-on-scroll:not(.is-revealed)');
+              var idx = Array.prototype.indexOf.call(siblings, target);
+              if (idx > 0) {
+                var colIdx = idx % 4;
+                target.style.transitionDelay = (colIdx * 0.16) + 's';
+              }
             }
           }
-          entry.target.classList.add('is-revealed');
-          obs.unobserve(entry.target);
 
-          // Clean up transition delay after animation
+          target.classList.add('is-revealed');
+          obs.unobserve(target);
+
+          // Clean up inline delay after transition completes
           setTimeout(function () {
-            entry.target.style.transitionDelay = '';
-          }, 1200);
+            target.style.transitionDelay = '';
+          }, 1900);
         }
       });
     }, observerOptions);
 
+    // Initial check: elements already visible in viewport reveal immediately with smooth entrance
     targets.forEach(function (el) {
-      observer.observe(el);
+      var rect = el.getBoundingClientRect();
+      if (rect.bottom < 0) {
+        // Element is already scrolled past above viewport
+        el.classList.add('is-revealed');
+      } else if (rect.top < vh - 40 && rect.bottom > 0) {
+        // Element is currently visible in viewport on initial load
+        el.classList.add('is-revealed');
+      } else {
+        // Element is below viewport: observe for scroll reveal
+        observer.observe(el);
+      }
     });
+
+    // Dynamic Tab & Filter Handling (Agenda Day 1/2, Dashboard tabs, Speakers search & track filters)
+    function revealDynamicElements() {
+      setTimeout(function () {
+        var currentVh = window.innerHeight || document.documentElement.clientHeight;
+        document.querySelectorAll(selectorStr).forEach(function (el) {
+          if (!el.classList.contains('is-revealed')) {
+            var rect = el.getBoundingClientRect();
+            if (rect.top < currentVh - 20 && rect.bottom > 0) {
+              el.classList.add('is-revealed');
+              observer.unobserve(el);
+            }
+          }
+        });
+      }, 100);
+    }
+
+    document.addEventListener('click', function (e) {
+      var tabBtn = e.target.closest('button, a, [data-toggle="tab"], .track-filter-pill, .dash-pill-btn, .agenda-day-btn, .track-tab-btn');
+      if (tabBtn) {
+        revealDynamicElements();
+      }
+    });
+
+    // Safety timeout: ensure no content remains hidden after 4s
+    setTimeout(function () {
+      document.querySelectorAll(selectorStr).forEach(function (el) {
+        if (!el.classList.contains('is-revealed')) {
+          el.classList.add('is-revealed');
+        }
+      });
+    }, 4000);
   }
 
-  // Initialize when DOM is ready
+  // Initialize on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initScrollReveal);
   } else {
