@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Ar_Sa/PublicAr.Master" AutoEventWireup="true" CodeBehind="Profile.aspx.cs" Inherits="AIE.Ar_Sa.Profile" %>
+<%@ Page Title="" Language="C#" MasterPageFile="~/Ar_Sa/PublicAr.Master" AutoEventWireup="true" CodeBehind="Profile.aspx.cs" Inherits="AIE.Ar_Sa.Profile" %>
 <%@ Register Assembly="DevExpress.Web.Bootstrap.v20.2, Version=20.2.5.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" Namespace="DevExpress.Web.Bootstrap" TagPrefix="dx" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
 </asp:Content>
@@ -88,6 +88,11 @@
                                 <div class="card" runat="server" id="div_changepasss" visible="false">
                                     <div class="card-header btn-primary droidkufiregular" >تحديث كلمة المرور</div>
                                     <div class="form-border card-body">
+                                        <div class="field-set">
+                                            <label class="droidkufiregular">كلمة المرور الحالية</label>
+                                            <asp:TextBox ID="TxtCurrentPass" runat="server" CssClass="form-control" TextMode="Password" AutoComplete="false"></asp:TextBox>
+                                        </div>
+
                                         <div class="field-set">
                                             <label class="droidkufiregular">كلمة مرور جديدة</label>
                                             <asp:TextBox ID="TxtPass" runat="server" CssClass="form-control" TextMode="Password" AutoComplete="false"></asp:TextBox>
