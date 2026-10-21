@@ -52,39 +52,29 @@
                                     </asp:LinkButton>
                                 </div>
 
-                                <!-- Security Status Box -->
-                                <div class="mt-4 p-3 text-left" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px;">
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <span class="text-white font-weight-bold small"><i class="bi bi-shield-check text-success mr-1"></i> Security Status</span>
-                                        <span class="badge badge-success">Protected</span>
-                                    </div>
-                                    <div class="text-secondary small mb-1">
-                                        <i class="bi bi-clock-history mr-1"></i> Last Sign-in: <asp:Label ID="LblLastLogin" runat="server" CssClass="text-light" Text="Active Session"></asp:Label>
-                                    </div>
-                                    <div class="text-secondary small">
-                                        <i class="bi bi-key mr-1"></i> Password Updated: <asp:Label ID="LblPasswordAge" runat="server" CssClass="text-light" Text="Secured"></asp:Label>
-                                    </div>
-                                </div>
-
                                 <!-- Exhibition Roadmap Box -->
-                                <div class="expo-profile-roadmap-box mt-4 p-3 text-left" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px;">
-                                    <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <span class="text-white font-weight-bold small"><i class="bi bi-map text-info mr-1"></i> Exhibition Roadmap</span>
-                                        <asp:Label ID="LblSurveyBadge" runat="server" CssClass="badge badge-warning" Text="Not Completed"></asp:Label>
+                                <div class="expo-profile-roadmap-box mt-4 text-left">
+                                    <div class="d-flex align-items-center mb-3 pb-2" style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                                        <div class="mr-2 d-flex align-items-center justify-content-center rounded" style="width: 28px; height: 28px; min-width: 28px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; border-radius: 8px !important;">
+                                            <i class="bi bi-compass" style="font-size: 0.95rem;"></i>
+                                        </div>
+                                        <span class="roadmap-header-title">Exhibition Roadmap</span>
+                                        <asp:Label ID="LblSurveyBadge" runat="server" Visible="false" style="display:none;"></asp:Label>
                                     </div>
-                                    <p class="text-secondary small mb-3" id="pRoadmapDesc" runat="server">
-                                        Take our short survey to get a tailored tour of sponsor booths and research displays on the Exhibition Map.
+                                    <p class="small mb-3" id="pRoadmapDesc" runat="server" style="color: #94a3b8; font-size: 0.82rem; line-height: 1.45;">
+                                        Answer 3 quick questions to generate a personalized tour of exhibitor booths and research showcases.
                                     </p>
-                                    <div id="pnlSurveyStops" runat="server" class="mb-3" visible="false">
-                                        <div class="text-secondary small mb-1">Recommended Stops:</div>
-                                        <div id="pnlStopsChips" runat="server" class="d-flex flex-wrap gap-1"></div>
+                                    <div id="pnlSurveyStops" runat="server" class="roadmap-stops-panel" style="display:none;">
+                                        <div class="small mb-2 d-flex align-items-center justify-content-between" style="color: #7dd3fc; font-weight: 600; font-size: 0.74rem;">
+                                            <span><i class="bi bi-geo-alt-fill mr-1 text-info"></i> Recommended Stops</span>
+                                        </div>
+                                        <div id="pnlStopsChips" runat="server" class="d-flex flex-wrap" style="gap: 5px;"></div>
                                     </div>
-                                    <div class="d-flex flex-column gap-2">
-                                        <a href="Schedules" class="btn btn-sm btn-info rounded-pill font-weight-bold">
-                                            <i class="bi bi-compass mr-1"></i> View on Floor Map
-                                        </a>
-                                        <a href="Survey" id="lnkSurveyAction" runat="server" class="btn btn-sm btn-outline-light rounded-pill font-weight-semibold">
-                                            <i class="bi bi-magic mr-1"></i> Build My Roadmap
+                                    <div id="pnlRoadmapActions" runat="server" class="roadmap-actions-container">
+                                        <a href="Survey" id="lnkSurveyAction" runat="server" class="roadmap-highlight-cta">
+                                            <i class="bi bi-magic mr-2"></i>
+                                            <span>Build My Roadmap</span>
+                                            <i class="bi bi-arrow-right ml-2 cta-arrow"></i>
                                         </a>
                                     </div>
                                 </div>
@@ -101,21 +91,21 @@
                                         <h3 class="text-white font-weight-bold m-0">Edit Profile Information</h3>
                                     </div>
 
-                                    <div id="divErrorProfile" class="auth-alert alert" runat="server" visible="false" role="alert"></div>
+                                    <div id="divErrorProfile" class="auth-alert alert" runat="server" visible="false" role="alert" style="display:none;"></div>
 
                                     <div class="auth-form">
                                         <div class="auth-field">
                                             <label for="<%= TxtEditFullName.ClientID %>" class="auth-label">
                                                 <i class="bi bi-person mr-1 text-info"></i> Full Name
                                             </label>
-                                            <asp:TextBox ID="TxtEditFullName" runat="server" CssClass="form-control" placeholder="Enter your full name" autocomplete="name" required="required"></asp:TextBox>
+                                            <asp:TextBox ID="TxtEditFullName" runat="server" CssClass="form-control" placeholder="Enter your full name" autocomplete="name" required="required" MaxLength="100"></asp:TextBox>
                                         </div>
 
                                         <div class="auth-field">
                                             <label for="<%= TxtEditMobile.ClientID %>" class="auth-label">
                                                 <i class="bi bi-telephone mr-1 text-info"></i> Mobile Number
                                             </label>
-                                            <asp:TextBox ID="TxtEditMobile" runat="server" TextMode="Phone" CssClass="form-control" placeholder="Enter mobile number" autocomplete="tel"></asp:TextBox>
+                                            <asp:TextBox ID="TxtEditMobile" runat="server" TextMode="Phone" CssClass="form-control" placeholder="e.g. +966 50 123 4567" autocomplete="tel" MaxLength="25"></asp:TextBox>
                                         </div>
 
                                         <div class="row">
@@ -124,7 +114,7 @@
                                                     <label for="<%= TxtEditOrg.ClientID %>" class="auth-label">
                                                         <i class="bi bi-building mr-1 text-info"></i> Organization / Workplace
                                                     </label>
-                                                    <asp:TextBox ID="TxtEditOrg" runat="server" CssClass="form-control" placeholder="Hospital / University / Company" autocomplete="organization"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtEditOrg" runat="server" CssClass="form-control" placeholder="Hospital / University / Company" autocomplete="organization" MaxLength="200"></asp:TextBox>
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
@@ -132,7 +122,7 @@
                                                     <label for="<%= TxtEditJobTitle.ClientID %>" class="auth-label">
                                                         <i class="bi bi-briefcase mr-1 text-info"></i> Job Title / Role
                                                     </label>
-                                                    <asp:TextBox ID="TxtEditJobTitle" runat="server" CssClass="form-control" placeholder="e.g. Consultant Radiologist"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtEditJobTitle" runat="server" CssClass="form-control" placeholder="e.g. Consultant Radiologist" MaxLength="150"></asp:TextBox>
                                                 </div>
                                             </div>
                                         </div>
@@ -143,7 +133,7 @@
                                                     <label for="<%= TxtEditSpecialty.ClientID %>" class="auth-label">
                                                         <i class="bi bi-award mr-1 text-info"></i> Specialty / Field
                                                     </label>
-                                                    <asp:TextBox ID="TxtEditSpecialty" runat="server" CssClass="form-control" placeholder="e.g. Neuroradiology, AI in Health"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtEditSpecialty" runat="server" CssClass="form-control" placeholder="e.g. Neuroradiology, AI in Health" MaxLength="150"></asp:TextBox>
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
@@ -151,13 +141,13 @@
                                                     <label for="<%= TxtEditLinkedIn.ClientID %>" class="auth-label">
                                                         <i class="bi bi-linkedin mr-1 text-info"></i> LinkedIn Profile
                                                     </label>
-                                                    <asp:TextBox ID="TxtEditLinkedIn" runat="server" CssClass="form-control" placeholder="https://linkedin.com/in/..."></asp:TextBox>
+                                                    <asp:TextBox ID="TxtEditLinkedIn" runat="server" CssClass="form-control" placeholder="https://linkedin.com/in/username" MaxLength="300"></asp:TextBox>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="d-flex justify-content-end mt-3">
-                                            <asp:Button runat="server" ID="BtnPudateProfile" CssClass="cyan-glow-btn px-4 py-2 text-white font-weight-bold" Text="Save Changes" OnClick="BtnPudateProfile_Click" data-loading-text="Saving..." />
+                                            <asp:Button runat="server" ID="BtnPudateProfile" CssClass="cyan-glow-btn px-4 py-2 text-white font-weight-bold" Text="Save Changes" OnClick="BtnPudateProfile_Click" data-loading-text="Saving..." formnovalidate="formnovalidate" />
                                         </div>
                                     </div>
                                 </div>
@@ -169,7 +159,7 @@
                                         <h3 class="text-white font-weight-bold m-0">Change Security Password</h3>
                                     </div>
 
-                                    <div id="divError" class="auth-alert alert" runat="server" visible="false" role="alert"></div>
+                                    <div id="divError" class="auth-alert alert" runat="server" visible="false" role="alert" style="display:none;"></div>
 
                                     <div class="auth-form">
                                         <div class="auth-field">
@@ -177,7 +167,7 @@
                                                 <i class="bi bi-key mr-1 text-info"></i> Current Password
                                             </label>
                                             <div class="auth-password">
-                                                <asp:TextBox ID="TxtPassCurrent" runat="server" TextMode="Password" CssClass="form-control" placeholder="Enter your current password" autocomplete="current-password" required="required"></asp:TextBox>
+                                                <asp:TextBox ID="TxtPassCurrent" runat="server" TextMode="Password" CssClass="form-control" placeholder="Enter your current password" autocomplete="current-password"></asp:TextBox>
                                                 <button type="button" class="auth-password-toggle" data-toggle-password="<%= TxtPassCurrent.ClientID %>" aria-label="Show password" data-label-show="Show password" data-label-hide="Hide password" aria-pressed="false">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
@@ -189,7 +179,7 @@
                                                 <i class="bi bi-lock mr-1 text-info"></i> New Password
                                             </label>
                                             <div class="auth-password">
-                                                <asp:TextBox ID="TxtPass" runat="server" TextMode="Password" CssClass="form-control" placeholder="Enter new password (min. 8 characters)" autocomplete="new-password" required="required"></asp:TextBox>
+                                                <asp:TextBox ID="TxtPass" runat="server" TextMode="Password" CssClass="form-control" placeholder="Enter new password (min. 8 characters)" autocomplete="new-password"></asp:TextBox>
                                                 <button type="button" class="auth-password-toggle" data-toggle-password="<%= TxtPass.ClientID %>" aria-label="Show password" data-label-show="Show password" data-label-hide="Hide password" aria-pressed="false">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
@@ -219,7 +209,7 @@
                                                 <i class="bi bi-check-all mr-1 text-info"></i> Confirm New Password
                                             </label>
                                             <div class="auth-password">
-                                                <asp:TextBox ID="TxtPassRe" runat="server" TextMode="Password" CssClass="form-control" placeholder="Confirm new password" autocomplete="new-password" required="required"></asp:TextBox>
+                                                <asp:TextBox ID="TxtPassRe" runat="server" TextMode="Password" CssClass="form-control" placeholder="Confirm new password" autocomplete="new-password"></asp:TextBox>
                                                 <button type="button" class="auth-password-toggle" data-toggle-password="<%= TxtPassRe.ClientID %>" aria-label="Show password" data-label-show="Show password" data-label-hide="Hide password" aria-pressed="false">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
@@ -228,7 +218,7 @@
                                         </div>
 
                                         <div class="d-flex justify-content-end mt-3">
-                                            <asp:Button runat="server" ID="BtnUpdate" CssClass="cyan-glow-btn px-4 py-2 text-white font-weight-bold" Text="Update Password" OnClick="BtnUpdate_Click" data-loading-text="Updating..." />
+                                            <asp:Button runat="server" ID="BtnUpdate" CssClass="cyan-glow-btn px-4 py-2 text-white font-weight-bold" Text="Update Password" OnClick="BtnUpdate_Click" data-loading-text="Updating..." formnovalidate="formnovalidate" />
                                         </div>
                                     </div>
                                 </div>

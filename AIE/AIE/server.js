@@ -83,6 +83,17 @@ function seedDefaultAccounts() {
       role: 'Attendee',
       isAdmin: false,
       passwordHash: 'PBKDF2-SHA512$210000$OmA5KPTUEKDSf291nAbGMg==$YCg6a7S9ScfG+99qu+MkHMdfknV4ilgG7lyFhyMky5U='
+    },
+    {
+      email: 'speaker@sairh.com',
+      fullName: 'Dr. Fahad Almsned PhD',
+      mobile: '+966 50 999 8888',
+      organization: 'King Fahad Specialist Hospital Dammam',
+      jobTitle: 'Executive Director of Health Informatics',
+      specialty: 'Thoracic AI Imaging',
+      role: 'Speaker',
+      isAdmin: false,
+      passwordHash: 'PBKDF2-SHA512$210000$wTKpejY4u7uk1muRJZco7Q==$OXiyio664+V/Rih34Golh/RLpGXrJ/a/T8E99/ApaZ4='
     }
   ];
 
@@ -101,6 +112,11 @@ function seedDefaultAccounts() {
         hasCompletedSurvey: false,
         surveyRoadmap: []
       };
+      modified = true;
+    } else if (!DEV_USERS[k].passwordHash) {
+      DEV_USERS[k].passwordHash = s.passwordHash;
+      if (!DEV_USERS[k].passwordHistory) DEV_USERS[k].passwordHistory = [s.passwordHash];
+      if (!DEV_USERS[k].role) DEV_USERS[k].role = s.role;
       modified = true;
     }
   }
@@ -325,15 +341,19 @@ function hashPassword(password) {
   return `PBKDF2-SHA512$${iterations}$${salt.toString('base64')}$${hash.toString('base64')}`;
 }
 
+// Constant dummy hash computed with 210,000 iterations to mitigate timing attacks on invalid emails
+const DUMMY_HASH = 'PBKDF2-SHA512$210000$wTKpejY4u7uk1muRJZco7Q==$OXiyio664+V/Rih34Golh/RLpGXrJ/a/T8E99/ApaZ4=';
+
 function verifyPassword(password, storedHash) {
   if (!password || !storedHash) return false;
   const parts = storedHash.split('$');
   if (parts.length !== 4 || parts[0] !== 'PBKDF2-SHA512') return false;
   const iterations = parseInt(parts[1], 10);
-  if (isNaN(iterations) || iterations < 1) return false;
+  if (isNaN(iterations) || iterations < 1000 || iterations > 1000000) return false;
   try {
     const salt = Buffer.from(parts[2], 'base64');
     const expected = Buffer.from(parts[3], 'base64');
+    if (salt.length !== 16 || expected.length !== 32) return false;
     const actual = crypto.pbkdf2Sync(password, salt, iterations, expected.length, 'sha512');
     return crypto.timingSafeEqual(actual, expected);
   } catch (e) {
@@ -446,6 +466,69 @@ function getCookie(req, name) {
   if (!cookieHeader) return null;
   const match = cookieHeader.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
   return match ? decodeURIComponent(match[1]) : null;
+}
+
+// -----------------------------------------------------------------------------
+// Enterprise Session Security & HMAC-SHA256 Cookie Signing
+// -----------------------------------------------------------------------------
+const SESSION_COOKIE_NAME = 'sairh_user';
+const SESSION_SECRET = process.env.SESSION_SECRET || 'sairh_enterprise_session_hmac_secret_2026_dev_key';
+
+function signSession(email) {
+  const normalized = (email || '').trim().toLowerCase();
+  const data = Buffer.from(normalized, 'utf8').toString('base64url');
+  const hmac = crypto.createHmac('sha256', SESSION_SECRET).update(data).digest('base64url');
+  return `${data}.${hmac}`;
+}
+
+function verifySessionCookie(cookieValue) {
+  if (!cookieValue || typeof cookieValue !== 'string') return null;
+  const parts = cookieValue.split('.');
+  if (parts.length !== 2) return null;
+  const [data, sig] = parts;
+  try {
+    const expectedSig = crypto.createHmac('sha256', SESSION_SECRET).update(data).digest('base64url');
+    const sigBuf = Buffer.from(sig);
+    const expectedBuf = Buffer.from(expectedSig);
+    if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+      return null;
+    }
+    const email = Buffer.from(data, 'base64url').toString('utf8');
+    return email.toLowerCase();
+  } catch (e) {
+    return null;
+  }
+}
+
+function buildSessionCookieHeader(req, email, rememberMe = false) {
+  const token = signSession(email);
+  const isHttps = !!(req && ((req.connection && req.connection.encrypted) || (req.socket && req.socket.encrypted) || (req.headers && req.headers['x-forwarded-proto'] === 'https')));
+  let header = `${SESSION_COOKIE_NAME}=${token}; Path=/; HttpOnly; SameSite=Lax`;
+  if (rememberMe) {
+    header += '; Max-Age=2592000'; // 30 days
+  }
+  if (isHttps) {
+    header += '; Secure';
+  }
+  return header;
+}
+
+function buildClearSessionCookieHeader(req) {
+  const isHttps = !!(req && ((req.connection && req.connection.encrypted) || (req.socket && req.socket.encrypted) || (req.headers && req.headers['x-forwarded-proto'] === 'https')));
+  let header = `${SESSION_COOKIE_NAME}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax`;
+  if (isHttps) {
+    header += '; Secure';
+  }
+  return header;
+}
+
+function getSafeReturnUrl(returnUrl, fallbackUrl) {
+  if (!returnUrl || typeof returnUrl !== 'string') return fallbackUrl;
+  const trimmed = returnUrl.trim();
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//') && !trimmed.startsWith('/\\') && !trimmed.includes(':') && !/[\r\n]/.test(trimmed)) {
+    return trimmed;
+  }
+  return fallbackUrl;
 }
 
 function render403AccessDenied(isAr) {
@@ -597,7 +680,7 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
   rendered = rendered.replace(/<asp:ContentPlaceHolder[^>]*ID=["']ContentPlaceHolder1["'][^>]*>[\s\S]*?<\/asp:ContentPlaceHolder>/gi, () => mainContent);
 
   // Convert <form ... runat="server"> to <form ... method="post" action="">
-  rendered = rendered.replace(/<form\b([^>]*)runat=["']server["']([^>]*)>/gi, '<form$1method="post" action=""$2>');
+  rendered = rendered.replace(/<form\b([^>]*)runat=["']server["']([^>]*)>/gi, '<form$1method="post" action="" novalidate="novalidate"$2>');
 
   // Resolve dates and expressions
   const now = new Date();
@@ -634,9 +717,11 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
     const tm = ((attrs.match(/TextMode=["']([^"']+)["']/i) || [])[1] || '').toLowerCase();
     const rows = (attrs.match(/Rows=["']([^"']+)["']/i) || [])[1] || '3';
     const ac = (attrs.match(/autocomplete=["']([^"']+)["']/i) || [])[1];
+    const ml = (attrs.match(/MaxLength=["']([^"']+)["']/i) || [])[1];
     const req = /required(?:=["'][^"']*["'])?/i.test(attrs);
     let extra = '';
     if (ac) extra += ` autocomplete="${ac}"`;
+    if (ml) extra += ` maxlength="${ml}"`;
     if (req) extra += ` required="required"`;
 
     let val = formData[id] !== undefined ? formData[id] : '';
@@ -683,8 +768,10 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
     const cls = (attrs.match(/CssClass=["']([^"']+)["']/i) || [])[1] || '';
     const txt = (attrs.match(/Text=["']([^"']*)["']/i) || [])[1] || '';
     const ld = (attrs.match(/data-loading-text=["']([^"']+)["']/i) || [])[1];
+    const fnv = /formnovalidate/i.test(attrs);
     let extra = '';
     if (ld) extra += ` data-loading-text="${ld}"`;
+    if (fnv) extra += ' formnovalidate="formnovalidate"';
     return `<button type="submit" name="${id}" id="${id}" class="${cls}"${extra}>${txt}</button>`;
   });
 
@@ -761,26 +848,65 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
     return `<a href="${pb}" id="${id}" class="${cls}">${body}</a>`;
   });
 
-  // Handle Error/Success Alert Banners
-  if (errorAlert) {
-    rendered = rendered.replace(/<div[^>]*id=["']divError(?:Profile)?["'][^>]*>[\s\S]*?<\/div>/i, `<div id="divError" class="auth-alert alert alert-danger" style="display:block;" role="alert">${errorAlert}</div>`);
-  } else if (successAlert) {
-    rendered = rendered.replace(/<div[^>]*id=["']divError(?:Profile)?["'][^>]*>[\s\S]*?<\/div>/i, `<div id="divError" class="auth-alert alert alert-success" style="display:block;" role="alert">${successAlert}</div>`);
-  }
+  // Handle Error/Success Alert Banners & Profile Tabs
+  const isProfilePage = aspxPath.toLowerCase().includes('profile');
+  const activeTab = options.activeTab || (relativeUrl.toLowerCase().includes('tab=password') ? 'password' : 'profile');
 
-  // Header user dropdown vs signin link visibility and Admin badge
-  const isAdmin = !!(user && (user.role === 'Administrator' || user.role === 'Admin' || user.isAdmin === true));
-  if (user) {
-    rendered = rendered.replace(/id="liLogin"/g, 'id="liLogin" style="display:none;"');
-    if (isAdmin) {
-      rendered = rendered.replace(/id="liDashboard"[^>]*style="display:none;"/gi, 'id="liDashboard" style="display:block;"');
+  if (isProfilePage) {
+    if (activeTab === 'password') {
+      rendered = rendered.replace(/<div([^>]*\bid=["']div_editprofile["'][^>]*)>/i, '<div$1 style="display:none;">');
+      rendered = rendered.replace(/<div([^>]*\bid=["']div_changepasss["'][^>]*)>/i, (m, attrs) => {
+        const clean = attrs.replace(/\bvisible=["']false["']/i, '');
+        return `<div${clean} style="display:block;">`;
+      });
+      rendered = rendered.replace(/(id=["']BtnShowChangePass["'][^>]*class=["'][^"']*)/i, '$1 active');
+      rendered = rendered.replace(/(id=["']BtnShowProfile["'][^>]*class=["'][^"']*)\bactive\b/i, '$1');
+
+      const passErr = options.passwordErrorAlert || (errorAlert && activeTab === 'password' ? errorAlert : null);
+      const passSucc = options.passwordSuccessAlert || (successAlert && activeTab === 'password' ? successAlert : null);
+      if (passErr) {
+        rendered = rendered.replace(/<div[^>]*id=["']divError["'][^>]*>[\s\S]*?<\/div>/i, `<div id="divError" class="auth-alert alert alert-danger" style="display:block;" role="alert">${passErr}</div>`);
+      } else if (passSucc) {
+        rendered = rendered.replace(/<div[^>]*id=["']divError["'][^>]*>[\s\S]*?<\/div>/i, `<div id="divError" class="auth-alert alert alert-success" style="display:block;" role="alert">${passSucc}</div>`);
+      } else {
+        rendered = rendered.replace(/<div([^>]*id=["']divError["'][^>]*)>/i, '<div$1 style="display:none;">');
+      }
+      rendered = rendered.replace(/<div([^>]*id=["']divErrorProfile["'][^>]*)>/i, '<div$1 style="display:none;">');
     } else {
-      rendered = rendered.replace(/<span[^>]*id=["']liDashboard["'][^>]*>[\s\S]*?<\/span>/gi, '');
+      rendered = rendered.replace(/<div([^>]*\bid=["']div_editprofile["'][^>]*)>/i, (m, attrs) => {
+        const clean = attrs.replace(/\bvisible=["']false["']/i, '');
+        return `<div${clean} style="display:block;">`;
+      });
+      rendered = rendered.replace(/<div([^>]*\bid=["']div_changepasss["'][^>]*)>/i, '<div$1 style="display:none;">');
+
+      const profErr = options.profileErrorAlert || (errorAlert && activeTab !== 'password' ? errorAlert : null);
+      const profSucc = options.profileSuccessAlert || (successAlert && activeTab !== 'password' ? successAlert : null);
+      if (profErr) {
+        rendered = rendered.replace(/<div[^>]*id=["']divErrorProfile["'][^>]*>[\s\S]*?<\/div>/i, `<div id="divErrorProfile" class="auth-alert alert alert-danger" style="display:block;" role="alert">${profErr}</div>`);
+      } else if (profSucc) {
+        rendered = rendered.replace(/<div[^>]*id=["']divErrorProfile["'][^>]*>[\s\S]*?<\/div>/i, `<div id="divErrorProfile" class="auth-alert alert alert-success" style="display:block;" role="alert">${profSucc}</div>`);
+      } else {
+        rendered = rendered.replace(/<div([^>]*id=["']divErrorProfile["'][^>]*)>/i, '<div$1 style="display:none;">');
+      }
+      rendered = rendered.replace(/<div([^>]*id=["']divError["'][^>]*)>/i, '<div$1 style="display:none;">');
     }
   } else {
-    rendered = rendered.replace(/id="liProfile"/g, 'id="liProfile" style="display:none;"');
-    rendered = rendered.replace(/<span[^>]*id=["']liDashboard["'][^>]*>[\s\S]*?<\/span>/gi, '');
+    if (errorAlert) {
+      rendered = rendered.replace(/<div[^>]*id=["']divError["'][^>]*>[\s\S]*?<\/div>/i, `<div id="divError" class="auth-alert alert alert-danger" style="display:block;" role="alert">${errorAlert}</div>`);
+    } else if (successAlert) {
+      rendered = rendered.replace(/<div[^>]*id=["']divError["'][^>]*>[\s\S]*?<\/div>/i, `<div id="divError" class="auth-alert alert alert-success" style="display:block;" role="alert">${successAlert}</div>`);
+    }
   }
+
+  // Header user dropdown visibility:
+  // Signed-in user: only Account Management and Log Out (hide liLogin)
+  // Guest / No user: only Registration and Sign In (hide liProfile)
+  if (user) {
+    rendered = rendered.replace(/\bid=["']liLogin["']/g, 'id="liLogin" style="display:none;"');
+  } else {
+    rendered = rendered.replace(/\bid=["']liProfile["']/g, 'id="liProfile" style="display:none;"');
+  }
+  rendered = rendered.replace(/<span[^>]*id=["']liDashboard["'][^>]*>[\s\S]*?<\/span>/gi, '');
 
   // Remove UpdatePanel
   rendered = rendered.replace(/<\/?asp:UpdatePanel[^>]*>/gi, '');
@@ -932,6 +1058,8 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
     else rendered = rendered.replace('id="linkHome"', 'id="linkHome" class="active"');
   }
 
+  rendered = rendered.replace(/href="~\/Default\.aspx"/gi, 'href="/Default.aspx"');
+  rendered = rendered.replace(/href="~\/Ar_Sa\/Default\.aspx"/gi, 'href="/Ar_Sa/Default.aspx"');
   rendered = rendered.replace(/href="~\/"/g, 'href="/"');
   rendered = rendered.replace(/href="~\/Ar_Sa\/"/gi, 'href="/Ar_Sa/"');
 
@@ -947,7 +1075,7 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
   if (aspxPath.toLowerCase().includes('schedules')) {
     const roadmap = user && user.surveyRoadmap ? user.surveyRoadmap : [];
     if (roadmap && roadmap.length > 0) {
-      rendered = rendered.replace(/id=["']pnlRoadmap["'][^>]*visible=["']false["']/gi, 'id="pnlRoadmap" style="display:block;"');
+      rendered = rendered.replace(/<div[^>]*\bid=["']pnlRoadmap["'][^>]*>/gi, '<div class="expo-roadmap-banner" id="pnlRoadmap" style="display:block;">');
       rendered = rendered.replace(/id=["']pnlSurveyCTA["']/gi, 'id="pnlSurveyCTA" style="display:none;"');
       const isAr = relativeUrl.toLowerCase().includes('/ar_sa') || aspxPath.toLowerCase().includes('ar_sa');
       const cards = roadmap.map(code => {
@@ -957,47 +1085,62 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
         const name = isAr ? booth.nameAr : booth.nameEn;
         const org = isAr ? booth.organizationAr : booth.organizationEn;
         return `
-          <div class="recommended-stop-card" onclick="openBoothModal('${code}')" style="cursor:pointer;">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                  <span class="badge badge-info">${escapeHtml(hall)}</span>
-                  <strong class="text-white">${code}</strong>
+          <div class="recommended-stop-card" onclick="highlightBooth('${code}')" style="cursor:pointer;">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="badge" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px;">${escapeHtml(hall)}</span>
+                  <strong class="text-white" style="letter-spacing: 0.5px;">${code}</strong>
               </div>
-              <div class="text-white font-weight-bold">${escapeHtml(name)}</div>
-              <div class="text-secondary small">${escapeHtml(org)}</div>
+              <div class="text-white font-weight-bold mb-1" style="font-size: 0.95rem;">${escapeHtml(name)}</div>
+              <div class="text-secondary small" style="font-size: 0.82rem;">${escapeHtml(org)}</div>
           </div>`;
       }).join('');
       rendered = rendered.replace(/<div[^>]*id=["']recCardsContainer["'][^>]*>[\s\S]*?<\/div>/i, `<div class="recommended-cards-grid" id="recCardsContainer">${cards}</div>`);
     } else {
-      rendered = rendered.replace(/id=["']pnlRoadmap["']/gi, 'id="pnlRoadmap" style="display:none;"');
+      rendered = rendered.replace(/<div[^>]*\bid=["']pnlRoadmap["'][^>]*>/gi, '<div class="expo-roadmap-banner" id="pnlRoadmap" style="display:none;">');
     }
   }
 
   // Profile.aspx exhibition roadmap box rendering
   if (aspxPath.toLowerCase().includes('profile')) {
     if (user && (user.organization || user.jobTitle)) {
+      rendered = rendered.replace(/<p([^>]*)id=["']pOrgTitle["']([^>]*)visible=["']false["']/gi, '<p$1id="pOrgTitle"$2style="display:block;"');
       rendered = rendered.replace(/<p([^>]*)id=["']pOrgTitle["']([^>]*)style=["']display:none;?["']/gi, '<p$1id="pOrgTitle"$2style="display:block;"');
+    } else {
+      rendered = rendered.replace(/<p([^>]*)id=["']pOrgTitle["']([^>]*)>/gi, '<p$1id="pOrgTitle" style="display:none;">');
     }
     const isAr = relativeUrl.toLowerCase().includes('/ar_sa') || aspxPath.toLowerCase().includes('ar_sa');
     const roadmap = user && user.surveyRoadmap ? user.surveyRoadmap : [];
+    // Remove any status badge from the Exhibition Roadmap card header
+    rendered = rendered.replace(/<(?:asp:Label|span)[^>]*id=["']LblSurveyBadge["'][^>]*>[\s\S]*?<\/(?:asp:Label|span)>/gi, '');
+
     if (roadmap && roadmap.length > 0) {
       const cnt = roadmap.length;
-      const badgeText = isAr ? `مكتمل (${cnt} محطات)` : `Completed (${cnt} stops)`;
-      const descText = isAr ? `مسارك المخصص في المعرض نشط ويتضمن ${cnt} محطة استكشافية موصى بها.` : `Your personalized roadmap is active with ${cnt} recommended booth and research stops.`;
-      const actionText = isAr ? '<i class="bi bi-arrow-repeat ml-1"></i> إعادة الاستبيان' : '<i class="bi bi-arrow-repeat mr-1"></i> Retake Survey';
-      const chips = roadmap.map(c => `<span class="badge badge-primary ${isAr ? 'ml-1' : 'mr-1'} mb-1" style="background:#0284c7;font-size:0.75rem;">${c}</span>`).join('');
-      rendered = rendered.replace(/<span[^>]*id=["']LblSurveyBadge["'][^>]*>[\s\S]*?<\/span>/i, `<span id="LblSurveyBadge" class="badge badge-success">${badgeText}</span>`);
-      rendered = rendered.replace(/<p[^>]*id=["']pRoadmapDesc["'][^>]*>[\s\S]*?<\/p>/i, `<p class="text-secondary small mb-3" id="pRoadmapDesc">${descText}</p>`);
-      rendered = rendered.replace(/id=["']pnlSurveyStops["'][^>]*visible=["']false["']/gi, 'id="pnlSurveyStops" style="display:block;"');
-      rendered = rendered.replace(/<div[^>]*id=["']pnlStopsChips["'][^>]*>[\s\S]*?<\/div>/i, `<div id="pnlStopsChips" class="d-flex flex-wrap gap-1">${chips}</div>`);
-      rendered = rendered.replace(/<a[^>]*id=["']lnkSurveyAction["'][^>]*>[\s\S]*?<\/a>/i, `<a href="Survey" id="lnkSurveyAction" class="btn btn-sm btn-outline-light rounded-pill font-weight-semibold">${actionText}</a>`);
+      const descText = isAr ? `مسارك المخصص نشط ويتضمن ${cnt} محطة استكشافية موصى بها تناسب اهتماماتك.` : `Your personalized itinerary is active with ${cnt} recommended booth and research stops.`;
+      const chips = roadmap.map(c => `<span class="roadmap-stop-chip ${isAr ? 'ml-1' : 'mr-1'} mb-1">${c}</span>`).join('');
+      
+      rendered = rendered.replace(/<p[^>]*id=["']pRoadmapDesc["'][^>]*>[\s\S]*?<\/p>/i, `<p class="small mb-3" id="pRoadmapDesc" style="color: #94a3b8; font-size: 0.82rem; line-height: 1.45;">${descText}</p>`);
+      rendered = rendered.replace(/(<div[^>]*\bid=["']pnlSurveyStops["'][^>]*style=["'])display:none;\s*/i, '$1display:block; ');
+      rendered = rendered.replace(/<div[^>]*id=["']pnlStopsChips["'][^>]*>[\s\S]*?<\/div>/i, `<div id="pnlStopsChips" class="d-flex flex-wrap" style="gap: 5px;">${chips}</div>`);
+      
+      const arrowIcon = isAr ? 'bi-arrow-left mr-2' : 'bi-arrow-right ml-2';
+      const marginClass = isAr ? 'ml-2' : 'mr-2';
+      const primaryTitle = isAr ? 'عرض على خريطة المعرض' : 'View on Floor Map';
+      const secondaryTitle = isAr ? 'إعادة الاستبيان' : 'Retake Survey';
+      const primaryTile = `<a href="Schedules" id="lnkFloorMapAction" class="roadmap-highlight-cta"><i class="bi bi-compass ${marginClass}"></i><span>${primaryTitle}</span><i class="bi ${arrowIcon} cta-arrow"></i></a>`;
+      const secondaryTile = `<a href="Survey" id="lnkSurveyAction" class="roadmap-retake-btn"><i class="bi bi-arrow-repeat ${marginClass}"></i><span>${secondaryTitle}</span></a>`;
+      const actionsHtml = `<div id="pnlRoadmapActions" class="roadmap-actions-container">\n${primaryTile}\n${secondaryTile}\n</div>`;
+      rendered = rendered.replace(/<div[^>]*id=["']pnlRoadmapActions["'][^>]*>[\s\S]*?<\/div>/i, actionsHtml);
     } else {
-      const badgeText = isAr ? "لم يكتمل بعد" : "Not Completed";
-      const descText = isAr ? "أكمل استبيان التخصيص القصير للحصول على جولة مخصصة للأجنحة وشاشات الأبحاث على خريطة المعرض." : "Take our short survey to get a tailored tour of sponsor booths and research displays on the Exhibition Map.";
-      const actionText = isAr ? '<i class="bi bi-magic ml-1"></i> بناء مساري المخصص' : '<i class="bi bi-magic mr-1"></i> Build My Roadmap';
-      rendered = rendered.replace(/<span[^>]*id=["']LblSurveyBadge["'][^>]*>[\s\S]*?<\/span>/i, `<span id="LblSurveyBadge" class="badge badge-warning">${badgeText}</span>`);
-      rendered = rendered.replace(/<p[^>]*id=["']pRoadmapDesc["'][^>]*>[\s\S]*?<\/p>/i, `<p class="text-secondary small mb-3" id="pRoadmapDesc">${descText}</p>`);
-      rendered = rendered.replace(/id=["']pnlSurveyStops["']/gi, 'id="pnlSurveyStops" style="display:none;"');
-      rendered = rendered.replace(/<a[^>]*id=["']lnkSurveyAction["'][^>]*>[\s\S]*?<\/a>/i, `<a href="Survey" id="lnkSurveyAction" class="btn btn-sm btn-outline-light rounded-pill font-weight-semibold">${actionText}</a>`);
+      const descText = isAr ? "أجب عن 3 أسئلة سريعة للحصول على مسار ذكي ومخصص يوجهك لأجنحة المعرض وشاشات الأبحاث." : "Answer 3 quick questions to generate a personalized tour of exhibitor booths and research showcases.";
+      
+      rendered = rendered.replace(/<p[^>]*id=["']pRoadmapDesc["'][^>]*>[\s\S]*?<\/p>/i, `<p class="small mb-3" id="pRoadmapDesc" style="color: #94a3b8; font-size: 0.82rem; line-height: 1.45;">${descText}</p>`);
+      
+      const arrowIcon = isAr ? 'bi-arrow-left mr-2' : 'bi-arrow-right ml-2';
+      const marginClass = isAr ? 'ml-2' : 'mr-2';
+      const primaryTitle = isAr ? 'بناء مساري المخصص' : 'Build My Roadmap';
+      const highlightBtn = `<a href="Survey" id="lnkSurveyAction" class="roadmap-highlight-cta"><i class="bi bi-magic ${marginClass}"></i><span>${primaryTitle}</span><i class="bi ${arrowIcon} cta-arrow"></i></a>`;
+      const actionsHtml = `<div id="pnlRoadmapActions" class="roadmap-actions-container">\n${highlightBtn}\n</div>`;
+      rendered = rendered.replace(/<div[^>]*id=["']pnlRoadmapActions["'][^>]*>[\s\S]*?<\/div>/i, actionsHtml);
     }
   }
 
@@ -1090,7 +1233,7 @@ function handleAuthApi(req, res, pathname, currentUser) {
     // POST /api/auth/logout
     if (endpoint === 'api/auth/logout' && method === 'POST') {
       res.writeHead(200, {
-        'Set-Cookie': 'sairh_user=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT'
+        'Set-Cookie': buildClearSessionCookieHeader(req)
       });
       return res.end(JSON.stringify({ success: true, message: 'Successfully logged out.' }));
     }
@@ -1146,7 +1289,7 @@ function handleAuthApi(req, res, pathname, currentUser) {
       saveUsers();
 
       res.writeHead(201, {
-        'Set-Cookie': `sairh_user=${encodeURIComponent(email)}; Path=/; HttpOnly`
+        'Set-Cookie': buildSessionCookieHeader(req, email, false)
       });
       return res.end(JSON.stringify({ success: true, message: 'Welcome to SAIRH!', user: newUser }));
     }
@@ -1164,6 +1307,7 @@ function handleAuthApi(req, res, pathname, currentUser) {
 
       const user = DEV_USERS[email];
       if (!user) {
+        verifyPassword(password, DUMMY_HASH);
         res.writeHead(401);
         return res.end(JSON.stringify({ success: false, error: 'Incorrect email or password.', code: 'InvalidCredentials' }));
       }
@@ -1205,10 +1349,7 @@ function handleAuthApi(req, res, pathname, currentUser) {
       user.lastLogin = new Date().toISOString();
       saveUsers();
 
-      const cookieHeader = rememberMe
-        ? `sairh_user=${encodeURIComponent(email)}; Path=/; Max-Age=2592000; HttpOnly`
-        : `sairh_user=${encodeURIComponent(email)}; Path=/; HttpOnly`;
-
+      const cookieHeader = buildSessionCookieHeader(req, email, rememberMe);
       res.writeHead(200, { 'Set-Cookie': cookieHeader });
       return res.end(JSON.stringify({ success: true, message: 'Sign in successful.', user }));
     }
@@ -1296,15 +1437,19 @@ function handleAuthApi(req, res, pathname, currentUser) {
         return res.end(JSON.stringify({ error: 'Please enter a valid email address.' }));
       }
 
-      const token = crypto.randomBytes(24).toString('hex');
-      RESET_TOKENS[token] = {
-        email,
-        expires: Date.now() + 3600 * 1000,
-        used: false
-      };
-      const resetUrl = `/ResetPassword?token=${token}`;
+      let resetUrl = null;
+      let token = null;
+      if (DEV_USERS[email]) {
+        token = crypto.randomBytes(24).toString('hex');
+        RESET_TOKENS[token] = {
+          email,
+          expires: Date.now() + 3600 * 1000,
+          used: false
+        };
+        resetUrl = `/ResetPassword?token=${token}`;
+      }
       res.writeHead(200);
-      return res.end(JSON.stringify({ success: true, message: 'Reset link sent.', token, resetUrl }));
+      return res.end(JSON.stringify({ success: true, message: 'If that email address exists in our system, we have sent instructions to reset your password.', token, resetUrl }));
     }
 
     // POST /api/auth/reset-password
@@ -1320,7 +1465,11 @@ function handleAuthApi(req, res, pathname, currentUser) {
       }
 
       const targetEmail = tokenInfo.email;
-      const userObj = DEV_USERS[targetEmail.toLowerCase()] || {};
+      const userObj = DEV_USERS[targetEmail.toLowerCase()];
+      if (!userObj) {
+        res.writeHead(400);
+        return res.end(JSON.stringify({ success: false, error: 'Password reset link is invalid or has expired.' }));
+      }
 
       const errors = [];
       if (isPasswordInHistory(newPassword, userObj.passwordHistory)) {
@@ -1366,7 +1515,7 @@ function handleRequest(req, res) {
   // Handle Logout
   if (parsed.query.logout) {
     res.writeHead(302, {
-      'Set-Cookie': 'sairh_user=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
+      'Set-Cookie': buildClearSessionCookieHeader(req),
       'Location': pathname.toLowerCase().startsWith('ar_sa') ? '/Ar_Sa/Login' : '/Login'
     });
     return res.end();
@@ -1390,12 +1539,10 @@ function handleRequest(req, res) {
     }
   }
 
-  // Current authenticated user check
-  const userEmail = getCookie(req, 'sairh_user');
-  let currentUser = userEmail && DEV_USERS[userEmail.toLowerCase()] ? DEV_USERS[userEmail.toLowerCase()] : null;
-  if (!currentUser && userEmail) {
-    currentUser = { fullName: userEmail.split('@')[0], email: userEmail, mobile: '' };
-  }
+  // Current authenticated user check (HMAC-SHA256 verified)
+  const rawCookie = getCookie(req, SESSION_COOKIE_NAME);
+  const userEmail = verifySessionCookie(rawCookie);
+  const currentUser = (userEmail && DEV_USERS[userEmail.toLowerCase()]) ? DEV_USERS[userEmail.toLowerCase()] : null;
 
   // Handle Auth RESTful API
   if (pathname.toLowerCase().startsWith('api/auth/')) {
@@ -1611,14 +1758,30 @@ function handleRequest(req, res) {
     });
 
     req.on('end', () => {
-      const post = querystring.parse(body);
-      handlePostRequest(req, res, pathname, post, currentUser);
+      try {
+        const post = querystring.parse(body);
+        handlePostRequest(req, res, pathname, post, currentUser);
+      } catch (err) {
+        console.error('Error in handlePostRequest:', err);
+        if (!res.headersSent) {
+          res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(`<h3>500 Internal Server Error</h3><pre>${err.stack || err.message}</pre>`);
+        }
+      }
     });
     return;
   }
 
   // Handle GET requests
-  handleGetRequest(req, res, pathname, currentUser);
+  try {
+    handleGetRequest(req, res, pathname, currentUser);
+  } catch (err) {
+    console.error('Error in handleGetRequest:', err);
+    if (!res.headersSent) {
+      res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(`<h3>500 Internal Server Error</h3><pre>${err.stack || err.message}</pre>`);
+    }
+  }
 }
 
 function handlePostRequest(req, res, pathname, post, currentUser) {
@@ -1684,9 +1847,9 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
     };
     saveUsers();
 
-    const redirectPath = isArabic ? '/Ar_Sa/Survey?first=1' : '/Survey?first=1';
+    const redirectPath = isArabic ? '/Ar_Sa/Profile' : '/Profile';
     res.writeHead(302, {
-      'Set-Cookie': `sairh_user=${encodeURIComponent(email)}; Path=/; HttpOnly`,
+      'Set-Cookie': buildSessionCookieHeader(req, email, false),
       'Location': redirectPath
     });
     return res.end();
@@ -1725,13 +1888,16 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
       return res.end(html);
     }
 
-    const token = crypto.randomBytes(24).toString('hex');
-    RESET_TOKENS[token] = {
-      email,
-      expires: Date.now() + 3600 * 1000,
-      used: false
-    };
-    const resetUrl = isArabic ? `/Ar_Sa/ResetPassword?token=${token}` : `/ResetPassword?token=${token}`;
+    let resetUrl = null;
+    if (DEV_USERS[email]) {
+      const token = crypto.randomBytes(24).toString('hex');
+      RESET_TOKENS[token] = {
+        email,
+        expires: Date.now() + 3600 * 1000,
+        used: false
+      };
+      resetUrl = isArabic ? `/Ar_Sa/ResetPassword?token=${token}` : `/ResetPassword?token=${token}`;
+    }
     const template = isArabic ? 'Ar_Sa/ForgotPassword.aspx' : 'ForgotPassword.aspx';
     const html = parseAspx(path.join(BASE_DIR, template), req.url, { resetSuccessUrl: resetUrl });
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -1751,10 +1917,17 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
       return res.end(html);
     }
 
+    const targetEmail = tokenInfo.email;
+    if (!DEV_USERS[targetEmail.toLowerCase()]) {
+      const template = isArabic ? 'Ar_Sa/ResetPassword.aspx' : 'ResetPassword.aspx';
+      const html = parseAspx(path.join(BASE_DIR, template), req.url, { invalidToken: true });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      return res.end(html);
+    }
+
     const pwd = post.TxtPassword || '';
     const pwdAgain = post.TxtPasswordAgain || '';
-    const targetEmail = tokenInfo.email;
-    const userObj = DEV_USERS[targetEmail.toLowerCase()] || {};
+    const userObj = DEV_USERS[targetEmail.toLowerCase()];
 
     const valErrors = validatePasswordStrength(pwd, targetEmail, userObj.fullName || '', isArabic);
     if (pwd && pwd !== pwdAgain) {
@@ -1775,35 +1948,14 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
     // Success
     tokenInfo.used = true;
     const newHash = hashPassword(pwd);
-    if (DEV_USERS[targetEmail.toLowerCase()]) {
-      const u = DEV_USERS[targetEmail.toLowerCase()];
-      u.passwordHash = newHash;
-      if (!u.passwordHistory) u.passwordHistory = [];
-      u.passwordHistory.unshift(newHash);
-      if (u.passwordHistory.length > 5) u.passwordHistory = u.passwordHistory.slice(0, 5);
-      u.passwordChangedDate = new Date().toISOString();
-      u.failedAttempts = 0;
-      u.lockoutUntil = null;
-    } else {
-      DEV_USERS[targetEmail.toLowerCase()] = {
-        fullName: targetEmail.split('@')[0],
-        email: targetEmail,
-        mobile: '',
-        organization: '',
-        jobTitle: '',
-        specialty: '',
-        linkedIn: '',
-        role: 'Attendee',
-        passwordHash: newHash,
-        passwordHistory: [newHash],
-        failedAttempts: 0,
-        lockoutUntil: null,
-        lastLogin: new Date().toISOString(),
-        passwordChangedDate: new Date().toISOString(),
-        hasCompletedSurvey: false,
-        surveyRoadmap: []
-      };
-    }
+    userObj.passwordHash = newHash;
+    if (!userObj.passwordHistory) userObj.passwordHistory = [];
+    userObj.passwordHistory.unshift(newHash);
+    if (userObj.passwordHistory.length > 5) userObj.passwordHistory = userObj.passwordHistory.slice(0, 5);
+    userObj.passwordChangedDate = new Date().toISOString();
+    userObj.failedAttempts = 0;
+    userObj.lockoutUntil = null;
+    DEV_USERS[targetEmail.toLowerCase()] = userObj;
     saveUsers();
 
     const template = isArabic ? 'Ar_Sa/ResetPassword.aspx' : 'ResetPassword.aspx';
@@ -1853,28 +2005,11 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
         }
       }
     } else {
-      // Mock fallback if user wasn't registered yet in local dev
-      const pHash = hashPassword(password);
-      user = {
-        fullName: email.split('@')[0],
-        email,
-        mobile: '',
-        organization: '',
-        jobTitle: '',
-        specialty: '',
-        linkedIn: '',
-        role: 'Attendee',
-        passwordHash: pHash,
-        passwordHistory: [pHash],
-        failedAttempts: 0,
-        lockoutUntil: null,
-        lastLogin: new Date().toISOString(),
-        passwordChangedDate: new Date().toISOString(),
-        hasCompletedSurvey: false,
-        surveyRoadmap: []
-      };
-      DEV_USERS[email] = user;
-      saveUsers();
+      // Unknown email: run constant-time dummy verification to mitigate timing attacks
+      verifyPassword(password, DUMMY_HASH);
+      error = isArabic
+        ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.'
+        : 'Incorrect email or password.';
     }
 
     if (error) {
@@ -1884,10 +2019,12 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
       return res.end(html);
     }
 
-    const redirectPath = isArabic ? '/Ar_Sa/Profile' : '/Profile';
-    const cookieHeader = rememberMe
-      ? `sairh_user=${encodeURIComponent(email)}; Path=/; Max-Age=2592000; HttpOnly`
-      : `sairh_user=${encodeURIComponent(email)}; Path=/; HttpOnly`;
+    const parsedReq = url.parse(req.url, true);
+    const returnUrlParam = parsedReq.query.ReturnUrl || parsedReq.query.returnUrl || post.ReturnUrl || post.returnUrl;
+    const defaultRedirect = isArabic ? '/Ar_Sa/Profile' : '/Profile';
+    const redirectPath = getSafeReturnUrl(returnUrlParam, defaultRedirect);
+    const cookieHeader = buildSessionCookieHeader(req, email, rememberMe);
+
     res.writeHead(302, {
       'Set-Cookie': cookieHeader,
       'Location': redirectPath
@@ -1906,25 +2043,53 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
 
     // Update Profile Info
     if (post.BtnPudateProfile !== undefined || post.TxtEditFullName || post.TxtEditOrg !== undefined) {
-      const name = (post.TxtEditFullName || '').trim();
-      const mobile = (post.TxtEditMobile || '').trim();
-      const org = (post.TxtEditOrg || '').trim();
-      const jobTitle = (post.TxtEditJobTitle || '').trim();
-      const specialty = (post.TxtEditSpecialty || '').trim();
-      const linkedIn = (post.TxtEditLinkedIn || '').trim();
+      const isAjax = req.headers['x-requested-with'] === 'XMLHttpRequest' || (req.headers['accept'] && req.headers['accept'].includes('application/json'));
 
-      if (name.length >= 3) {
-        currentUser.fullName = name;
-        currentUser.mobile = mobile;
-        currentUser.organization = org;
-        currentUser.jobTitle = jobTitle;
-        currentUser.specialty = specialty;
-        currentUser.linkedIn = linkedIn;
-        DEV_USERS[currentUser.email.toLowerCase()] = currentUser;
-        saveUsers();
+      let name = (post.TxtEditFullName || '').trim().slice(0, 100);
+      let mobile = (post.TxtEditMobile || '').trim().slice(0, 25);
+      const org = (post.TxtEditOrg || '').trim().slice(0, 200);
+      const jobTitle = (post.TxtEditJobTitle || '').trim().slice(0, 150);
+      const specialty = (post.TxtEditSpecialty || '').trim().slice(0, 150);
+      let linkedIn = (post.TxtEditLinkedIn || '').trim().slice(0, 300);
+
+      // Normalize Arabic Indic digits in mobile
+      if (mobile) {
+        mobile = mobile.replace(/[\u0660-\u0669]/g, c => String(c.charCodeAt(0) - 0x0660))
+                       .replace(/[\u06F0-\u06F9]/g, c => String(c.charCodeAt(0) - 0x06F0))
+                       .replace(/[^\d+() -]/g, '');
       }
-      const successMsg = isArabic ? 'تم تحديث البيانات المهنية والشخصية بنجاح!' : 'Your professional profile has been updated successfully!';
-      const html = parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, successAlert: successMsg });
+
+      // Normalize LinkedIn URL
+      if (linkedIn && !/^https?:\/\//i.test(linkedIn)) {
+        linkedIn = 'https://' + linkedIn;
+      }
+
+      if (name.length < 3) {
+        const errorMsg = isArabic ? 'يرجى إدخال اسم كامل صحيح (3 أحرف على الأقل).' : 'Please enter a valid full name (at least 3 characters).';
+        if (isAjax) {
+          res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+          return res.end(JSON.stringify({ success: false, error: errorMsg }));
+        }
+        const html = parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'profile', profileErrorAlert: errorMsg, formData: post });
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        return res.end(html);
+      }
+
+      currentUser.fullName = name;
+      currentUser.mobile = mobile;
+      currentUser.organization = org;
+      currentUser.jobTitle = jobTitle;
+      currentUser.specialty = specialty;
+      currentUser.linkedIn = linkedIn;
+      DEV_USERS[currentUser.email.toLowerCase()] = currentUser;
+      saveUsers();
+
+      const successMsg = isArabic ? 'تم حفظ التعديلات بنجاح!' : 'Your profile changes have been saved successfully!';
+      if (isAjax) {
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        return res.end(JSON.stringify({ success: true, message: successMsg, user: currentUser }));
+      }
+      const html = parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'profile', profileSuccessAlert: successMsg });
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
@@ -1954,7 +2119,7 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
       }
 
       if (errors.length > 0) {
-        const html = parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, errorAlert: renderErrorList(errors) });
+        const html = parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'password', passwordErrorAlert: renderErrorList(errors) });
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         return res.end(html);
       }
@@ -1970,7 +2135,7 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
       saveUsers();
 
       const successMsg = isArabic ? 'تم تغيير كلمة المرور بنجاح!' : 'Your password has been changed successfully!';
-      const html = parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, successAlert: successMsg });
+      const html = parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'password', passwordSuccessAlert: successMsg });
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
@@ -1994,15 +2159,27 @@ function handleGetRequest(req, res, pathname, currentUser) {
       }
       aspxFile = 'Ar_Sa/Admin/ManageSummit.aspx';
     }
-    else if (!sub || ['default', 'default.aspx', 'home'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Default.aspx';
+    else if (!sub || ['default', 'default.aspx', 'home', '~', '~/'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Default.aspx';
     else if (['publication', 'publication.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Publication.aspx';
     else if (['schedules', 'schedules.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Schedules.aspx';
     else if (['ceremony', 'ceremony.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Ceremony.aspx';
     else if (['judges', 'judges.aspx', 'speakers', 'speakers.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Speakers.aspx';
     else if (['sponsors', 'sponsors.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Sponsors.aspx';
     else if (['contactus', 'contactus.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/ContactUs.aspx';
-    else if (['login', 'login.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Login.aspx';
-    else if (['register', 'register.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Register.aspx';
+    else if (['login', 'login.aspx'].includes(sub.toLowerCase())) {
+      if (currentUser) {
+        res.writeHead(302, { 'Location': '/Ar_Sa/Profile' });
+        return res.end();
+      }
+      aspxFile = 'Ar_Sa/Login.aspx';
+    }
+    else if (['register', 'register.aspx'].includes(sub.toLowerCase())) {
+      if (currentUser) {
+        res.writeHead(302, { 'Location': '/Ar_Sa/Profile' });
+        return res.end();
+      }
+      aspxFile = 'Ar_Sa/Register.aspx';
+    }
     else if (['dashboard', 'dashboard.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Dashboard.aspx';
     else if (['survey', 'survey.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/Survey.aspx';
     else if (['forgotpassword', 'forgotpassword.aspx'].includes(sub.toLowerCase())) aspxFile = 'Ar_Sa/ForgotPassword.aspx';
@@ -2027,15 +2204,27 @@ function handleGetRequest(req, res, pathname, currentUser) {
       }
       aspxFile = 'Admin/ManageSummit.aspx';
     }
-    else if (!pathname || ['default', 'default.aspx', 'home'].includes(pathname.toLowerCase())) aspxFile = 'Default.aspx';
+    else if (!pathname || ['default', 'default.aspx', 'home', '~', '~/'].includes(pathname.toLowerCase())) aspxFile = 'Default.aspx';
     else if (['publication', 'publication.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Publication.aspx';
     else if (['schedules', 'schedules.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Schedules.aspx';
     else if (['ceremony', 'ceremony.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Ceremony.aspx';
     else if (['judges', 'judges.aspx', 'speakers', 'speakers.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Speakers.aspx';
     else if (['sponsors', 'sponsors.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Sponsors.aspx';
     else if (['contactus', 'contactus.aspx'].includes(pathname.toLowerCase())) aspxFile = 'ContactUs.aspx';
-    else if (['login', 'login.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Login.aspx';
-    else if (['register', 'register.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Register.aspx';
+    else if (['login', 'login.aspx'].includes(pathname.toLowerCase())) {
+      if (currentUser) {
+        res.writeHead(302, { 'Location': '/Profile' });
+        return res.end();
+      }
+      aspxFile = 'Login.aspx';
+    }
+    else if (['register', 'register.aspx'].includes(pathname.toLowerCase())) {
+      if (currentUser) {
+        res.writeHead(302, { 'Location': '/Profile' });
+        return res.end();
+      }
+      aspxFile = 'Register.aspx';
+    }
     else if (['dashboard', 'dashboard.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Dashboard.aspx';
     else if (['survey', 'survey.aspx'].includes(pathname.toLowerCase())) aspxFile = 'Survey.aspx';
     else if (['forgotpassword', 'forgotpassword.aspx'].includes(pathname.toLowerCase())) aspxFile = 'ForgotPassword.aspx';
@@ -2113,5 +2302,10 @@ module.exports = {
   parseAspx,
   DEV_USERS,
   RESET_TOKENS,
-  handleRequest
+  handleRequest,
+  signSession,
+  verifySessionCookie,
+  buildSessionCookieHeader,
+  buildClearSessionCookieHeader,
+  getSafeReturnUrl
 };

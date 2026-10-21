@@ -7,6 +7,7 @@ and provides full interactive mock authentication (Register, Login, Profile).
 """
 
 import base64
+from datetime import datetime as dt, timezone
 import hashlib
 import hmac
 import html as html_lib
@@ -17,6 +18,7 @@ import secrets
 import ssl
 import sys
 import threading
+import urllib.request
 from http.cookies import SimpleCookie
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
@@ -39,6 +41,72 @@ def save_users():
             json.dump(DEV_USERS, f, ensure_ascii=False, indent=2)
     except Exception as e:
         print(f"Error saving users file: {e}")
+
+
+def seed_default_accounts():
+    seeds = [
+        {
+            'email': 'admin@sairh.com',
+            'fullName': 'SAIRH System Administrator',
+            'mobile': '+966 50 000 0001',
+            'organization': 'SAIRH Organizing Committee',
+            'jobTitle': 'Chief Technology Officer',
+            'specialty': 'Health AI',
+            'role': 'Administrator',
+            'isAdmin': True,
+            'passwordHash': 'PBKDF2-SHA512$210000$SzIEvmPTW7K3sWS0dszu1Q==$EobVOQGvH3Dd3DMdlrWu8NBA2aN/M+03faGIHFnpIMQ='
+        },
+        {
+            'email': 'attendee@sairh.com',
+            'fullName': 'Dr. Sarah Al-Ahmad',
+            'mobile': '+966 50 123 4567',
+            'organization': 'King Faisal Specialist Hospital',
+            'jobTitle': 'Radiology Consultant',
+            'specialty': 'Neuroradiology & AI',
+            'role': 'Attendee',
+            'isAdmin': False,
+            'passwordHash': 'PBKDF2-SHA512$210000$OmA5KPTUEKDSf291nAbGMg==$YCg6a7S9ScfG+99qu+MkHMdfknV4ilgG7lyFhyMky5U='
+        },
+        {
+            'email': 'speaker@sairh.com',
+            'fullName': 'Dr. Fahad Almsned PhD',
+            'mobile': '+966 50 999 8888',
+            'organization': 'King Fahad Specialist Hospital Dammam',
+            'jobTitle': 'Executive Director of Health Informatics',
+            'specialty': 'Thoracic AI Imaging',
+            'role': 'Speaker',
+            'isAdmin': False,
+            'passwordHash': 'PBKDF2-SHA512$210000$wTKpejY4u7uk1muRJZco7Q==$OXiyio664+V/Rih34Golh/RLpGXrJ/a/T8E99/ApaZ4='
+        }
+    ]
+    modified = False
+    for s in seeds:
+        k = s['email'].lower()
+        if k not in DEV_USERS:
+            DEV_USERS[k] = {
+                **s,
+                'linkedIn': '',
+                'passwordHistory': [s['passwordHash']],
+                'failedAttempts': 0,
+                'lockoutUntil': None,
+                'lastLogin': '2026-10-19T09:00:00.000Z',
+                'passwordChangedDate': '2026-10-19T09:00:00.000Z',
+                'hasCompletedSurvey': False,
+                'surveyRoadmap': []
+            }
+            modified = True
+        elif not DEV_USERS[k].get('passwordHash'):
+            DEV_USERS[k]['passwordHash'] = s['passwordHash']
+            if not DEV_USERS[k].get('passwordHistory'):
+                DEV_USERS[k]['passwordHistory'] = [s['passwordHash']]
+            if not DEV_USERS[k].get('role'):
+                DEV_USERS[k]['role'] = s['role']
+            modified = True
+    if modified:
+        save_users()
+
+
+seed_default_accounts()
 
 
 COMMON_PASSWORDS = {
@@ -269,6 +337,9 @@ def hash_password(password):
     return f"PBKDF2-SHA512${iterations}${salt_b64}${hash_b64}"
 
 
+# Constant dummy hash computed with 210,000 iterations to mitigate timing attacks on invalid emails
+DUMMY_HASH = 'PBKDF2-SHA512$210000$wTKpejY4u7uk1muRJZco7Q==$OXiyio664+V/Rih34Golh/RLpGXrJ/a/T8E99/ApaZ4='
+
 def verify_password(password, stored_hash):
     if not password or not stored_hash:
         return False
@@ -277,14 +348,88 @@ def verify_password(password, stored_hash):
         return False
     try:
         iterations = int(parts[1])
-        if iterations < 1:
+        if iterations < 1000 or iterations > 1000000:
             return False
         salt = base64.b64decode(parts[2].encode('ascii'))
         expected = base64.b64decode(parts[3].encode('ascii'))
+        if len(salt) != 16 or len(expected) != 32:
+            return False
         actual = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), salt, iterations, dklen=len(expected))
         return hmac.compare_digest(actual, expected)
     except Exception:
         return False
+
+
+def is_password_in_history(new_password, history_list, max_history=3):
+    if not history_list or not isinstance(history_list, list):
+        return False
+    for h in history_list[:max_history]:
+        if verify_password(new_password, h):
+            return True
+    return False
+
+
+# -----------------------------------------------------------------------------
+# Enterprise Session Security & HMAC-SHA256 Cookie Signing
+# -----------------------------------------------------------------------------
+SESSION_COOKIE_NAME = 'sairh_user'
+SESSION_SECRET = os.environ.get('SESSION_SECRET', 'sairh_enterprise_session_hmac_secret_2026_dev_key')
+
+def sign_session(email):
+    normalized = (email or '').strip().lower()
+    data_b64 = base64.urlsafe_b64encode(normalized.encode('utf-8')).decode('ascii').rstrip('=')
+    sig = hmac.new(SESSION_SECRET.encode('utf-8'), data_b64.encode('ascii'), hashlib.sha256).digest()
+    sig_b64 = base64.urlsafe_b64encode(sig).decode('ascii').rstrip('=')
+    return f"{data_b64}.{sig_b64}"
+
+def verify_session_cookie(cookie_value):
+    if not cookie_value or not isinstance(cookie_value, str) or '.' not in cookie_value:
+        return None
+    parts = cookie_value.split('.')
+    if len(parts) != 2:
+        return None
+    data_b64, sig_b64 = parts
+    try:
+        expected_sig = hmac.new(SESSION_SECRET.encode('utf-8'), data_b64.encode('ascii'), hashlib.sha256).digest()
+        sig_padded = sig_b64 + '=' * (-len(sig_b64) % 4)
+        sig = base64.urlsafe_b64decode(sig_padded.encode('ascii'))
+        if not hmac.compare_digest(sig, expected_sig):
+            return None
+        data_padded = data_b64 + '=' * (-len(data_b64) % 4)
+        email = base64.urlsafe_b64decode(data_padded.encode('ascii')).decode('utf-8')
+        return email.strip().lower()
+    except Exception:
+        return None
+
+def is_request_https(handler):
+    return (
+        getattr(handler.server, 'is_ssl', False)
+        or isinstance(getattr(handler, 'connection', None), ssl.SSLSocket)
+        or handler.headers.get('X-Forwarded-Proto') == 'https'
+    )
+
+def build_session_cookie_header(handler, email, remember_me=False):
+    token = sign_session(email)
+    header = f"{SESSION_COOKIE_NAME}={token}; Path=/; HttpOnly; SameSite=Lax"
+    if remember_me:
+        header += "; Max-Age=2592000"
+    if is_request_https(handler):
+        header += "; Secure"
+    return header
+
+def build_clear_session_cookie_header(handler):
+    header = f"{SESSION_COOKIE_NAME}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax"
+    if is_request_https(handler):
+        header += "; Secure"
+    return header
+
+def get_safe_return_url(return_url, fallback_url):
+    if not return_url or not isinstance(return_url, str):
+        return fallback_url
+    trimmed = return_url.strip()
+    if trimmed.startswith('/') and not trimmed.startswith('//') and not trimmed.startswith('/\\') and ':' not in trimmed and '\r' not in trimmed and '\n' not in trimmed:
+        return trimmed
+    return fallback_url
 
 
 def has_sequential_run(s, min_length=4):
@@ -473,7 +618,7 @@ def get_speakers_dataset():
     return [], 'error', 'speakers.json not found'
 
 
-def parse_aspx(aspx_path, relative_url, user=None, error_alert=None, success_alert=None, form_data=None, reset_success_url=None, invalid_token=False, reset_done=False):
+def parse_aspx(aspx_path, relative_url, user=None, error_alert=None, success_alert=None, form_data=None, reset_success_url=None, invalid_token=False, reset_done=False, active_tab=None, password_error_alert=None, password_success_alert=None, profile_error_alert=None, profile_success_alert=None):
     """
     Parses an ASPX page, loads its master page if specified,
     merges Content into ContentPlaceHolders, resolves server tags,
@@ -527,7 +672,7 @@ def parse_aspx(aspx_path, relative_url, user=None, error_alert=None, success_ale
     rendered = re.sub(r'<asp:ContentPlaceHolder[^>]*ID=["\']ContentPlaceHolder1["\'][^>]*>.*?</asp:ContentPlaceHolder>', lambda m: main_content, rendered, flags=re.DOTALL | re.IGNORECASE)
 
     # Convert <form ... runat="server"> to <form ... method="post" action="">
-    rendered = re.sub(r'<form\b([^>]*)runat=["\']server["\']([^>]*)>', r'<form\1method="post" action=""\2>', rendered, flags=re.IGNORECASE)
+    rendered = re.sub(r'<form\b([^>]*)runat=["\']server["\']([^>]*)>', r'<form\1method="post" action="" novalidate="novalidate"\2>', rendered, flags=re.IGNORECASE)
 
     # Replace <%= ResolveUrl("~/path") %> or <%= ResolveUrl("path") %>
     rendered = re.sub(r'<%=\s*ResolveUrl\(["\']~?/([^"\']+)["\']\)\s*%>', r'/\1', rendered)
@@ -576,6 +721,8 @@ def parse_aspx(aspx_path, relative_url, user=None, error_alert=None, success_ale
         if rw_m: rows = rw_m.group(1)
         ac_m = re.search(r'autocomplete=["\']([^"\']+)["\']', attrs)
         if ac_m: extra += f' autocomplete="{ac_m.group(1)}"'
+        ml_m = re.search(r'MaxLength=["\']([^"\']+)["\']', attrs, re.IGNORECASE)
+        if ml_m: extra += f' maxlength="{ml_m.group(1)}"'
         req_m = re.search(r'required(?:=["\']([^"\']*)["\'])?', attrs)
         if req_m: extra += ' required="required"'
 
@@ -585,6 +732,14 @@ def parse_aspx(aspx_path, relative_url, user=None, error_alert=None, success_ale
                 val = user.get('fullName', '')
             elif name == 'TxtEditMobile':
                 val = user.get('mobile', '')
+            elif name == 'TxtEditOrg':
+                val = user.get('organization', '')
+            elif name == 'TxtEditJobTitle':
+                val = user.get('jobTitle', '')
+            elif name == 'TxtEditSpecialty':
+                val = user.get('specialty', '')
+            elif name == 'TxtEditLinkedIn':
+                val = user.get('linkedIn', '') or user.get('linkedInUrl', '')
 
         val_attr = f' value="{html_lib.escape(val)}"' if val else ''
 
@@ -617,6 +772,8 @@ def parse_aspx(aspx_path, relative_url, user=None, error_alert=None, success_ale
         if txt_m: text = txt_m.group(1)
         ld_m = re.search(r'data-loading-text=["\']([^"\']+)["\']', attrs)
         if ld_m: extra += f' data-loading-text="{ld_m.group(1)}"'
+        fnv_m = re.search(r'formnovalidate(?:=["\']([^"\']*)["\'])?', attrs, re.IGNORECASE)
+        if fnv_m: extra += ' formnovalidate="formnovalidate"'
 
         return f'<button type="submit" name="{name}" id="{name}" class="{css_class}"{extra}>{text}</button>'
 
@@ -650,6 +807,10 @@ def parse_aspx(aspx_path, relative_url, user=None, error_alert=None, success_ale
                 text = user.get('email', text)
             elif name == 'TxtMobile':
                 text = user.get('mobile', text) or '-'
+            elif name == 'LblOrgTitle':
+                org = user.get('organization', '')
+                job = user.get('jobTitle', '')
+                text = ' • '.join([s for s in [job, org] if s])
 
         content = text if text else body
         cls_attr = f' class="{css_class}"' if css_class else ""
@@ -690,17 +851,61 @@ def parse_aspx(aspx_path, relative_url, user=None, error_alert=None, success_ale
 
     rendered = re.sub(r'<asp:LinkButton([^>]*)>(.*?)</asp:LinkButton>', replace_linkbutton, rendered, flags=re.DOTALL | re.IGNORECASE)
 
-    # Handle Alert Banners
-    if error_alert:
-        rendered = re.sub(r'<div[^>]*id=["\']divError(?:Profile)?["\'][^>]*>.*?</div>', f'<div id="divError" class="auth-alert alert alert-danger" style="display:block;" role="alert">{error_alert}</div>', rendered, flags=re.DOTALL | re.IGNORECASE)
-    elif success_alert:
-        rendered = re.sub(r'<div[^>]*id=["\']divError(?:Profile)?["\'][^>]*>.*?</div>', f'<div id="divError" class="auth-alert alert alert-success" style="display:block;" role="alert">{success_alert}</div>', rendered, flags=re.DOTALL | re.IGNORECASE)
+    # Handle Error/Success Alert Banners & Profile Tabs
+    is_profile_page = 'profile' in aspx_path.lower()
+    tab = active_tab or ('password' if 'tab=password' in relative_url.lower() else 'profile')
 
-    # Header user dropdown vs signin link visibility
-    if user:
-        rendered = rendered.replace('id="liLogin"', 'id="liLogin" style="display:none;"')
+    if is_profile_page:
+        if tab == 'password':
+            rendered = re.sub(r'<div([^>]*\bid=["\']div_editprofile["\'][^>]*)>', r'<div\1 style="display:none;">', rendered, flags=re.IGNORECASE)
+            def show_changepass(m):
+                attrs = m.group(1)
+                clean = re.sub(r'\bvisible=["\']false["\']', '', attrs, flags=re.IGNORECASE)
+                return f'<div{clean} style="display:block;">'
+            rendered = re.sub(r'<div([^>]*\bid=["\']div_changepasss["\'][^>]*)>', show_changepass, rendered, flags=re.IGNORECASE)
+            rendered = re.sub(r'(id=["\']BtnShowChangePass["\'][^>]*class=["\'][^"\']*)', r'\1 active', rendered, flags=re.IGNORECASE)
+            rendered = re.sub(r'(id=["\']BtnShowProfile["\'][^>]*class=["\'][^"\']*)\bactive\b', r'\1', rendered, flags=re.IGNORECASE)
+
+            pass_err = password_error_alert or (error_alert if tab == 'password' else None)
+            pass_succ = password_success_alert or (success_alert if tab == 'password' else None)
+            if pass_err:
+                rendered = re.sub(r'<div[^>]*id=["\']divError["\'][^>]*>.*?</div>', f'<div id="divError" class="auth-alert alert alert-danger" style="display:block;" role="alert">{pass_err}</div>', rendered, flags=re.DOTALL | re.IGNORECASE)
+            elif pass_succ:
+                rendered = re.sub(r'<div[^>]*id=["\']divError["\'][^>]*>.*?</div>', f'<div id="divError" class="auth-alert alert alert-success" style="display:block;" role="alert">{pass_succ}</div>', rendered, flags=re.DOTALL | re.IGNORECASE)
+            else:
+                rendered = re.sub(r'<div([^>]*id=["\']divError["\'][^>]*)>', r'<div\1 style="display:none;">', rendered, flags=re.IGNORECASE)
+            rendered = re.sub(r'<div([^>]*id=["\']divErrorProfile["\'][^>]*)>', r'<div\1 style="display:none;">', rendered, flags=re.IGNORECASE)
+        else:
+            def show_editprofile(m):
+                attrs = m.group(1)
+                clean = re.sub(r'\bvisible=["\']false["\']', '', attrs, flags=re.IGNORECASE)
+                return f'<div{clean} style="display:block;">'
+            rendered = re.sub(r'<div([^>]*\bid=["\']div_editprofile["\'][^>]*)>', show_editprofile, rendered, flags=re.IGNORECASE)
+            rendered = re.sub(r'<div([^>]*\bid=["\']div_changepasss["\'][^>]*)>', r'<div\1 style="display:none;">', rendered, flags=re.IGNORECASE)
+
+            prof_err = profile_error_alert or (error_alert if tab != 'password' else None)
+            prof_succ = profile_success_alert or (success_alert if tab != 'password' else None)
+            if prof_err:
+                rendered = re.sub(r'<div[^>]*id=["\']divErrorProfile["\'][^>]*>.*?</div>', f'<div id="divErrorProfile" class="auth-alert alert alert-danger" style="display:block;" role="alert">{prof_err}</div>', rendered, flags=re.DOTALL | re.IGNORECASE)
+            elif prof_succ:
+                rendered = re.sub(r'<div[^>]*id=["\']divErrorProfile["\'][^>]*>.*?</div>', f'<div id="divErrorProfile" class="auth-alert alert alert-success" style="display:block;" role="alert">{prof_succ}</div>', rendered, flags=re.DOTALL | re.IGNORECASE)
+            else:
+                rendered = re.sub(r'<div([^>]*id=["\']divErrorProfile["\'][^>]*)>', r'<div\1 style="display:none;">', rendered, flags=re.IGNORECASE)
+            rendered = re.sub(r'<div([^>]*id=["\']divError["\'][^>]*)>', r'<div\1 style="display:none;">', rendered, flags=re.IGNORECASE)
     else:
-        rendered = rendered.replace('id="liProfile"', 'id="liProfile" style="display:none;"')
+        if error_alert:
+            rendered = re.sub(r'<div[^>]*id=["\']divError["\'][^>]*>.*?</div>', f'<div id="divError" class="auth-alert alert alert-danger" style="display:block;" role="alert">{error_alert}</div>', rendered, flags=re.DOTALL | re.IGNORECASE)
+        elif success_alert:
+            rendered = re.sub(r'<div[^>]*id=["\']divError["\'][^>]*>.*?</div>', f'<div id="divError" class="auth-alert alert alert-success" style="display:block;" role="alert">{success_alert}</div>', rendered, flags=re.DOTALL | re.IGNORECASE)
+
+    # Header user dropdown visibility:
+    # Signed-in user: only Account Management and Log Out (hide liLogin)
+    # Guest / No user: only Registration and Sign In (hide liProfile)
+    if user:
+        rendered = re.sub(r'\bid=["\']liLogin["\']', 'id="liLogin" style="display:none;"', rendered)
+    else:
+        rendered = re.sub(r'\bid=["\']liProfile["\']', 'id="liProfile" style="display:none;"', rendered)
+    rendered = re.sub(r'<span[^>]*id=["\']liDashboard["\'][^>]*>.*?</span>', '', rendered, flags=re.DOTALL | re.IGNORECASE)
 
     # Convert <asp:UpdatePanel> and <ContentTemplate> to simple divs
     rendered = re.sub(r'</?asp:UpdatePanel[^>]*>', '', rendered, flags=re.IGNORECASE)
@@ -911,6 +1116,11 @@ def parse_aspx(aspx_path, relative_url, user=None, error_alert=None, success_ale
         else:
             rendered = rendered.replace('id="linkHome"', 'id="linkHome" class="active"')
 
+    rendered = re.sub(r'href=["\']~/Default\.aspx["\']', 'href="/Default.aspx"', rendered, flags=re.IGNORECASE)
+    rendered = re.sub(r'href=["\']~/Ar_Sa/Default\.aspx["\']', 'href="/Ar_Sa/Default.aspx"', rendered, flags=re.IGNORECASE)
+    rendered = re.sub(r'href=["\']~/Ar_Sa/?["\']', 'href="/Ar_Sa/"', rendered, flags=re.IGNORECASE)
+    rendered = re.sub(r'href=["\']~/?["\']', 'href="/"', rendered, flags=re.IGNORECASE)
+
     # First-time welcome banner for Survey.aspx
     is_first_time = 'first=1' in relative_url
     if is_first_time:
@@ -922,7 +1132,7 @@ def parse_aspx(aspx_path, relative_url, user=None, error_alert=None, success_ale
     if 'schedules' in aspx_path.lower():
         roadmap = user.get('surveyRoadmap', []) if user else []
         if roadmap:
-            rendered = re.sub(r'id=["\']pnlRoadmap["\'][^>]*visible=["\']false["\']', 'id="pnlRoadmap" style="display:block;"', rendered, flags=re.IGNORECASE)
+            rendered = re.sub(r'<div[^>]*\bid=["\']pnlRoadmap["\'][^>]*>', '<div class="expo-roadmap-banner" id="pnlRoadmap" style="display:block;">', rendered, flags=re.IGNORECASE)
             rendered = re.sub(r'id=["\']pnlSurveyCTA["\']', 'id="pnlSurveyCTA" style="display:none;"', rendered, flags=re.IGNORECASE)
             is_ar = '/ar_sa' in relative_url.lower() or 'ar_sa' in aspx_path.lower()
             cards = []
@@ -933,42 +1143,61 @@ def parse_aspx(aspx_path, relative_url, user=None, error_alert=None, success_ale
                     name = booth['nameAr'] if is_ar else booth['nameEn']
                     org = booth['organizationAr'] if is_ar else booth['organizationEn']
                     cards.append(f'''
-                    <div class="recommended-stop-card" onclick="openBoothModal('{code}')" style="cursor:pointer;">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="badge badge-info">{html_lib.escape(hall)}</span>
-                            <strong class="text-white">{code}</strong>
+                    <div class="recommended-stop-card" onclick="highlightBooth('{code}')" style="cursor:pointer;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px;">{html_lib.escape(hall)}</span>
+                            <strong class="text-white" style="letter-spacing: 0.5px;">{code}</strong>
                         </div>
-                        <div class="text-white font-weight-bold">{html_lib.escape(name)}</div>
-                        <div class="text-secondary small">{html_lib.escape(org)}</div>
+                        <div class="text-white font-weight-bold mb-1" style="font-size: 0.95rem;">{html_lib.escape(name)}</div>
+                        <div class="text-secondary small" style="font-size: 0.82rem;">{html_lib.escape(org)}</div>
                     </div>
                     ''')
             rendered = re.sub(r'<div[^>]*id=["\']recCardsContainer["\'][^>]*>.*?</div>', f'<div class="recommended-cards-grid" id="recCardsContainer">{"".join(cards)}</div>', rendered, flags=re.DOTALL | re.IGNORECASE)
         else:
-            rendered = re.sub(r'id=["\']pnlRoadmap["\']', 'id="pnlRoadmap" style="display:none;"', rendered, flags=re.IGNORECASE)
+            rendered = re.sub(r'<div[^>]*\bid=["\']pnlRoadmap["\'][^>]*>', '<div class="expo-roadmap-banner" id="pnlRoadmap" style="display:none;">', rendered, flags=re.IGNORECASE)
 
-    # Profile.aspx exhibition roadmap box rendering
+    # Profile.aspx exhibition roadmap box rendering & user info
     if 'profile' in aspx_path.lower():
+        if user and (user.get('organization') or user.get('jobTitle')):
+            rendered = re.sub(r'<p([^>]*\bid=["\']pOrgTitle["\'][^>]*)visible=["\']false["\']([^>]*)>', r'<p\1style="display:block;"\2>', rendered, flags=re.IGNORECASE)
+            rendered = re.sub(r'<p([^>]*\bid=["\']pOrgTitle["\'][^>]*)style=["\']display:none;?["\']([^>]*)>', r'<p\1style="display:block;"\2>', rendered, flags=re.IGNORECASE)
+        else:
+            rendered = re.sub(r'<p([^>]*\bid=["\']pOrgTitle["\'][^>]*)>', r'<p\1 style="display:none;">', rendered, flags=re.IGNORECASE)
+
         is_ar = '/ar_sa' in relative_url.lower() or 'ar_sa' in aspx_path.lower()
         roadmap = user.get('surveyRoadmap', []) if user else []
+        arrow_icon = 'bi-arrow-left' if is_ar else 'bi-arrow-right'
+        margin_class = 'ml-2' if is_ar else 'mr-2'
+
+        # Remove any status badge from the Exhibition Roadmap card header
+        rendered = re.sub(r'<(?:asp:Label|span)[^>]*id=["\']LblSurveyBadge["\'][^>]*>.*?</(?:asp:Label|span)>', '', rendered, flags=re.IGNORECASE | re.DOTALL)
+
         if roadmap:
             cnt = len(roadmap)
-            badge_text = f"مكتمل ({cnt} محطات)" if is_ar else f"Completed ({cnt} stops)"
-            desc_text = f"مسارك المخصص في المعرض نشط ويتضمن {cnt} محطة استكشافية موصى بها." if is_ar else f"Your personalized roadmap is active with {cnt} recommended booth and research stops."
-            action_text = '<i class="bi bi-arrow-repeat ml-1"></i> إعادة الاستبيان' if is_ar else '<i class="bi bi-arrow-repeat mr-1"></i> Retake Survey'
-            chips = "".join([f'<span class="badge badge-primary {"ml-1" if is_ar else "mr-1"} mb-1" style="background:#0284c7;font-size:0.75rem;">{c}</span>' for c in roadmap])
-            rendered = re.sub(r'<span[^>]*id=["\']LblSurveyBadge["\'][^>]*>.*?</span>', f'<span id="LblSurveyBadge" class="badge badge-success">{badge_text}</span>', rendered, flags=re.IGNORECASE | re.DOTALL)
-            rendered = re.sub(r'<p[^>]*id=["\']pRoadmapDesc["\'][^>]*>.*?</p>', f'<p class="text-secondary small mb-3" id="pRoadmapDesc">{desc_text}</p>', rendered, flags=re.IGNORECASE | re.DOTALL)
-            rendered = re.sub(r'id=["\']pnlSurveyStops["\'][^>]*visible=["\']false["\']', 'id="pnlSurveyStops" style="display:block;"', rendered, flags=re.IGNORECASE)
-            rendered = re.sub(r'<div[^>]*id=["\']pnlStopsChips["\'][^>]*>.*?</div>', f'<div id="pnlStopsChips" class="d-flex flex-wrap gap-1">{chips}</div>', rendered, flags=re.IGNORECASE | re.DOTALL)
-            rendered = re.sub(r'<a[^>]*id=["\']lnkSurveyAction["\'][^>]*>.*?</a>', f'<a href="Survey" id="lnkSurveyAction" class="btn btn-sm btn-outline-light rounded-pill font-weight-semibold">{action_text}</a>', rendered, flags=re.IGNORECASE | re.DOTALL)
+            desc_text = f"مسارك المخصص نشط ويتضمن {cnt} محطة استكشافية موصى بها تناسب اهتماماتك." if is_ar else f"Your personalized itinerary is active with {cnt} recommended booth and research stops."
+            chips = "".join([f'<span class="roadmap-stop-chip {"ml-1" if is_ar else "mr-1"} mb-1">{c}</span>' for c in roadmap])
+            
+            rendered = re.sub(r'<p[^>]*id=["\']pRoadmapDesc["\'][^>]*>.*?</p>', f'<p class="small mb-3" id="pRoadmapDesc" style="color: #94a3b8; font-size: 0.82rem; line-height: 1.45;">{desc_text}</p>', rendered, flags=re.IGNORECASE | re.DOTALL)
+            rendered = re.sub(r'(<div[^>]*\bid=["\']pnlSurveyStops["\'][^>]*style=["\'])display:none;\s*', r'\1display:block; ', rendered, flags=re.IGNORECASE)
+            rendered = re.sub(r'<div[^>]*id=["\']pnlStopsChips["\'][^>]*>.*?</div>', f'<div id="pnlStopsChips" class="d-flex flex-wrap" style="gap: 5px;">{chips}</div>', rendered, flags=re.IGNORECASE | re.DOTALL)
+            
+            primary_title = 'عرض على خريطة المعرض' if is_ar else 'View on Floor Map'
+            secondary_title = 'إعادة الاستبيان' if is_ar else 'Retake Survey'
+            arrow_icon = 'bi-arrow-left mr-2' if is_ar else 'bi-arrow-right ml-2'
+            primary_tile = f'<a href="Schedules" id="lnkFloorMapAction" class="roadmap-highlight-cta"><i class="bi bi-compass {margin_class}"></i><span>{primary_title}</span><i class="bi {arrow_icon} cta-arrow"></i></a>'
+            secondary_tile = f'<a href="Survey" id="lnkSurveyAction" class="roadmap-retake-btn"><i class="bi bi-arrow-repeat {margin_class}"></i><span>{secondary_title}</span></a>'
+            actions_html = f'<div id="pnlRoadmapActions" class="roadmap-actions-container">\n{primary_tile}\n{secondary_tile}\n</div>'
+            rendered = re.sub(r'<div[^>]*id=["\']pnlRoadmapActions["\'][^>]*>.*?</div>', actions_html, rendered, flags=re.IGNORECASE | re.DOTALL)
         else:
-            badge_text = "لم يكتمل بعد" if is_ar else "Not Completed"
-            desc_text = "أكمل استبيان التخصيص القصير للحصول على جولة مخصصة للأجنحة وشاشات الأبحاث على خريطة المعرض." if is_ar else "Take our short survey to get a tailored tour of sponsor booths and research displays on the Exhibition Map."
-            action_text = '<i class="bi bi-magic ml-1"></i> بناء مساري المخصص' if is_ar else '<i class="bi bi-magic mr-1"></i> Build My Roadmap'
-            rendered = re.sub(r'<span[^>]*id=["\']LblSurveyBadge["\'][^>]*>.*?</span>', f'<span id="LblSurveyBadge" class="badge badge-warning">{badge_text}</span>', rendered, flags=re.IGNORECASE | re.DOTALL)
-            rendered = re.sub(r'<p[^>]*id=["\']pRoadmapDesc["\'][^>]*>.*?</p>', f'<p class="text-secondary small mb-3" id="pRoadmapDesc">{desc_text}</p>', rendered, flags=re.IGNORECASE | re.DOTALL)
-            rendered = re.sub(r'id=["\']pnlSurveyStops["\']', 'id="pnlSurveyStops" style="display:none;"', rendered, flags=re.IGNORECASE)
-            rendered = re.sub(r'<a[^>]*id=["\']lnkSurveyAction["\'][^>]*>.*?</a>', f'<a href="Survey" id="lnkSurveyAction" class="btn btn-sm btn-outline-light rounded-pill font-weight-semibold">{action_text}</a>', rendered, flags=re.IGNORECASE | re.DOTALL)
+            desc_text = "أجب عن 3 أسئلة سريعة للحصول على مسار ذكي ومخصص يوجهك لأجنحة المعرض وشاشات الأبحاث." if is_ar else "Answer 3 quick questions to generate a personalized tour of exhibitor booths and research showcases."
+            
+            rendered = re.sub(r'<p[^>]*id=["\']pRoadmapDesc["\'][^>]*>.*?</p>', f'<p class="small mb-3" id="pRoadmapDesc" style="color: #94a3b8; font-size: 0.82rem; line-height: 1.45;">{desc_text}</p>', rendered, flags=re.IGNORECASE | re.DOTALL)
+            
+            primary_title = 'بناء مساري المخصص' if is_ar else 'Build My Roadmap'
+            arrow_icon = 'bi-arrow-left mr-2' if is_ar else 'bi-arrow-right ml-2'
+            highlight_btn = f'<a href="Survey" id="lnkSurveyAction" class="roadmap-highlight-cta"><i class="bi bi-magic {margin_class}"></i><span>{primary_title}</span><i class="bi {arrow_icon} cta-arrow"></i></a>'
+            actions_html = f'<div id="pnlRoadmapActions" class="roadmap-actions-container">\n{highlight_btn}\n</div>'
+            rendered = re.sub(r'<div[^>]*id=["\']pnlRoadmapActions["\'][^>]*>.*?</div>', actions_html, rendered, flags=re.IGNORECASE | re.DOTALL)
 
     # ForgotPassword.aspx state handling
     if reset_success_url:
@@ -1003,11 +1232,11 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
         cookie = SimpleCookie()
         try:
             cookie.load(cookie_header)
-            if 'sairh_user' in cookie:
-                email = cookie['sairh_user'].value.lower()
-                if email in DEV_USERS:
+            if SESSION_COOKIE_NAME in cookie:
+                cookie_val = cookie[SESSION_COOKIE_NAME].value
+                email = verify_session_cookie(cookie_val)
+                if email and email in DEV_USERS:
                     return DEV_USERS[email]
-                return {'fullName': email.split('@')[0], 'email': email, 'mobile': ''}
         except Exception:
             return None
         return None
@@ -1123,6 +1352,22 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
         self.wfile.write(res_data)
 
     def do_POST(self):
+        try:
+            self._handle_post()
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            try:
+                self.send_response(500)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                err_html = f"<h3>500 Internal Server Error</h3><pre>{html_lib.escape(traceback.format_exc())}</pre>".encode('utf-8')
+                self.send_header('Content-Length', str(len(err_html)))
+                self.end_headers()
+                self.wfile.write(err_html)
+            except Exception:
+                pass
+
+    def _handle_post(self):
         parsed = urlparse(self.path)
         path = parsed.path.strip('/')
 
@@ -1156,6 +1401,65 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
             self.wfile.write(res_data)
             return
 
+        # Handle Auth Profile API
+        if path.lower() == 'api/auth/profile':
+            current_user = self.get_current_user()
+            if not current_user:
+                self.send_response(401)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                res = json.dumps({'error': 'Authentication required.'}).encode('utf-8')
+                self.send_header('Content-Length', str(len(res)))
+                self.end_headers()
+                self.wfile.write(res)
+                return
+
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_body = self.rfile.read(content_length).decode('utf-8', errors='ignore')
+            payload = {}
+            try:
+                payload = json.loads(post_body)
+            except Exception:
+                post_data = parse_qs(post_body)
+                payload = {k: v[0] for k, v in post_data.items()}
+
+            full_name = (payload.get('FullName') or payload.get('fullName') or payload.get('TxtEditFullName') or '').strip()[:100]
+            mobile = (payload.get('MobileNo') or payload.get('mobile') or payload.get('TxtEditMobile') or '').strip()[:25]
+            org = (payload.get('Organization') or payload.get('organization') or payload.get('TxtEditOrg') or '').strip()[:200]
+            job_title = (payload.get('JobTitle') or payload.get('jobTitle') or payload.get('TxtEditJobTitle') or '').strip()[:150]
+            specialty = (payload.get('Specialty') or payload.get('specialty') or payload.get('TxtEditSpecialty') or '').strip()[:150]
+            linkedin = (payload.get('LinkedInUrl') or payload.get('linkedIn') or payload.get('TxtEditLinkedIn') or '').strip()[:300]
+
+            if full_name and len(full_name) < 3:
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                res = json.dumps({'error': 'Please enter your full name (at least 3 characters).'}).encode('utf-8')
+                self.send_header('Content-Length', str(len(res)))
+                self.end_headers()
+                self.wfile.write(res)
+                return
+
+            if full_name: current_user['fullName'] = full_name
+            if mobile is not None: current_user['mobile'] = mobile
+            if org is not None: current_user['organization'] = org
+            if job_title is not None: current_user['jobTitle'] = job_title
+            if specialty is not None: current_user['specialty'] = specialty
+            if linkedin is not None:
+                if linkedin and not (linkedin.startswith('http://') or linkedin.startswith('https://')):
+                    linkedin = 'https://' + linkedin
+                current_user['linkedIn'] = linkedin
+
+            DEV_USERS[current_user['email'].lower()] = current_user
+            DEV_USERS[current_user['email']] = current_user
+            save_users()
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            res = json.dumps({'success': True, 'message': 'Profile saved successfully.', 'user': current_user}, ensure_ascii=False).encode('utf-8')
+            self.send_header('Content-Length', str(len(res)))
+            self.end_headers()
+            self.wfile.write(res)
+            return
+
         is_arabic = path.lower().startswith('ar_sa')
         subpath = path[5:].strip('/') if is_arabic else path
         page = subpath.lower()
@@ -1173,6 +1477,8 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
             full_name = form.get('TxtFullName', '').strip()
             email = form.get('TxtEmail', '').strip().lower()
             mobile = form.get('TxtMobile', '').strip()
+            organization = form.get('TxtOrganization', '').strip()
+            job_title = form.get('TxtJobTitle', '').strip()
             password = form.get('TxtPassword', '')
             password_again = form.get('TxtPasswordAgain', '')
 
@@ -1181,6 +1487,8 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                 validation_errors.append('يرجى إدخال الاسم الكامل (3 أحرف على الأقل).' if is_arabic else 'Please enter your full name (at least 3 characters).')
             if not email or not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
                 validation_errors.append('يرجى إدخال بريد إلكتروني صالح.' if is_arabic else 'Please enter a valid email address.')
+            if email in DEV_USERS:
+                validation_errors.append('هذا البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول أو استعادة كلمة المرور.' if is_arabic else 'This email is already registered. Please sign in or reset your password.')
 
             pwd_errors = validate_password_strength(password, email, full_name, is_arabic)
             validation_errors.extend(pwd_errors)
@@ -1199,21 +1507,31 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(encoded)
                 return
 
-            # Success: store password as PBKDF2 hash, redirect first-time attendee to Survey
+            # Success: store password as PBKDF2 hash, redirect attendee to Profile
             p_hash = hash_password(password)
             DEV_USERS[email] = {
                 'fullName': full_name,
                 'email': email,
                 'mobile': mobile,
+                'organization': organization,
+                'jobTitle': job_title,
+                'specialty': '',
+                'linkedIn': '',
+                'role': 'Attendee',
                 'passwordHash': p_hash,
+                'passwordHistory': [p_hash],
+                'failedAttempts': 0,
+                'lockoutUntil': None,
+                'lastLogin': dt.now(timezone.utc).isoformat(),
+                'passwordChangedDate': dt.now(timezone.utc).isoformat(),
                 'hasCompletedSurvey': False,
                 'surveyRoadmap': []
             }
             save_users()
 
-            redirect_target = '/Ar_Sa/Survey?first=1' if is_arabic else '/Survey?first=1'
+            redirect_target = '/Ar_Sa/Profile' if is_arabic else '/Profile'
             self.send_response(302)
-            self.send_header('Set-Cookie', f'sairh_user={email}; Path=/; HttpOnly')
+            self.send_header('Set-Cookie', build_session_cookie_header(self, email, False))
             self.send_header('Location', redirect_target)
             self.end_headers()
             return
@@ -1259,13 +1577,15 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(encoded)
                 return
 
-            token = secrets.token_urlsafe(32)
-            RESET_TOKENS[token] = {
-                'email': email,
-                'expires': dt.now().timestamp() + 3600,
-                'used': False
-            }
-            reset_url = f'/Ar_Sa/ResetPassword?token={token}' if is_arabic else f'/ResetPassword?token={token}'
+            reset_url = None
+            if email in DEV_USERS:
+                token = secrets.token_urlsafe(32)
+                RESET_TOKENS[token] = {
+                    'email': email,
+                    'expires': dt.now().timestamp() + 3600,
+                    'used': False
+                }
+                reset_url = f'/Ar_Sa/ResetPassword?token={token}' if is_arabic else f'/ResetPassword?token={token}'
             template = 'Ar_Sa/ForgotPassword.aspx' if is_arabic else 'ForgotPassword.aspx'
             html = parse_aspx(os.path.join(BASE_DIR, template), self.path, reset_success_url=reset_url)
             self.send_response(200)
@@ -1293,14 +1613,28 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(encoded)
                 return
 
+            target_email = token_info['email']
+            if target_email not in DEV_USERS:
+                template = 'Ar_Sa/ResetPassword.aspx' if is_arabic else 'ResetPassword.aspx'
+                html = parse_aspx(os.path.join(BASE_DIR, template), self.path, invalid_token=True)
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                encoded = html.encode('utf-8')
+                self.send_header('Content-Length', str(len(encoded)))
+                self.end_headers()
+                self.wfile.write(encoded)
+                return
+
             pwd = form.get('TxtPassword', '')
             pwd_again = form.get('TxtPasswordAgain', '')
-            target_email = token_info['email']
-            user_obj = DEV_USERS.get(target_email, {})
+            user_obj = DEV_USERS[target_email]
 
             val_errors = validate_password_strength(pwd, target_email, user_obj.get('fullName', ''), is_arabic)
             if pwd and pwd != pwd_again:
                 val_errors.append('كلمتا المرور غير متطابقتين.' if is_arabic else 'Passwords do not match.')
+
+            if is_password_in_history(pwd, user_obj.get('passwordHistory', [])):
+                val_errors.append('لا يمكن إعادة استخدام أي من كلمات المرور الـ 3 الأخيرة الخاصة بك.' if is_arabic else 'You cannot reuse any of your last 3 passwords.')
 
             if val_errors:
                 template = 'Ar_Sa/ResetPassword.aspx' if is_arabic else 'ResetPassword.aspx'
@@ -1316,10 +1650,14 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
             # Success
             token_info['used'] = True
             new_hash = hash_password(pwd)
-            if target_email in DEV_USERS:
-                DEV_USERS[target_email]['passwordHash'] = new_hash
-            else:
-                DEV_USERS[target_email] = {'fullName': target_email.split('@')[0], 'email': target_email, 'mobile': '', 'passwordHash': new_hash}
+            user_obj['passwordHash'] = new_hash
+            if 'passwordHistory' not in user_obj or not isinstance(user_obj['passwordHistory'], list):
+                user_obj['passwordHistory'] = []
+            user_obj['passwordHistory'].insert(0, new_hash)
+            user_obj['passwordHistory'] = user_obj['passwordHistory'][:5]
+            user_obj['passwordChangedDate'] = dt.now().isoformat()
+            user_obj['failedAttempts'] = 0
+            user_obj['lockoutUntil'] = None
             save_users()
 
             template = 'Ar_Sa/ResetPassword.aspx' if is_arabic else 'ResetPassword.aspx'
@@ -1336,6 +1674,7 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
         if page in ['login', 'login.aspx']:
             email = form.get('TxtEmail', '').strip().lower()
             password = form.get('TxtPassword', '')
+            remember_me = form.get('ChkRememberMe') in ['true', 'on']
 
             error = None
             if not email or not password:
@@ -1343,12 +1682,29 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
             else:
                 user = DEV_USERS.get(email)
                 if user and user.get('passwordHash'):
-                    if not verify_password(password, user['passwordHash']):
-                        error = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' if is_arabic else 'Incorrect email or password.'
-                elif not user:
-                    # Mock dev mode fallback: create user with hash
-                    DEV_USERS[email] = {'fullName': email.split('@')[0], 'email': email, 'mobile': '', 'passwordHash': hash_password(password)}
-                    save_users()
+                    lockout_until = user.get('lockoutUntil')
+                    now_ts = int(dt.now().timestamp() * 1000)
+                    if lockout_until and now_ts < lockout_until:
+                        rem = int((lockout_until - now_ts) / 60000) + 1
+                        error = f'الحساب مغلق مؤقتاً لحمايته بسبب تكرار المحاولات الخاطئة. يرجى الانتظار لمدة {rem} دقيقة.' if is_arabic else f'Account is temporarily locked due to multiple failed login attempts. Please try again in {rem} minute(s).'
+                    elif not verify_password(password, user['passwordHash']):
+                        failed = user.get('failedAttempts', 0) + 1
+                        user['failedAttempts'] = failed
+                        if failed >= 5:
+                            user['lockoutUntil'] = now_ts + 15 * 60 * 1000
+                            error = 'تم قفل الحساب لمدة 15 دقيقة بعد 5 محاولات تسجيل دخول غير صحيحة.' if is_arabic else 'Account locked for 15 minutes due to 5 consecutive failed login attempts.'
+                        else:
+                            left = 5 - failed
+                            error = f'البريد الإلكتروني أو كلمة المرور غير صحيحة. يتبقى لديك {left} محاولات قبل قفل الحساب.' if is_arabic else f'Incorrect email or password. You have {left} attempt(s) remaining before account lockout.'
+                        save_users()
+                    else:
+                        user['failedAttempts'] = 0
+                        user['lockoutUntil'] = None
+                        user['lastLogin'] = dt.now().isoformat()
+                        save_users()
+                else:
+                    verify_password(password, DUMMY_HASH)
+                    error = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' if is_arabic else 'Incorrect email or password.'
 
             if error:
                 template = 'Ar_Sa/Login.aspx' if is_arabic else 'Login.aspx'
@@ -1361,9 +1717,13 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(encoded)
                 return
 
-            redirect_target = '/Ar_Sa/Profile' if is_arabic else '/Profile'
+            query_params = parse_qs(parsed.query)
+            ret_url = query_params.get('ReturnUrl', [''])[0] or query_params.get('returnUrl', [''])[0] or form.get('ReturnUrl', '') or form.get('returnUrl', '')
+            default_target = '/Ar_Sa/Profile' if is_arabic else '/Profile'
+            redirect_target = get_safe_return_url(ret_url, default_target)
+
             self.send_response(302)
-            self.send_header('Set-Cookie', f'sairh_user={email}; Path=/; HttpOnly')
+            self.send_header('Set-Cookie', build_session_cookie_header(self, email, remember_me))
             self.send_header('Location', redirect_target)
             self.end_headers()
             return
@@ -1378,16 +1738,72 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
 
             template = 'Ar_Sa/Profile.aspx' if is_arabic else 'Profile.aspx'
 
-            if 'BtnPudateProfile' in form or 'TxtEditFullName' in form:
-                name = form.get('TxtEditFullName', '').strip()
-                mobile = form.get('TxtEditMobile', '').strip()
-                if len(name) >= 3:
-                    current_user['fullName'] = name
-                    current_user['mobile'] = mobile
-                    DEV_USERS[current_user['email']] = current_user
-                    save_users()
-                msg = 'تم تحديث البيانات الشخصية بنجاح!' if is_arabic else 'Your profile has been updated successfully!'
-                html = parse_aspx(os.path.join(BASE_DIR, template), self.path, user=current_user, success_alert=msg)
+            if 'BtnPudateProfile' in form or 'TxtEditFullName' in form or 'TxtEditOrg' in form:
+                is_ajax = self.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in self.headers.get('Accept', '')
+
+                name = form.get('TxtEditFullName', '').strip()[:100]
+                mobile = form.get('TxtEditMobile', '').strip()[:25]
+                org = form.get('TxtEditOrg', '').strip()[:200]
+                job_title = form.get('TxtEditJobTitle', '').strip()[:150]
+                specialty = form.get('TxtEditSpecialty', '').strip()[:150]
+                linkedin = form.get('TxtEditLinkedIn', '').strip()[:300]
+
+                # Normalize Arabic Indic digits in mobile
+                if mobile:
+                    clean_mobile = ""
+                    for ch in mobile:
+                        if '\u0660' <= ch <= '\u0669':
+                            clean_mobile += str(ord(ch) - ord('\u0660'))
+                        elif '\u06F0' <= ch <= '\u06F9':
+                            clean_mobile += str(ord(ch) - ord('\u06F0'))
+                        elif ch in '0123456789+ -()':
+                            clean_mobile += ch
+                    mobile = clean_mobile.strip()
+
+                # Normalize LinkedIn URL
+                if linkedin and not (linkedin.startswith('http://') or linkedin.startswith('https://')):
+                    linkedin = 'https://' + linkedin
+
+                if len(name) < 3:
+                    err_msg = 'يرجى إدخال اسم كامل صحيح (3 أحرف على الأقل).' if is_arabic else 'Please enter a valid full name (at least 3 characters).'
+                    if is_ajax:
+                        self.send_response(400)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        res_bytes = json.dumps({'success': False, 'error': err_msg}).encode('utf-8')
+                        self.send_header('Content-Length', str(len(res_bytes)))
+                        self.end_headers()
+                        self.wfile.write(res_bytes)
+                        return
+                    html = parse_aspx(os.path.join(BASE_DIR, template), self.path, user=current_user, active_tab='profile', profile_error_alert=err_msg, form_data=form)
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    encoded = html.encode('utf-8')
+                    self.send_header('Content-Length', str(len(encoded)))
+                    self.end_headers()
+                    self.wfile.write(encoded)
+                    return
+
+                current_user['fullName'] = name
+                current_user['mobile'] = mobile
+                current_user['organization'] = org
+                current_user['jobTitle'] = job_title
+                current_user['specialty'] = specialty
+                current_user['linkedIn'] = linkedin
+                DEV_USERS[current_user['email'].lower()] = current_user
+                DEV_USERS[current_user['email']] = current_user
+                save_users()
+
+                msg = 'تم حفظ التعديلات بنجاح!' if is_arabic else 'Your profile changes have been saved successfully!'
+                if is_ajax:
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    res_bytes = json.dumps({'success': True, 'message': msg, 'user': current_user}).encode('utf-8')
+                    self.send_header('Content-Length', str(len(res_bytes)))
+                    self.end_headers()
+                    self.wfile.write(res_bytes)
+                    return
+
+                html = parse_aspx(os.path.join(BASE_DIR, template), self.path, user=current_user, active_tab='profile', profile_success_alert=msg)
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/html; charset=utf-8')
                 encoded = html.encode('utf-8')
@@ -1407,6 +1823,9 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                 elif current_user.get('passwordHash') and not verify_password(cur_pass, current_user['passwordHash']):
                     errors.append('كلمة المرور الحالية غير صحيحة.' if is_arabic else 'Your current password is incorrect.')
 
+                if is_password_in_history(new_pass, current_user.get('passwordHistory', [])):
+                    errors.append('لا يمكن إعادة استخدام أي من كلمات المرور الـ 3 الأخيرة الخاصة بك.' if is_arabic else 'You cannot reuse any of your last 3 passwords.')
+
                 str_errors = validate_password_strength(new_pass, current_user.get('email'), current_user.get('fullName'), is_arabic)
                 errors.extend(str_errors)
 
@@ -1414,7 +1833,7 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                     errors.append('كلمتا المرور غير متطابقتين.' if is_arabic else 'The passwords do not match.')
 
                 if errors:
-                    html = parse_aspx(os.path.join(BASE_DIR, template), self.path, user=current_user, error_alert=render_error_list(errors))
+                    html = parse_aspx(os.path.join(BASE_DIR, template), self.path, user=current_user, active_tab='password', password_error_alert=render_error_list(errors))
                     self.send_response(200)
                     self.send_header('Content-Type', 'text/html; charset=utf-8')
                     encoded = html.encode('utf-8')
@@ -1423,13 +1842,19 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                     self.wfile.write(encoded)
                     return
 
-                # Update password hash
-                current_user['passwordHash'] = hash_password(new_pass)
+                # Update password hash and history
+                new_hash = hash_password(new_pass)
+                current_user['passwordHash'] = new_hash
+                if 'passwordHistory' not in current_user or not isinstance(current_user['passwordHistory'], list):
+                    current_user['passwordHistory'] = []
+                current_user['passwordHistory'].insert(0, new_hash)
+                current_user['passwordHistory'] = current_user['passwordHistory'][:5]
+                current_user['passwordChangedDate'] = dt.now().isoformat()
                 DEV_USERS[current_user['email']] = current_user
                 save_users()
 
                 msg = 'تم تغيير كلمة المرور بنجاح!' if is_arabic else 'Your password has been changed successfully!'
-                html = parse_aspx(os.path.join(BASE_DIR, template), self.path, user=current_user, success_alert=msg)
+                html = parse_aspx(os.path.join(BASE_DIR, template), self.path, user=current_user, active_tab='password', password_success_alert=msg)
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/html; charset=utf-8')
                 encoded = html.encode('utf-8')
@@ -1442,6 +1867,22 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
         self.do_GET()
 
     def do_GET(self):
+        try:
+            self._handle_get()
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            try:
+                self.send_response(500)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                err_html = f"<h3>500 Internal Server Error</h3><pre>{html_lib.escape(traceback.format_exc())}</pre>".encode('utf-8')
+                self.send_header('Content-Length', str(len(err_html)))
+                self.end_headers()
+                self.wfile.write(err_html)
+            except Exception:
+                pass
+
+    def _handle_get(self):
         parsed = urlparse(self.path)
         path = parsed.path.strip('/')
 
@@ -1479,7 +1920,7 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
         if 'logout=1' in parsed.query:
             is_arabic = path.lower().startswith('ar_sa')
             self.send_response(302)
-            self.send_header('Set-Cookie', 'sairh_user=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT')
+            self.send_header('Set-Cookie', build_clear_session_cookie_header(self))
             self.send_header('Location', '/Ar_Sa/Login' if is_arabic else '/Login')
             self.end_headers()
             return
@@ -1503,7 +1944,7 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
 
         # Route matching to ASPX files
         if is_arabic:
-            if not subpath or subpath.lower() in ['default', 'default.aspx', 'home']:
+            if not subpath or subpath.lower() in ['default', 'default.aspx', 'home', '~', '~/']:
                 aspx_file = 'Ar_Sa/Default.aspx'
             elif subpath.lower() in ['publication', 'publication.aspx']:
                 aspx_file = 'Ar_Sa/Publication.aspx'
@@ -1518,8 +1959,18 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
             elif subpath.lower() in ['contactus', 'contactus.aspx']:
                 aspx_file = 'Ar_Sa/ContactUs.aspx'
             elif subpath.lower() in ['login', 'login.aspx']:
+                if current_user:
+                    self.send_response(302)
+                    self.send_header('Location', '/Ar_Sa/Profile')
+                    self.end_headers()
+                    return
                 aspx_file = 'Ar_Sa/Login.aspx'
             elif subpath.lower() in ['register', 'register.aspx']:
+                if current_user:
+                    self.send_response(302)
+                    self.send_header('Location', '/Ar_Sa/Profile')
+                    self.end_headers()
+                    return
                 aspx_file = 'Ar_Sa/Register.aspx'
             elif subpath.lower() in ['profile', 'profile.aspx']:
                 if not current_user:
@@ -1534,7 +1985,7 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                 target = os.path.join(BASE_DIR, 'Ar_Sa', subpath + '.aspx')
                 aspx_file = f'Ar_Sa/{subpath}.aspx' if os.path.exists(target) else None
         else:
-            if not path or path.lower() in ['default', 'default.aspx', 'home']:
+            if not path or path.lower() in ['default', 'default.aspx', 'home', '~', '~/']:
                 aspx_file = 'Default.aspx'
             elif path.lower() in ['publication', 'publication.aspx']:
                 aspx_file = 'Publication.aspx'
@@ -1549,8 +2000,18 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
             elif path.lower() in ['contactus', 'contactus.aspx']:
                 aspx_file = 'ContactUs.aspx'
             elif path.lower() in ['login', 'login.aspx']:
+                if current_user:
+                    self.send_response(302)
+                    self.send_header('Location', '/Profile')
+                    self.end_headers()
+                    return
                 aspx_file = 'Login.aspx'
             elif path.lower() in ['register', 'register.aspx']:
+                if current_user:
+                    self.send_response(302)
+                    self.send_header('Location', '/Profile')
+                    self.end_headers()
+                    return
                 aspx_file = 'Register.aspx'
             elif path.lower() in ['profile', 'profile.aspx']:
                 if not current_user:
@@ -1601,6 +2062,7 @@ def run_https(port=7198):
     
     server_address = ('0.0.0.0', port)
     httpd = HTTPServer(server_address, SairhRequestHandler)
+    httpd.is_ssl = True
     
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain(certfile=cert_file, keyfile=key_file)

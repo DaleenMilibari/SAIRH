@@ -40,7 +40,7 @@
                     <div class="header-inner">
                         <!-- Logo -->
                         <div id="logo">
-                            <a href="~/" runat="server">
+                            <a href="~/Default.aspx" runat="server">
                                 <img alt="SAIRH Logo" class="logo" src="<%= ResolveUrl("~/Content/images/background/SAIRH_logo_transparent.svg") %>" />
                             </a>
                         </div>
@@ -49,7 +49,7 @@
                         <div class="header-nav-container" id="headerNavContainer">
                             <!-- Main Navigation Menu -->
                             <ul id="mainmenu">
-                                <li><a href="~/" runat="server" id="linkHome"><i class="bi bi-house-door"></i> <span>Home</span></a></li>
+                                <li><a href="~/Default.aspx" runat="server" id="linkHome"><i class="bi bi-house-door"></i> <span>Home</span></a></li>
                                 <li><a href="Ceremony" runat="server" id="linkCeremony"><i class="bi bi-calendar2-check"></i> <span>Program &amp; Tracks</span></a></li>
                                 <li><a href="Schedules" runat="server" id="linkSchedules"><i class="bi bi-buildings"></i> <span>Exhibition</span></a></li>
                                 <li><a href="Speakers" runat="server" id="linkSpeakers"><i class="bi bi-people"></i> <span>Speakers</span></a></li>
@@ -59,45 +59,38 @@
 
                             <!-- Account & Language Switcher Group -->
                             <div class="header-actions">
-                                <!-- Signed In User Account Dropdown -->
-                                <div class="header-user-dropdown" runat="server" id="liProfile" ClientIDMode="Static">
+                                <!-- User Account Dropdown (Always visible entry point) -->
+                                <div class="header-user-dropdown" id="userAccountDropdown">
                                     <button type="button" class="action-pill user-dropdown-toggle" id="userDropdownTrigger" aria-label="User Account Menu" aria-haspopup="true">
                                         <i class="bi bi-person-circle"></i>
                                         <span>Account</span>
                                         <i class="bi bi-chevron-down user-dropdown-caret"></i>
                                     </button>
                                     <div class="user-dropdown-menu" id="userDropdownMenu">
-                                        <div class="user-dropdown-header">
-                                            <div class="user-dropdown-avatar">
-                                                <i class="bi bi-person-circle"></i>
-                                            </div>
-                                            <div class="user-dropdown-info">
-                                                <span class="user-dropdown-badge"><i class="bi bi-check-circle"></i> Signed In</span>
-                                                <span class="user-dropdown-greeting">Attendee Account</span>
-                                            </div>
+                                        <!-- Signed-in state: only Account Management and Log Out -->
+                                        <div runat="server" id="liProfile" ClientIDMode="Static" class="user-dropdown-group">
+                                            <asp:LinkButton ID="BtnProfile" runat="server" PostBackUrl="~/Profile.aspx" CssClass="user-dropdown-item">
+                                                <i class="bi bi-person-gear"></i> <span>Account Management</span>
+                                            </asp:LinkButton>
+                                            <div class="user-dropdown-divider"></div>
+                                            <span runat="server" id="liLogOut">
+                                                <asp:LinkButton ID="BtnSignOut" runat="server" OnClick="BtnSignOut_Click" CssClass="user-dropdown-item user-dropdown-item-danger">
+                                                    <i class="bi bi-box-arrow-right"></i> <span>Log Out</span>
+                                                </asp:LinkButton>
+                                            </span>
+                                            <span runat="server" id="liDashboard" style="display:none;"></span>
                                         </div>
-                                        <div class="user-dropdown-divider"></div>
-                                        <asp:LinkButton ID="BtnProfile" runat="server" PostBackUrl="~/Profile.aspx" CssClass="user-dropdown-item">
-                                            <i class="bi bi-person-badge"></i> <span>My Profile &amp; Pass</span>
-                                        </asp:LinkButton>
-                                        <span runat="server" id="liDashboard" style="display:none;">
-                                            <asp:LinkButton ID="BtnDashboard" runat="server" PostBackUrl="~/Admin/ManageSummit.aspx" CssClass="user-dropdown-item">
-                                                <i class="bi bi-shield-lock"></i> <span>Manage Summit (Admin)</span>
-                                            </asp:LinkButton>
-                                        </span>
-                                        <div class="user-dropdown-divider"></div>
-                                        <span runat="server" id="liLogOut">
-                                            <asp:LinkButton ID="BtnSignOut" runat="server" OnClick="BtnSignOut_Click" CssClass="user-dropdown-item user-dropdown-item-danger">
-                                                <i class="bi bi-box-arrow-right"></i> <span>Sign out</span>
-                                            </asp:LinkButton>
-                                        </span>
-                                    </div>
-                                </div>
 
-                                <!-- Guest State: Sign in & Register Buttons (Shown only when not signed in) -->
-                                <div class="header-guest-actions" runat="server" id="liLogin" ClientIDMode="Static">
-                                    <a href="Login" class="action-pill"><i class="bi bi-box-arrow-in-right"></i> <span>Sign in</span></a>
-                                    <a href="Register" class="action-pill action-pill-primary"><i class="bi bi-person-plus"></i> <span>Register</span></a>
+                                        <!-- Guest / Not signed in state: only Registration and Sign In -->
+                                        <div runat="server" id="liLogin" ClientIDMode="Static" class="user-dropdown-group">
+                                            <a href="<%= ResolveUrl("~/Register.aspx") %>" class="user-dropdown-item">
+                                                <i class="bi bi-person-plus"></i> <span>Registration</span>
+                                            </a>
+                                            <a href="<%= ResolveUrl("~/Login.aspx") %>" class="user-dropdown-item">
+                                                <i class="bi bi-box-arrow-in-right"></i> <span>Sign In</span>
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Language Switcher -->
@@ -119,18 +112,31 @@
                     </div>
                 </div>
 
-                <!-- Instant Mutual Exclusivity Guard & Mobile Navigation Toggle Script -->
+                <!-- Header Navigation & Dropdown Toggle Script -->
                 <script>
                     (function () {
-                        // Instant mutual exclusivity between profile and login
-                        var profile = document.getElementById('liProfile');
-                        var login = document.getElementById('liLogin');
-                        if (profile && login) {
-                            login.style.setProperty('display', 'none', 'important');
+                        // User Account dropdown click toggle & outside click handler
+                        function setupUserDropdownToggle() {
+                            var userDropdown = document.getElementById('userAccountDropdown');
+                            var dropdownTrigger = document.getElementById('userDropdownTrigger');
+                            if (!userDropdown || !dropdownTrigger) return;
+
+                            dropdownTrigger.addEventListener('click', function (e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                userDropdown.classList.toggle('open');
+                            });
+
+                            document.addEventListener('click', function (e) {
+                                if (userDropdown.classList.contains('open') && !userDropdown.contains(e.target)) {
+                                    userDropdown.classList.remove('open');
+                                }
+                            });
                         }
 
                         // Robust mobile menu toggle & outside click handler
                         function setupMenuToggle() {
+                            setupUserDropdownToggle();
                             var menuBtn = document.getElementById('menu-btn');
                             var header = document.querySelector('header');
                             if (!menuBtn || !header) return;
@@ -274,7 +280,6 @@
                     </div>
                     <div class="sairh-chat-header-text">
                         <h4 id="chat-title" class="sairh-chat-title">SAIRH AI Assistant</h4>
-                        <span id="chat-status" class="sairh-chat-status">Online &bull; 2026 Summit Guide</span>
                     </div>
                 </div>
                 <div class="sairh-chat-header-actions">
@@ -288,11 +293,6 @@
                 </div>
             </div>
 
-            <div class="sairh-chat-banner">
-                <i class="bi bi-info-circle-fill"></i>
-                <span id="chat-banner-text">Official AI Summit Guide for SAIRH 2026</span>
-            </div>
-
             <div class="sairh-chat-messages" id="chat-messages" role="log" aria-live="polite">
             </div>
 
@@ -302,9 +302,6 @@
                     <button type="button" id="send-btn" class="sairh-chat-send-btn" onclick="submitUserQuery()" aria-label="Send Message">
                         <i class="bi bi-send-fill"></i>
                     </button>
-                </div>
-                <div class="sairh-chat-watermark">
-                    <span>SAIRH 2026 &bull; Year of Artificial Intelligence</span>
                 </div>
             </div>
         </div>

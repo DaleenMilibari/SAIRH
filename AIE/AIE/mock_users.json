@@ -31,28 +31,28 @@
     ],
     "failedAttempts": 0,
     "lockoutUntil": null,
-    "lastLogin": "2026-10-12T08:05:53.075Z",
+    "lastLogin": "2026-10-19T10:43:27.465Z",
     "passwordChangedDate": "2026-10-12T08:05:53.081Z",
     "hasCompletedSurvey": false,
     "surveyRoadmap": []
   },
   "attendee@sairh.com": {
     "email": "attendee@sairh.com",
-    "fullName": "Dr. Sarah Al-Ahmad Consultant",
+    "fullName": "Dr. Sarah Al-Ahmad",
     "mobile": "+966501234567",
-    "organization": "KFSH & Research Centre",
+    "organization": "KFSH Research Centre Python",
     "jobTitle": "Chief AI Radiologist",
-    "specialty": "Pediatric Neuro AI",
+    "specialty": "Neuro AI",
     "role": "Attendee",
     "isAdmin": false,
     "passwordHash": "PBKDF2-SHA512$210000$OmA5KPTUEKDSf291nAbGMg==$YCg6a7S9ScfG+99qu+MkHMdfknV4ilgG7lyFhyMky5U=",
-    "linkedIn": "https://linkedin.com/in/drsarah2",
+    "linkedIn": "https://linkedin.com",
     "passwordHistory": [
       "PBKDF2-SHA512$210000$OmA5KPTUEKDSf291nAbGMg==$YCg6a7S9ScfG+99qu+MkHMdfknV4ilgG7lyFhyMky5U="
     ],
-    "failedAttempts": 0,
+    "failedAttempts": 1,
     "lockoutUntil": null,
-    "lastLogin": "2026-10-13T05:55:22.498Z",
+    "lastLogin": "2026-10-19T10:43:28.074Z",
     "passwordChangedDate": "2026-10-12T08:05:53.081Z",
     "hasCompletedSurvey": false,
     "surveyRoadmap": [],
@@ -315,7 +315,12 @@
     "organization": "King Fahad Specialist Hospital Dammam",
     "jobTitle": "Executive Director of Health Informatics",
     "specialty": "Thoracic AI Imaging",
-    "linkedIn": "https://linkedin.com/in/fahadalmsned"
+    "linkedIn": "https://linkedin.com/in/fahadalmsned",
+    "passwordHash": "PBKDF2-SHA512$210000$wTKpejY4u7uk1muRJZco7Q==$OXiyio664+V/Rih34Golh/RLpGXrJ/a/T8E99/ApaZ4=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$wTKpejY4u7uk1muRJZco7Q==$OXiyio664+V/Rih34Golh/RLpGXrJ/a/T8E99/ApaZ4="
+    ],
+    "role": "Speaker"
   },
   "form_user_1791870922339@sairh.test": {
     "fullName": "Eng. Khalid Healthcare",
@@ -336,5 +341,227 @@
     "passwordChangedDate": "2026-10-13T05:55:22.392Z",
     "hasCompletedSurvey": false,
     "surveyRoadmap": []
+  },
+  "userone@gmail.com": {
+    "fullName": "userone",
+    "email": "userone@gmail.com",
+    "mobile": "",
+    "passwordHash": "PBKDF2-SHA512$210000$OjAuxYttN1qRhRiIc+Gqew==$jLd7WPqXnMDnIQfJaFEDAqJXmJ1ZZm9m0Aeq1s6hX3g="
+  },
+  "use@asdfghjk.com": {
+    "fullName": "use",
+    "email": "use@asdfghjk.com",
+    "mobile": "",
+    "passwordHash": "PBKDF2-SHA512$210000$6vBWFfqL1Rb3tLrx6FkrGA==$A5PIw9v+Jgam38c96XqxWjWLpHZb54hSk2z6dzV7agM="
+  },
+  "lockout_user_1792406543011@sairh.test": {
+    "fullName": "Lockout Test",
+    "email": "lockout_user_1792406543011@sairh.test",
+    "passwordHash": "PBKDF2-SHA512$210000$yE91FuriHCZo8auhrrkdIw==$K/D2H9x1WZcP1bXD8injdu68YwhhbMssJhn02RWLvKI=",
+    "failedAttempts": 5,
+    "lockoutUntil": 1792407443340
+  },
+  "reg_attendee_1792406543681@sairh.test": {
+    "fullName": "Dr. Sarah Al-Otaibi",
+    "email": "reg_attendee_1792406543681@sairh.test",
+    "mobile": "+966551234567",
+    "organization": "King Faisal Specialist Hospital",
+    "jobTitle": "Consultant Radiologist",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$cmMlfJjIrUfwHX9ORqEnmQ==$f0tKMSOZwphfheDkJqhDZh9SMlJmEHHYQwmxXJjRnYA=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$cmMlfJjIrUfwHX9ORqEnmQ==$f0tKMSOZwphfheDkJqhDZh9SMlJmEHHYQwmxXJjRnYA="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-19T10:42:23.841Z",
+    "passwordChangedDate": "2026-10-19T10:42:23.735Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "ar_reg_1792406543843@sairh.test": {
+    "fullName": "د. عبد الله الشمري",
+    "email": "ar_reg_1792406543843@sairh.test",
+    "mobile": "",
+    "organization": "",
+    "jobTitle": "",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$hu5icXRDmLmp4VZ+W+t3iw==$C5a5f0Sse9zMRBKRX6rQDeTuT4SwNSM7lhLfYlQ/PVk=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$hu5icXRDmLmp4VZ+W+t3iw==$C5a5f0Sse9zMRBKRX6rQDeTuT4SwNSM7lhLfYlQ/PVk="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-19T10:42:24.007Z",
+    "passwordChangedDate": "2026-10-19T10:42:23.897Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "lockout_user_1792406607486@sairh.test": {
+    "fullName": "Lockout Test",
+    "email": "lockout_user_1792406607486@sairh.test",
+    "passwordHash": "PBKDF2-SHA512$210000$MxevWRI4QQkIY9ESJtBZgA==$OkQOzlsf8+35ob0S37S/6ezYVwfg+K4DAkoFLMgXeLc=",
+    "failedAttempts": 5,
+    "lockoutUntil": 1792407507800
+  },
+  "reg_attendee_1792406608128@sairh.test": {
+    "fullName": "Dr. Sarah Al-Otaibi",
+    "email": "reg_attendee_1792406608128@sairh.test",
+    "mobile": "+966551234567",
+    "organization": "King Faisal Specialist Hospital",
+    "jobTitle": "Consultant Radiologist",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$x4qTtritgftx+5wf7tgOnw==$6nLUKulAgPH8Zv3IF4SlyTgjsHNJu0fGDmh6PurHQKc=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$x4qTtritgftx+5wf7tgOnw==$6nLUKulAgPH8Zv3IF4SlyTgjsHNJu0fGDmh6PurHQKc="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-19T10:43:28.283Z",
+    "passwordChangedDate": "2026-10-19T10:43:28.180Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "ar_reg_1792406608284@sairh.test": {
+    "fullName": "د. عبد الله الشمري",
+    "email": "ar_reg_1792406608284@sairh.test",
+    "mobile": "",
+    "organization": "",
+    "jobTitle": "",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$n2JV9CdQ+j8rUTWDMOAUAg==$mbZJLvc4UBOyXpaufO0nC/UY4SFgUweBglnaQ/xxBaM=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$n2JV9CdQ+j8rUTWDMOAUAg==$mbZJLvc4UBOyXpaufO0nC/UY4SFgUweBglnaQ/xxBaM="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-19T10:43:28.440Z",
+    "passwordChangedDate": "2026-10-19T10:43:28.335Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "py_attendee_1792406686@sairh.test": {
+    "fullName": "Dr. Faisal Al-Harbi",
+    "email": "py_attendee_1792406686@sairh.test",
+    "mobile": "+966500001122",
+    "organization": "King Saud University",
+    "jobTitle": "Imaging Researcher",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$KMdL4C22EOAfw5Co5oh+yQ==$8EQFkaRV7gKdz0+WR+q4uB8OfTearP7ZJ+UZwB73qC8=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$KMdL4C22EOAfw5Co5oh+yQ==$8EQFkaRV7gKdz0+WR+q4uB8OfTearP7ZJ+UZwB73qC8="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "test_node_en@sairh.com": {
+    "fullName": "Dr. Sarah Node",
+    "email": "test_node_en@sairh.com",
+    "mobile": "",
+    "organization": "",
+    "jobTitle": "",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$cMGwNSegfD9f5hqKA/RCPA==$rrQfoZuugPKAlSNz1XqCPLIb2GyW5wxJa69ZF0ooodE=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$cMGwNSegfD9f5hqKA/RCPA==$rrQfoZuugPKAlSNz1XqCPLIb2GyW5wxJa69ZF0ooodE="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-19T12:05:17.832Z",
+    "passwordChangedDate": "2026-10-19T12:05:17.834Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "test_node_ar@sairh.com": {
+    "fullName": "د. سارة نود",
+    "email": "test_node_ar@sairh.com",
+    "mobile": "",
+    "organization": "",
+    "jobTitle": "",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$0lHLuA8Y05/w4Kdl5Hedzw==$jit/0CZ1mm/U/cLcIEFHJh8nrqAVdliQ+6vpqF0xBy8=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$0lHLuA8Y05/w4Kdl5Hedzw==$jit/0CZ1mm/U/cLcIEFHJh8nrqAVdliQ+6vpqF0xBy8="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-19T12:05:17.886Z",
+    "passwordChangedDate": "2026-10-19T12:05:17.886Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "saraomar@gmail.com": {
+    "fullName": "Sara Omar",
+    "email": "saraomar@gmail.com",
+    "mobile": "0567777777",
+    "organization": "",
+    "jobTitle": "",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$YsVmWbJYbbslDGU1pH0FIQ==$DxHTJQ8nGmlyfe5KrN/VoNuLeMYxhlNFLEE+FqyIrvQ=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$YsVmWbJYbbslDGU1pH0FIQ==$DxHTJQ8nGmlyfe5KrN/VoNuLeMYxhlNFLEE+FqyIrvQ="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-20T10:48:03.976Z",
+    "passwordChangedDate": "2026-10-20T05:39:49.882Z",
+    "hasCompletedSurvey": true,
+    "surveyRoadmap": [
+      "R1",
+      "R2",
+      "S6"
+    ]
+  },
+  "khmohammad@gmail.com": {
+    "fullName": "Khalid Mohammad",
+    "email": "khmohammad@gmail.com",
+    "mobile": "0566332218",
+    "organization": "",
+    "jobTitle": "",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$Po/c++K7KTCvXO1eQYdwYA==$SjVt6XCb2b4/VGoGKbKXxRx3MXrC26SbQlLcaw5iH7k=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$Po/c++K7KTCvXO1eQYdwYA==$SjVt6XCb2b4/VGoGKbKXxRx3MXrC26SbQlLcaw5iH7k="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-20T10:55:08.611Z",
+    "passwordChangedDate": "2026-10-20T10:55:08.611Z",
+    "hasCompletedSurvey": true,
+    "surveyRoadmap": [
+      "R2",
+      "R4",
+      "R8",
+      "R10",
+      "R14",
+      "R16",
+      "R20",
+      "S5"
+    ],
+    "visitedBooths": [
+      "R12",
+      "R4",
+      "S1"
+    ]
   }
 }

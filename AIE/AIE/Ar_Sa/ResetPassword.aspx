@@ -112,6 +112,4 @@
             </div>
         </div>
     </section>
-
-    <script src="<%= ResolveUrl("~/Scripts/auth.js") %>"></script>
 </asp:Content>

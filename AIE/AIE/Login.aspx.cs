@@ -11,7 +11,7 @@ namespace AIE
             if (Ado.UserDetails != null)
             {
                 string returnUrl = Request.QueryString["ReturnUrl"];
-                Response.Redirect(AuthService.GetSafeReturnUrl(returnUrl, "~/"));
+                Response.Redirect(AuthService.GetSafeReturnUrl(returnUrl, "~/Profile.aspx"));
                 return;
             }
 
@@ -40,7 +40,7 @@ namespace AIE
                     case AuthService.SignInStatus.Success:
                         AuthService.StartSession(account, rememberMe);
                         string returnUrl = Request.QueryString["ReturnUrl"];
-                        Response.Redirect(AuthService.GetSafeReturnUrl(returnUrl, "~/"));
+                        Response.Redirect(AuthService.GetSafeReturnUrl(returnUrl, "~/Profile.aspx"));
                         break;
 
                     case AuthService.SignInStatus.LockedOut:

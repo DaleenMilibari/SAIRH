@@ -11,7 +11,7 @@ namespace AIE.Ar_Sa
             if (Ado.UserDetails != null)
             {
                 string returnUrl = Request.QueryString["ReturnUrl"];
-                Response.Redirect(AuthService.GetSafeReturnUrl(returnUrl, "~/Ar_Sa/"));
+                Response.Redirect(AuthService.GetSafeReturnUrl(returnUrl, "~/Ar_Sa/Profile.aspx"));
                 return;
             }
 
@@ -40,7 +40,7 @@ namespace AIE.Ar_Sa
                     case AuthService.SignInStatus.Success:
                         AuthService.StartSession(account, rememberMe);
                         string returnUrl = Request.QueryString["ReturnUrl"];
-                        Response.Redirect(AuthService.GetSafeReturnUrl(returnUrl, "~/Ar_Sa/"));
+                        Response.Redirect(AuthService.GetSafeReturnUrl(returnUrl, "~/Ar_Sa/Profile.aspx"));
                         break;
 
                     case AuthService.SignInStatus.LockedOut:

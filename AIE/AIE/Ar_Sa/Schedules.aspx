@@ -4,146 +4,120 @@
     <style>
         /* SiteMap & Exhibition Floor Custom Styles - Arabic RTL */
         :root {
-            --research-color: #dbeafe;
-            --research-stroke: #93c5fd;
-            --sponsor-color: #dcfce7;
-            --sponsor-stroke: #86efac;
+            --research-color: rgba(14, 165, 233, 0.22);
+            --research-stroke: rgba(56, 189, 248, 0.65);
+            --sponsor-color: rgba(16, 185, 129, 0.22);
+            --sponsor-stroke: rgba(52, 211, 153, 0.65);
             --recommended-color: #0284c7;
+            --recommended-stroke: #38bdf8;
             --visited-color: #10b981;
+            --visited-stroke: #34d399;
             --busy-color: #f59e0b;
+            --busy-stroke: #fbbf24;
         }
 
         .expo-roadmap-banner {
-            background: linear-gradient(135deg, rgba(2, 132, 199, 0.25), rgba(15, 23, 42, 0.8));
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.25), rgba(15, 23, 42, 0.85));
             border: 1px solid rgba(56, 189, 248, 0.4);
-            border-radius: 16px;
-            padding: 24px 28px;
-            margin-bottom: 30px;
-            backdrop-filter: blur(12px);
+            border-radius: 18px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(14px);
             text-align: right;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
         }
 
         .roadmap-cta-banner {
-            background: rgba(15, 23, 42, 0.7);
+            background: rgba(15, 23, 42, 0.75);
             border: 1px dashed rgba(56, 189, 248, 0.4);
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 24px 28px;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
             text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Remove double border from map search input and chat input bar */
+        .expo-search-box input,
+        .expo-search-box input[type="text"],
+        .expo-search-box #mapSearchInput,
+        .sairh-chat-input-bar input,
+        .sairh-chat-input-bar input[type="text"],
+        .sairh-chat-input-bar #user-input,
+        .sairh-chat-input {
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            padding: 4px 8px !important;
+            outline: none !important;
+        }
+
+        .expo-search-box input:focus,
+        .expo-search-box input[type="text"]:focus,
+        .expo-search-box #mapSearchInput:focus,
+        .sairh-chat-input-bar input:focus,
+        .sairh-chat-input-bar input[type="text"]:focus,
+        .sairh-chat-input-bar #user-input:focus,
+        .sairh-chat-input:focus {
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            outline: none !important;
+        }
+
+        /* Fixed High-Z Hover Tooltip (Never blocked by expo-map-toolbar) */
+        .booth-hover-tooltip {
+            position: fixed !important;
+            z-index: 100000 !important;
+            pointer-events: none !important;
+            background: rgba(15, 23, 42, 0.96) !important;
+            border: 1px solid rgba(56, 189, 248, 0.45) !important;
+            border-radius: 12px !important;
+            padding: 10px 14px !important;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.25) !important;
+            color: #ffffff !important;
+            font-size: 0.8rem !important;
+            max-width: 270px !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            direction: rtl;
+            text-align: right;
+            transition: opacity 0.15s ease, transform 0.1s ease !important;
         }
 
         .recommended-cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 14px;
-            margin-top: 18px;
+            margin-top: 14px;
         }
 
         .recommended-stop-card {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-right: 4px solid #0284c7;
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 16px;
-            transition: all 0.2s ease;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-right: 4px solid #38bdf8;
+            border-left: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 14px;
+            padding: 16px 18px;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             text-align: right;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
         }
 
         .recommended-stop-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(56, 189, 248, 0.4);
-            box-shadow: 0 10px 25px -10px rgba(2, 132, 199, 0.3);
+            transform: translateY(-3px);
+            border-color: rgba(56, 189, 248, 0.6);
+            box-shadow: 0 12px 30px -8px rgba(2, 132, 199, 0.4);
+            background: rgba(15, 23, 42, 0.95);
         }
 
-        .map-legend-bar {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 20px;
-            background: rgba(15, 23, 42, 0.8);
-            padding: 14px 24px;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            flex-wrap: wrap;
-            direction: rtl;
-        }
-
-        .legend-pill {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #cbd5e1;
-        }
-
-        .legend-swatch {
-            width: 18px;
-            height: 18px;
-            border-radius: 6px;
-            border: 1.5px solid transparent;
-            display: inline-block;
-        }
-
-        .sitemap-canvas-card {
-            background: #ffffff;
-            border-radius: 20px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15);
-            padding: 24px;
-            position: relative;
-            overflow-x: auto;
-            margin-bottom: 40px;
-        }
-
-        svg.floor-plan-svg {
-            width: 100%;
-            height: auto;
-            min-width: 960px;
-            user-select: none;
-            display: block;
-        }
-
-        .booth-rect {
-            cursor: pointer;
-            transition: transform 0.15s ease, filter 0.15s ease, stroke-width 0.15s;
-        }
-
-        .booth-rect:hover {
-            filter: brightness(0.92);
-            stroke: #0f172a !important;
-            stroke-width: 2.5px !important;
-        }
-
-        .booth-label {
-            font-weight: 700;
-            font-size: 11px;
-            fill: #1e293b;
-            pointer-events: none;
-            text-anchor: middle;
-            dominant-baseline: central;
-        }
-
-        .booth-label.light-text {
-            fill: #ffffff !important;
-        }
-
-        .check-badge {
-            pointer-events: none;
-            fill: #ffffff;
-            font-size: 11px;
-            font-weight: 900;
-            text-anchor: middle;
-            dominant-baseline: central;
-        }
-
-        /* Detail Modal Dialog */
+        /* Detail Modal */
         .booth-modal-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(6px);
+            background: rgba(8, 14, 28, 0.75);
+            backdrop-filter: blur(10px);
             display: none;
             align-items: center;
             justify-content: center;
@@ -151,52 +125,9 @@
             direction: rtl;
         }
 
-        .booth-modal-box {
-            background: #ffffff;
-            color: #0f172a;
-            width: 90%;
-            max-width: 460px;
-            border-radius: 18px;
-            padding: 28px;
-            box-shadow: 0 25px 35px -5px rgba(0,0,0,0.25);
-            animation: modalPopIn 0.2s ease-out;
-            position: relative;
-            text-align: right;
-        }
-
         @keyframes modalPopIn {
-            from { transform: scale(0.95); opacity: 0; }
+            from { transform: scale(0.92); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
-        }
-
-        .booth-modal-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .booth-status-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f1f5f9;
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .booth-status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 8px;
-            margin-right: 0;
         }
     </style>
 </asp:Content>
@@ -222,32 +153,49 @@
     <!-- Main Exhibition Showcase & SiteMap -->
     <section class="py-5" aria-label="Exhibition Hall">
         <div class="container">
-            <!-- Expo Meta Banner -->
+            <!-- Build / Retake Roadmap Action (Prominently Placed Above Meta Banner) -->
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.8rem; padding: 6px 14px; border-radius: 9999px;">
+                        <i class="bi bi-compass ml-1"></i> مسار المعرض المخصص
+                    </span>
+                    <span class="text-secondary small">جولة مخصصة لمعروضات الذكاء الاصطناعي بناءً على اهتماماتك</span>
+                </div>
+                <div>
+                    <a href="Survey" class="cyan-glow-btn d-inline-flex align-items-center px-4 py-2 text-white font-weight-bold text-decoration-none">
+                        <i class="bi bi-compass ml-2"></i> بناء / إعادة الاستبيان
+                    </a>
+                </div>
+            </div>
+
+            <!-- Expo Meta Banner (3 Balanced Columns) -->
             <div class="expo-meta-banner mb-4">
-                <div class="d-flex align-items-center gap-3">
-                    <i class="bi bi-geo-alt text-info display-6"></i>
+                <div class="expo-meta-item">
+                    <div class="expo-meta-icon"><i class="bi bi-geo-alt"></i></div>
                     <div>
                         <div class="text-white font-weight-bold">مقر المعرض</div>
                         <div class="text-secondary small">مركز معارض جراند حياة الخبر</div>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-3">
-                    <i class="bi bi-people text-info display-6"></i>
+                <div class="expo-meta-item">
+                    <div class="expo-meta-icon"><i class="bi bi-calendar3"></i></div>
+                    <div>
+                        <div class="text-white font-weight-bold">تواريخ القمة</div>
+                        <div class="text-secondary small">24 – 26 نوفمبر 2026 • 09:00 - 18:00</div>
+                    </div>
+                </div>
+                <div class="expo-meta-item">
+                    <div class="expo-meta-icon"><i class="bi bi-grid-3x3-gap"></i></div>
                     <div>
                         <div class="text-white font-weight-bold">نطاق المشاركة</div>
                         <div class="text-secondary small">15 جناحاً للرعاة و 30 منصة عرض بحثية</div>
                     </div>
                 </div>
-                <div>
-                    <a href="Survey" class="btn btn-outline-info rounded-pill px-4 py-2 font-weight-bold">
-                        <i class="bi bi-compass ml-1"></i> استبيان التخصيص
-                    </a>
-                </div>
             </div>
 
             <!-- Personalized Roadmap Section -->
-            <div id="pnlRoadmap" runat="server" class="expo-roadmap-banner" visible="false">
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="expo-roadmap-banner" id="pnlRoadmap" runat="server" visible="false">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-1">
                     <div>
                         <span class="badge badge-info px-3 py-1 rounded-pill mb-2"><i class="bi bi-stars ml-1"></i> مسارك الموصى به</span>
                         <h3 class="text-white font-weight-bold mb-1">المحطات المقترحة لزيارتك</h3>
@@ -256,9 +204,9 @@
                         </p>
                     </div>
                     <div>
-                        <a href="Survey" class="btn btn-sm btn-outline-light rounded-pill px-3 py-2 font-weight-semibold">
-                            <i class="bi bi-arrow-repeat ml-1"></i> إعادة الاستبيان
-                        </a>
+                        <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 6px 14px; border-radius: 9999px; font-size: 0.78rem;">
+                            <i class="bi bi-bookmark-star ml-1"></i> مسار منسق
+                        </span>
                     </div>
                 </div>
 
@@ -267,80 +215,155 @@
                 </div>
             </div>
 
-            <!-- Survey CTA Banner for Guests or Users Without Survey -->
-            <div id="pnlSurveyCTA" runat="server" class="roadmap-cta-banner">
-                <h4 class="text-white font-weight-bold mb-2">هل ترغب في الحصول على مسار مخصص في المعرض؟</h4>
-                <p class="text-secondary small mb-3">
-                    أجب عن استبياننا السريع خلال دقيقة واحدة لتسليط الضوء على أجنحة الرعاة وشاشات الأبحاث التي تلائم اهتماماتك وتخصصك.
-                </p>
-                <a href="Survey" class="cyan-glow-btn d-inline-block px-4 py-2 text-white font-weight-bold text-decoration-none">
-                    <i class="bi bi-magic ml-1"></i> بناء مساري المخصص
-                </a>
-            </div>
+            <!-- Survey CTA Placeholder (Hidden to avoid duplication with top Build / Retake Roadmap action) -->
+            <div id="pnlSurveyCTA" runat="server" style="display:none;"></div>
 
-            <!-- Map Header & Legend -->
+            <!-- Map Header -->
             <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-3">
                 <div>
                     <h2 class="text-white font-weight-bold h3 mb-1">
                         <i class="bi bi-map text-info ml-2"></i> خريطة المعرض التفاعلية
                     </h2>
                     <p class="text-secondary small mb-0">
-                        انقر على أي جناح أو شاشة عرض للاطلاع على تفاصيل الأبحاث، أو فترات الانتظار، أو محاكاة مسح بطاقة NFC.
+                        استكشف منصات الأبحاث، وأجنحة الرعاة، وفترات التوفر، ونقاط تفاعل NFC الذكية.
                     </p>
                 </div>
             </div>
 
-            <!-- Legend Bar -->
-            <div class="map-legend-bar">
-                <div class="legend-pill">
-                    <span class="legend-swatch" style="background: var(--research-color); border-color: var(--research-stroke);"></span>
-                    <span>شاشات عرض الأبحاث (سماوي)</span>
+            <!-- Interactive Map Toolbar (RTL) -->
+            <div class="expo-map-toolbar mb-4">
+                <div class="row align-items-center g-3">
+                    <!-- Live Search Bar -->
+                    <div class="col-xl-4 col-lg-4 col-md-12 mb-2 mb-lg-0">
+                        <div class="expo-search-box">
+                            <i class="bi bi-search text-info ml-2"></i>
+                            <input type="text" id="mapSearchInput" class="form-control bg-transparent text-white border-0 shadow-none p-0" placeholder="ابحث برقم الجناح أو اسم الشركة أو التخصص..." oninput="handleMapSearch(this.value)" />
+                            <button type="button" id="btnClearMapSearch" class="btn btn-sm text-secondary p-0" style="display:none; font-size:1.2rem; line-height:1;" onclick="clearMapSearch()" title="مسح البحث">&times;</button>
+                        </div>
+                    </div>
+                    <!-- Filter Tabs with Integrated Color Swatches -->
+                    <div class="col-xl-8 col-lg-8 col-md-12 d-flex align-items-center justify-content-lg-end flex-wrap gap-2">
+                        <button type="button" class="expo-filter-pill active" id="fltAll" onclick="setMapFilter('all')">
+                            <i class="bi bi-grid-fill ml-1"></i> الكل (<span id="cntAll">45</span>)
+                        </button>
+                        <button type="button" class="expo-filter-pill" id="fltRoadmap" onclick="setMapFilter('recommended')">
+                            <span class="legend-swatch ml-1" style="background: var(--recommended-color); width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span> مساري المخصص (<span id="cntRecommended">0</span>)
+                        </button>
+                        <button type="button" class="expo-filter-pill" id="fltSponsors" onclick="setMapFilter('sponsor')">
+                            <span class="legend-swatch ml-1" style="background: var(--sponsor-color); border: 1px solid var(--sponsor-stroke); width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span> الرعاة (15)
+                        </button>
+                        <button type="button" class="expo-filter-pill" id="fltResearch" onclick="setMapFilter('research')">
+                            <span class="legend-swatch ml-1" style="background: var(--research-color); border: 1px solid var(--research-stroke); width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span> الأبحاث (30)
+                        </button>
+                        <button type="button" class="expo-filter-pill" id="fltVisited" onclick="setMapFilter('visited')">
+                            <span class="legend-swatch ml-1" style="background: var(--visited-color); width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span> تمت الزيارة (<span id="cntVisited">0</span>)
+                        </button>
+                    </div>
                 </div>
-                <div class="legend-pill">
-                    <span class="legend-swatch" style="background: var(--sponsor-color); border-color: var(--sponsor-stroke);"></span>
-                    <span>أجنحة الرعاة (أخضر فاتح)</span>
-                </div>
-                <div class="legend-pill">
-                    <span class="legend-swatch" style="background: var(--recommended-color);"></span>
-                    <span class="text-info font-weight-bold">موصى بها (مسارك المخصص)</span>
-                </div>
-                <div class="legend-pill">
-                    <span class="legend-swatch" style="background: var(--visited-color);"></span>
-                    <span>تمت الزيارة (مع علامة صح)</span>
-                </div>
-                <div class="legend-pill">
-                    <span class="legend-swatch" style="background: var(--busy-color);"></span>
-                    <span>مشغول (فترة انتظار 5 د)</span>
+
+                <!-- Attendance Progress Bar, Live Cooldown Badge & Zoom -->
+                <div class="d-flex align-items-center justify-content-between mt-3 pt-3 flex-wrap gap-3" style="border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.75rem; padding: 4px 10px; border-radius: 9999px;">
+                            <i class="bi bi-broadcast ml-1"></i> مخطط مباشر
+                        </span>
+                        <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 0.75rem; padding: 4px 10px; border-radius: 9999px;">
+                            <span class="booth-status-dot ml-1" style="background: var(--busy-color); width: 7px; height: 7px; margin-left: 4px;"></span> مشغول: فترة انتظار 5 د
+                        </span>
+                        <span class="text-secondary small" id="searchMatchNotice" style="display:none;"></span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-light small font-weight-semibold">
+                            تمت الزيارة: <span id="progressText" class="text-info font-weight-bold">0 / 45</span> (<span id="progressPct">0%</span>)
+                        </span>
+                        <div class="expo-progress-track">
+                            <div class="expo-progress-fill" id="progressFill" style="width: 0%;"></div>
+                        </div>
+                        <!-- Zoom Controls -->
+                        <div class="expo-zoom-group">
+                            <button type="button" class="expo-zoom-btn" onclick="zoomMap(1.15)" title="تكبير"><i class="bi bi-zoom-in"></i></button>
+                            <button type="button" class="expo-zoom-btn" onclick="zoomMap(0.85)" title="تصغير"><i class="bi bi-zoom-out"></i></button>
+                            <button type="button" class="expo-zoom-btn" onclick="resetMapZoom()" title="إعادة ضبط العرض"><i class="bi bi-arrows-angle-contract"></i></button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- SVG Floor Plan Canvas Card -->
-            <div class="sitemap-canvas-card">
+            <div class="sitemap-canvas-card" id="sitemapCanvasCard">
+                <div id="boothHoverTooltip" class="booth-hover-tooltip" style="display:none;">
+                    <div class="tooltip-header">
+                        <span class="tooltip-code" id="tooltipCode">R-01</span>
+                        <span class="tooltip-hall" id="tooltipHall">قاعة الأبحاث</span>
+                    </div>
+                    <div class="tooltip-name" id="tooltipName">عنوان المشروع</div>
+                    <div class="tooltip-org" id="tooltipOrg">الجهة العارضة</div>
+                    <div class="tooltip-status" id="tooltipStatus">
+                        <span class="booth-status-dot" id="tooltipDot"></span> <span id="tooltipStatusText">متاح للزيارة</span>
+                    </div>
+                </div>
+
                 <svg id="exhibition-map" class="floor-plan-svg" viewBox="0 0 1060 520">
+                    <defs>
+                        <!-- Blueprint Grid Pattern -->
+                        <pattern id="blueprint-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                            <path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(56, 189, 248, 0.04)" stroke-width="1" />
+                        </pattern>
+                        <!-- Hall Gradients -->
+                        <linearGradient id="research-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="rgba(14, 165, 233, 0.12)" />
+                            <stop offset="100%" stop-color="rgba(15, 23, 42, 0.95)" />
+                        </linearGradient>
+                        <linearGradient id="sponsor-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="rgba(16, 185, 129, 0.12)" />
+                            <stop offset="100%" stop-color="rgba(15, 23, 42, 0.95)" />
+                        </linearGradient>
+                        <linearGradient id="plaza-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="rgba(30, 41, 59, 0.4)" />
+                            <stop offset="100%" stop-color="rgba(15, 23, 42, 0.85)" />
+                        </linearGradient>
+                        <linearGradient id="entrance-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#0284c7" />
+                            <stop offset="50%" stop-color="#38bdf8" />
+                            <stop offset="100%" stop-color="#0284c7" />
+                        </linearGradient>
+                    </defs>
+
                     <!-- Research Screen Hall Outer Frame -->
-                    <rect x="20" y="20" width="670" height="240" rx="14" fill="#f8fafc" stroke="#1e293b" stroke-width="2.5" />
-                    <text x="355" y="130" font-weight="800" font-size="18" fill="#1e293b" text-anchor="middle">قاعة شاشات الأبحاث</text>
-                    <text x="355" y="152" font-weight="600" font-size="12" fill="#64748b" text-anchor="middle">30 منصة عرض للمشاريع البحثية</text>
+                    <rect x="20" y="20" width="670" height="240" rx="16" fill="url(#research-grad)" stroke="rgba(56, 189, 248, 0.4)" stroke-width="2" />
+                    <rect x="20" y="20" width="670" height="240" rx="16" fill="url(#blueprint-grid)" opacity="0.7" />
+                    
+                    <!-- Research Hall Label -->
+                    <rect x="195" y="105" width="320" height="54" rx="10" fill="rgba(10, 15, 30, 0.75)" stroke="rgba(56, 189, 248, 0.25)" stroke-width="1" />
+                    <text x="355" y="126" font-weight="800" font-size="15" fill="#f8fafc" text-anchor="middle">قاعة شاشات الأبحاث</text>
+                    <text x="355" y="146" font-weight="600" font-size="11" fill="#38bdf8" text-anchor="middle">30 منصة لعرض أبحاث الذكاء الاصطناعي والتصوير الطبي</text>
 
                     <!-- Door Passageway Indicator -->
-                    <line x1="690" y1="125" x2="730" y2="125" stroke="#0284c7" stroke-width="3" stroke-dasharray="3 3" />
-                    <line x1="690" y1="155" x2="730" y2="155" stroke="#0284c7" stroke-width="3" stroke-dasharray="3 3" />
-                    <text x="710" y="142" font-size="9" font-weight="700" fill="#0284c7" text-anchor="middle">بوابة</text>
+                    <line x1="690" y1="125" x2="730" y2="125" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="4 4" />
+                    <line x1="690" y1="155" x2="730" y2="155" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="4 4" />
+                    <rect x="696" y="130" width="28" height="20" rx="4" fill="rgba(14, 165, 233, 0.3)" stroke="#38bdf8" stroke-width="1" />
+                    <text x="710" y="143" font-size="9" font-weight="800" fill="#bae6fd" text-anchor="middle">بوابة</text>
 
                     <!-- Sponsor Hall Outer Frame -->
-                    <rect x="730" y="20" width="310" height="470" rx="14" fill="#f8fafc" stroke="#1e293b" stroke-width="2.5" />
-                    <text x="885" y="55" font-weight="800" font-size="18" fill="#1e293b" text-anchor="middle">قاعة الرعاة والشركاء</text>
-                    <text x="885" y="75" font-weight="600" font-size="12" fill="#64748b" text-anchor="middle">15 جناحاً للرعاة</text>
+                    <rect x="730" y="20" width="310" height="470" rx="16" fill="url(#sponsor-grad)" stroke="rgba(52, 211, 153, 0.4)" stroke-width="2" />
+                    <rect x="730" y="20" width="310" height="470" rx="16" fill="url(#blueprint-grid)" opacity="0.7" />
 
-                    <!-- Main Empty Hall -->
-                    <rect x="20" y="280" width="670" height="210" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
-                    <text x="355" y="375" font-weight="800" font-size="18" fill="#94a3b8" text-anchor="middle">القاعة الرئيسية</text>
-                    <text x="355" y="398" font-weight="500" font-size="12" fill="#94a3b8" text-anchor="middle">لا توجد أجنحة عرض في هذه المساحة</text>
+                    <!-- Sponsor Hall Label -->
+                    <rect x="755" y="38" width="260" height="50" rx="10" fill="rgba(10, 15, 30, 0.75)" stroke="rgba(52, 211, 153, 0.25)" stroke-width="1" />
+                    <text x="885" y="58" font-weight="800" font-size="15" fill="#f8fafc" text-anchor="middle">قاعة الرعاة والشركاء</text>
+                    <text x="885" y="76" font-weight="600" font-size="11" fill="#34d399" text-anchor="middle">15 جناحاً لقادة الصناعة والتكنولوجيا</text>
 
-                    <!-- Entrance Arc -->
+                    <!-- Main Hall / Central Networking Plaza -->
+                    <rect x="20" y="280" width="670" height="210" rx="16" fill="url(#plaza-grad)" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1.5" />
+                    <rect x="20" y="280" width="670" height="210" rx="16" fill="url(#blueprint-grid)" opacity="0.4" />
+                    <text x="355" y="375" font-weight="800" font-size="16" fill="#cbd5e1" text-anchor="middle">الساحة الرئيسية للتواصل</text>
+                    <text x="355" y="398" font-weight="500" font-size="11" fill="#64748b" text-anchor="middle">مساحة استراحة، ركن القهوة وممر التنقل بين القاعات</text>
+
+                    <!-- Entrance Arc with Neon Glow -->
                     <g transform="translate(885, 490)">
-                        <path d="M -35 -20 A 35 35 0 0 1 35 -20" fill="none" stroke="#0f172a" stroke-width="2.5" />
-                        <text x="0" y="-30" font-size="11" font-weight="800" fill="#0f172a" text-anchor="middle">↑ المدخل الرئيسي</text>
+                        <path d="M -45 -12 A 45 45 0 0 1 45 -12" fill="none" stroke="url(#entrance-grad)" stroke-width="3" />
+                        <rect x="-65" y="-36" width="130" height="24" rx="12" fill="rgba(10, 15, 30, 0.85)" stroke="rgba(56, 189, 248, 0.6)" stroke-width="1.5" />
+                        <text x="0" y="-20" font-size="11" font-weight="800" fill="#38bdf8" text-anchor="middle">↑ المدخل الرئيسي</text>
                     </g>
 
                     <!-- Interactive SVG Booth Nodes Layer (R1-R30 & S1-S15) -->
@@ -419,41 +442,44 @@
         </div>
     </section>
 
-    <!-- Detail Modal Dialog -->
+    <!-- Detail Modal Dialog (RTL) -->
     <div class="booth-modal-backdrop" id="boothModal" onclick="if(event.target===this)closeModal();">
         <div class="booth-modal-box">
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>
                     <span class="booth-modal-badge" id="modalBadge">تفاصيل الجناح</span>
-                    <h3 class="font-weight-bold m-0" id="modalTitle">رمز الجناح</h3>
-                    <div class="text-secondary small font-weight-bold" id="modalOrg">الجهة العارضة</div>
+                    <h3 class="font-weight-bold m-0 text-white" id="modalTitle">رمز الجناح</h3>
+                    <div class="text-info small font-weight-bold mt-1" id="modalOrg">الجهة العارضة</div>
                 </div>
-                <button type="button" class="close text-secondary" style="font-size: 1.6rem; cursor:pointer;" onclick="closeModal()" aria-label="إغلاق">
+                <button type="button" class="close text-secondary" style="font-size: 1.8rem; cursor:pointer; opacity: 0.8; transition: opacity 0.2s;" onclick="closeModal()" aria-label="إغلاق">
                     &times;
                 </button>
             </div>
 
-            <p class="text-secondary small mb-3" id="modalCategories" style="line-height: 1.5;"></p>
+            <div class="mb-3">
+                <div class="text-secondary small font-weight-bold mb-1"><i class="bi bi-tags text-info ml-1"></i> مجالات التركيز:</div>
+                <div class="text-light small mb-0 d-flex flex-wrap" id="modalCategories" style="line-height: 1.5; gap: 4px;"></div>
+            </div>
 
             <div class="booth-status-row">
                 <span>حالة التوفر:</span>
                 <div class="d-flex align-items-center">
                     <span class="booth-status-dot" id="modalStatusDot"></span>
-                    <span id="modalStatusText">متاح للزيارة</span>
+                    <span id="modalStatusText" class="text-white">متاح للزيارة</span>
                 </div>
             </div>
 
-            <div id="modalVisitedNote" class="text-success small font-weight-bold mb-3" style="display:none;">
+            <div id="modalVisitedNote" class="text-success small font-weight-bold mb-3" style="display:none; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 12px; border-radius: 8px;">
                 <i class="bi bi-check-circle-fill ml-1"></i> لقد قمت بزيارة ومسح هذا الجناح مسبقاً!
             </div>
 
-            <button type="button" class="cyan-glow-btn w-100 py-3 text-white font-weight-bold" id="btnScan" onclick="simulateNFCScan()">
+            <button type="button" class="cyan-glow-btn w-100 py-3 text-white font-weight-bold border-0" id="btnScan" onclick="simulateNFCScan()">
                 <i class="bi bi-broadcast ml-1"></i> محاكاة مسح بطاقة NFC
             </button>
         </div>
     </div>
 
-    <!-- Interactive SiteMap Script (Arabic) -->
+    <!-- Interactive SiteMap Script (Arabic RTL) -->
     <script>
         const boothLayout = {
             // Top row R1 to R12
@@ -481,8 +507,17 @@
 
         let activeSelectedBooth = null;
         let localBoothsCache = [];
+        let currentFilter = 'all';
+        let activeSearchQuery = '';
+        let currentZoom = 1.0;
 
         function initSVGFloorPlan() {
+            // Attach tooltip to document.body so it is never clipped by parent overflow or obscured by toolbar
+            const tooltip = document.getElementById("boothHoverTooltip");
+            if (tooltip && tooltip.parentElement !== document.body) {
+                document.body.appendChild(tooltip);
+            }
+
             const container = document.getElementById("booths-layer");
             if (!container) return;
             let markup = "";
@@ -493,10 +528,10 @@
                 const h = isSponsor ? 30 : 22;
 
                 markup += `
-                  <g id="group-${code}" onclick="openBoothModal('${code}')">
+                  <g id="group-${code}" onclick="handleBoothClick(event, '${code}')" onmouseenter="showBoothTooltip(event, '${code}')" onmousemove="moveBoothTooltip(event)" onmouseleave="hideBoothTooltip()">
                     <rect id="rect-${code}" class="booth-rect" x="${pos.x}" y="${pos.y}" width="${w}" height="${h}" rx="6" />
                     <text id="text-${code}" class="booth-label" x="${pos.x + w / 2}" y="${pos.y + h / 2}">${code}</text>
-                    <circle id="check-bg-${code}" cx="${pos.x + w - 4}" cy="${pos.y + 4}" r="6" fill="#10b981" style="display:none;" />
+                    <circle id="check-bg-${code}" cx="${pos.x + w - 4}" cy="${pos.y + 4}" r="6" fill="#10b981" stroke="#064e3b" stroke-width="1" style="display:none;" />
                     <text id="check-icon-${code}" class="check-badge" x="${pos.x + w - 4}" y="${pos.y + 5}" style="display:none;">✓</text>
                   </g>
                 `;
@@ -511,53 +546,259 @@
                 const booths = await res.json();
                 localBoothsCache = booths;
 
+                let recommendedCount = 0;
+                let visitedCount = 0;
+                const totalCount = booths.length || 45;
+
                 booths.forEach(b => {
                     const rect = document.getElementById(`rect-${b.boothCode}`);
                     const text = document.getElementById(`text-${b.boothCode}`);
                     const checkBg = document.getElementById(`check-bg-${b.boothCode}`);
                     const checkIcon = document.getElementById(`check-icon-${b.boothCode}`);
 
+                    if (b.isRecommended) recommendedCount++;
+                    if (b.isVisitedByCurrentUser) visitedCount++;
+
                     if (!rect) return;
 
                     const isSponsor = b.boothCode.startsWith("S");
 
                     // Visual Priority:
-                    // 1. Visited (Bright green with check mark)
+                    // 1. Visited (Emerald green with check mark)
                     // 2. Busy (Orange/Amber)
-                    // 3. Recommended (Deep Royal Blue Highlight)
-                    // 4. Default Category Tint (Research: Baby Blue, Sponsor: Light Green)
+                    // 3. Recommended (Royal Blue Glow)
+                    // 4. Default Category Tint (Research: Cyan-Blue, Sponsor: Emerald-Mint)
                     if (b.isVisitedByCurrentUser) {
                         rect.setAttribute("fill", "var(--visited-color)");
-                        rect.setAttribute("stroke", "#059669");
+                        rect.setAttribute("stroke", "var(--visited-stroke)");
+                        rect.setAttribute("stroke-width", "2");
                         text.classList.add("light-text");
                         if (checkBg) checkBg.style.display = "block";
                         if (checkIcon) checkIcon.style.display = "block";
                     } else if (b.status === 1) { // 1 = Busy
                         rect.setAttribute("fill", "var(--busy-color)");
-                        rect.setAttribute("stroke", "#d97706");
+                        rect.setAttribute("stroke", "var(--busy-stroke)");
+                        rect.setAttribute("stroke-width", "2");
                         text.classList.add("light-text");
                         if (checkBg) checkBg.style.display = "none";
                         if (checkIcon) checkIcon.style.display = "none";
                     } else if (b.isRecommended) {
                         rect.setAttribute("fill", "var(--recommended-color)");
-                        rect.setAttribute("stroke", "#0369a1");
+                        rect.setAttribute("stroke", "var(--recommended-stroke)");
+                        rect.setAttribute("stroke-width", "2.5");
                         text.classList.add("light-text");
                         if (checkBg) checkBg.style.display = "none";
                         if (checkIcon) checkIcon.style.display = "none";
                     } else {
                         rect.setAttribute("fill", isSponsor ? "var(--sponsor-color)" : "var(--research-color)");
                         rect.setAttribute("stroke", isSponsor ? "var(--sponsor-stroke)" : "var(--research-stroke)");
+                        rect.setAttribute("stroke-width", "1.5");
                         text.classList.remove("light-text");
                         if (checkBg) checkBg.style.display = "none";
                         if (checkIcon) checkIcon.style.display = "none";
                     }
                 });
+
+                // Update Counters & Progress Bar
+                const cntAllEl = document.getElementById("cntAll");
+                const cntRecEl = document.getElementById("cntRecommended");
+                const cntVisEl = document.getElementById("cntVisited");
+                const progressTextEl = document.getElementById("progressText");
+                const progressPctEl = document.getElementById("progressPct");
+                const progressFillEl = document.getElementById("progressFill");
+
+                if (cntAllEl) cntAllEl.innerText = totalCount;
+                if (cntRecEl) cntRecEl.innerText = recommendedCount;
+                if (cntVisEl) cntVisEl.innerText = visitedCount;
+
+                const pct = Math.round((visitedCount / totalCount) * 100);
+                if (progressTextEl) progressTextEl.innerText = `${visitedCount} / ${totalCount}`;
+                if (progressPctEl) progressPctEl.innerText = `${pct}%`;
+                if (progressFillEl) progressFillEl.style.width = `${pct}%`;
+
+                applyFilterAndSearch();
             } catch (err) {
                 console.error("Failed to refresh floor plan:", err);
             }
         }
 
+        function setMapFilter(filterType) {
+            currentFilter = filterType;
+            const pills = document.querySelectorAll(".expo-filter-pill");
+            pills.forEach(p => p.classList.remove("active"));
+            
+            const targetMap = {
+                'all': 'fltAll',
+                'recommended': 'fltRoadmap',
+                'sponsor': 'fltSponsors',
+                'research': 'fltResearch',
+                'visited': 'fltVisited'
+            };
+            const btn = document.getElementById(targetMap[filterType]);
+            if (btn) btn.classList.add("active");
+
+            applyFilterAndSearch();
+        }
+
+        function handleMapSearch(val) {
+            activeSearchQuery = (val || "").trim().toLowerCase();
+            const btnClear = document.getElementById("btnClearMapSearch");
+            if (btnClear) btnClear.style.display = activeSearchQuery ? "inline-block" : "none";
+            applyFilterAndSearch();
+        }
+
+        function clearMapSearch() {
+            const input = document.getElementById("mapSearchInput");
+            if (input) input.value = "";
+            activeSearchQuery = "";
+            const btnClear = document.getElementById("btnClearMapSearch");
+            if (btnClear) btnClear.style.display = "none";
+            applyFilterAndSearch();
+        }
+
+        function applyFilterAndSearch() {
+            let matchCount = 0;
+            const noticeEl = document.getElementById("searchMatchNotice");
+
+            for (const [code] of Object.entries(boothLayout)) {
+                const rect = document.getElementById(`rect-${code}`);
+                const b = localBoothsCache.find(x => x.boothCode === code);
+                if (!rect) continue;
+
+                let matchesFilter = true;
+                if (currentFilter === 'recommended') {
+                    matchesFilter = b ? b.isRecommended : false;
+                } else if (currentFilter === 'sponsor') {
+                    matchesFilter = code.startsWith('S');
+                } else if (currentFilter === 'research') {
+                    matchesFilter = code.startsWith('R');
+                } else if (currentFilter === 'visited') {
+                    matchesFilter = b ? b.isVisitedByCurrentUser : false;
+                }
+
+                let matchesSearch = true;
+                if (activeSearchQuery) {
+                    const searchStr = `${code} ${b ? b.name : ''} ${b && b.organization ? b.organization : ''} ${(b && b.categories) ? b.categories.join(' ') : ''}`.toLowerCase();
+                    matchesSearch = searchStr.includes(activeSearchQuery);
+                }
+
+                if (matchesFilter && matchesSearch) {
+                    rect.classList.remove("dimmed");
+                    if (activeSearchQuery) {
+                        rect.classList.add("highlighted-match");
+                    } else {
+                        rect.classList.remove("highlighted-match");
+                    }
+                    matchCount++;
+                } else {
+                    rect.classList.add("dimmed");
+                    rect.classList.remove("highlighted-match");
+                }
+            }
+
+            if (noticeEl) {
+                if (activeSearchQuery) {
+                    noticeEl.style.display = "inline";
+                    noticeEl.innerText = `المطابقات: ${matchCount} ${matchCount === 1 ? 'جناح' : 'أجنحة'}`;
+                } else {
+                    noticeEl.style.display = "none";
+                }
+            }
+        }
+
+        function handleBoothClick(e, boothCode) {
+            showBoothTooltip(e, boothCode);
+            openBoothModal(boothCode);
+        }
+
+        // Tooltip Handlers
+        function showBoothTooltip(e, boothCode) {
+            const tooltip = document.getElementById("boothHoverTooltip");
+            const b = localBoothsCache.find(x => x.boothCode === boothCode);
+            if (!tooltip) return;
+
+            const isSponsor = boothCode.startsWith("S");
+            document.getElementById("tooltipCode").innerText = boothCode;
+            document.getElementById("tooltipHall").innerText = isSponsor ? "قاعة الرعاة" : "قاعة الأبحاث";
+            document.getElementById("tooltipName").innerText = b ? b.name : (isSponsor ? `جناح الراعي ${boothCode}` : `شاشة عرض بحثية ${boothCode}`);
+            document.getElementById("tooltipOrg").innerText = b && b.organization ? b.organization : (isSponsor ? "شريك المعرض" : "مشروع بحثي");
+
+            const dot = document.getElementById("tooltipDot");
+            const stText = document.getElementById("tooltipStatusText");
+            if (b && b.isVisitedByCurrentUser) {
+                dot.style.background = "#10b981";
+                stText.innerText = "تمت الزيارة";
+            } else if (b && b.status === 1) {
+                dot.style.background = "#f59e0b";
+                stText.innerText = "مشغول";
+            } else {
+                dot.style.background = "#38bdf8";
+                stText.innerText = "متاح للزيارة";
+            }
+
+            tooltip.style.display = "block";
+            moveBoothTooltip(e);
+        }
+
+        function moveBoothTooltip(e) {
+            const tooltip = document.getElementById("boothHoverTooltip");
+            if (!tooltip) return;
+
+            let x = e.clientX;
+            let y = e.clientY;
+
+            // Keep within horizontal viewport bounds
+            const tooltipWidth = 270;
+            if (x < tooltipWidth / 2 + 12) {
+                x = tooltipWidth / 2 + 12;
+            } else if (x > window.innerWidth - tooltipWidth / 2 - 12) {
+                x = window.innerWidth - tooltipWidth / 2 - 12;
+            }
+
+            tooltip.style.left = `${x}px`;
+            tooltip.style.top = `${y}px`;
+
+            // Display on top (above booth) with high z-index over toolbar; flip down if near viewport top
+            if (y < 130) {
+                tooltip.style.transform = "translate(-50%, 25px)";
+            } else {
+                tooltip.style.transform = "translate(-50%, -120%)";
+            }
+        }
+
+        function hideBoothTooltip() {
+            const tooltip = document.getElementById("boothHoverTooltip");
+            if (tooltip) tooltip.style.display = "none";
+        }
+
+        // Map Zoom Controls
+        function zoomMap(factor) {
+            currentZoom = Math.max(0.75, Math.min(2.0, currentZoom * factor));
+            const svg = document.getElementById("exhibition-map");
+            if (svg) {
+                svg.style.transform = `scale(${currentZoom})`;
+                svg.style.transformOrigin = "center center";
+            }
+        }
+
+        function resetMapZoom() {
+            currentZoom = 1.0;
+            const svg = document.getElementById("exhibition-map");
+            if (svg) {
+                svg.style.transform = "scale(1)";
+            }
+        }
+
+        function highlightBooth(code) {
+            const card = document.getElementById("sitemapCanvasCard");
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            openBoothModal(code);
+        }
+
         function openBoothModal(boothCode) {
+            hideBoothTooltip();
             activeSelectedBooth = boothCode;
             const b = localBoothsCache.find(x => x.boothCode === boothCode);
 
@@ -572,21 +813,28 @@
             const isSponsor = boothCode.startsWith("S");
             titleEl.innerText = b ? b.name : (isSponsor ? `جناح الراعي ${boothCode}` : `شاشة عرض أبحاث ${boothCode}`);
             orgEl.innerText = b && b.organization ? b.organization : (isSponsor ? "راعي القمة" : "مبادرة بحثية");
-            catEl.innerText = b && b.categories ? b.categories.join("، ") : "الذكاء الاصطناعي، الأشعة والابتكار الصحي";
+
+            if (b && b.categories && b.categories.length > 0) {
+                catEl.innerHTML = b.categories.map(c => `<span class="badge ml-1 mb-1" style="background: rgba(56, 189, 248, 0.15); color: #bae6fd; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px;">${c}</span>`).join('');
+            } else {
+                catEl.innerHTML = `<span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #bae6fd; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px;">الذكاء الاصطناعي، الأشعة والابتكار الصحي</span>`;
+            }
 
             if (isSponsor) {
                 badgeEl.innerText = "قاعة الرعاة والشركاء";
-                badgeEl.style.background = "#dcfce7";
-                badgeEl.style.color = "#166534";
+                badgeEl.style.background = "rgba(16, 185, 129, 0.18)";
+                badgeEl.style.border = "1px solid rgba(52, 211, 153, 0.4)";
+                badgeEl.style.color = "#34d399";
             } else {
                 badgeEl.innerText = "قاعة شاشات الأبحاث";
-                badgeEl.style.background = "#dbeafe";
-                badgeEl.style.color = "#1e40af";
+                badgeEl.style.background = "rgba(14, 165, 233, 0.18)";
+                badgeEl.style.border = "1px solid rgba(56, 189, 248, 0.4)";
+                badgeEl.style.color = "#38bdf8";
             }
 
             if (b && b.status === 1) {
                 dotEl.style.background = "var(--busy-color)";
-                statusEl.innerText = `مشغول (متبقي ~${Math.ceil(b.remainingBusySeconds / 60)} دقيقة)`;
+                statusEl.innerText = `مشغول (متبقي ~${Math.ceil(b.remainingBusySeconds / 60)} دقيقة فترة انتظار)`;
             } else {
                 dotEl.style.background = "var(--visited-color)";
                 statusEl.innerText = "متاح للزيارة";
@@ -603,14 +851,24 @@
 
         function closeModal() {
             document.getElementById("boothModal").style.display = "none";
+            hideBoothTooltip();
         }
 
         async function simulateNFCScan() {
             if (!activeSelectedBooth) return;
+            const btn = document.getElementById("btnScan");
+            if (btn) {
+                btn.innerHTML = `<i class="bi bi-arrow-repeat ml-1" style="animation: spin 1s infinite linear;"></i> جاري تسجيل الحضور عبر بطاقة NFC الذكية...`;
+                btn.disabled = true;
+            }
             try {
                 await fetch(`/api/map/scan?boothCode=${encodeURIComponent(activeSelectedBooth)}`, { method: "POST" });
             } catch (e) {
                 console.warn(e);
+            }
+            if (btn) {
+                btn.innerHTML = `<i class="bi bi-broadcast ml-1"></i> محاكاة مسح بطاقة NFC`;
+                btn.disabled = false;
             }
             closeModal();
             await loadFloorPlanState();

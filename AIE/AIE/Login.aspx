@@ -52,6 +52,8 @@
                                                 <i class="bi bi-eye"></i>
                                             </button>
                                         </div>
+                                    </div>
+
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div class="form-check p-0">
                                             <asp:CheckBox ID="ChkRememberMe" runat="server" Text=" Remember me on this device" CssClass="text-secondary small font-weight-semibold" />

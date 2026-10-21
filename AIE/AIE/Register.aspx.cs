@@ -52,7 +52,7 @@ namespace AIE
                 if (status == AuthService.RegisterStatus.Success && account != null)
                 {
                     AuthService.StartSession(account);
-                    Response.Redirect("~/Survey.aspx?first=1");
+                    Response.Redirect("~/Profile.aspx");
                     return;
                 }
 

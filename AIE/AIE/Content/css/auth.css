@@ -115,8 +115,10 @@
 }
 
 /* --- Validation state (only after the user has interacted) ------------- */
-.auth-form .form-control:user-invalid {
+.auth-form .form-control:user-invalid,
+.auth-form .form-control.is-invalid {
   border-color: #f87171 !important;
+  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.3) !important;
 }
 
 /* --- Alerts -------------------------------------------------------------- */

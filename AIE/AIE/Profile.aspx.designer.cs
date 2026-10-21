@@ -84,24 +84,6 @@ namespace AIE
         protected global::System.Web.UI.WebControls.Label LblOrgTitle;
 
         /// <summary>
-        /// LblLastLogin control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label LblLastLogin;
-
-        /// <summary>
-        /// LblPasswordAge control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label LblPasswordAge;
-
-        /// <summary>
         /// BtnShowProfile control.
         /// </summary>
         /// <remarks>
@@ -289,6 +271,15 @@ namespace AIE
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl pnlStopsChips;
+
+        /// <summary>
+        /// pnlRoadmapActions control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl pnlRoadmapActions;
 
         /// <summary>
         /// lnkSurveyAction control.

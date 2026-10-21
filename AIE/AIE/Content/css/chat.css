@@ -309,14 +309,11 @@
 
 /* Quick Notice Banner */
 .sairh-chat-banner {
-  background: rgba(56, 189, 248, 0.07);
-  border-bottom: 1px solid rgba(56, 189, 248, 0.14);
-  padding: 6px 16px;
-  font-size: 0.73rem;
-  color: #7dd3fc;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: none !important;
+}
+
+.sairh-chat-status {
+  display: none !important;
 }
 
 /* ==========================================================================
@@ -514,7 +511,7 @@
    4. Window Footer & Input Bar
    ========================================================================== */
 .sairh-chat-footer {
-  padding: 12px 14px 8px;
+  padding: 12px 14px 12px;
   background: rgba(8, 17, 45, 0.96);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -534,15 +531,30 @@
   box-shadow: 0 0 16px rgba(56, 189, 248, 0.28);
 }
 
+.sairh-chat-input-bar input,
+.sairh-chat-input-bar input[type="text"],
+.sairh-chat-input-bar #user-input,
 .sairh-chat-input {
   flex-grow: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: #ffffff;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  color: #ffffff !important;
   font-size: 0.86rem;
-  padding: 6px 0;
+  padding: 6px 4px !important;
   font-family: inherit;
+}
+
+.sairh-chat-input-bar input:focus,
+.sairh-chat-input-bar input[type="text"]:focus,
+.sairh-chat-input-bar #user-input:focus,
+.sairh-chat-input:focus {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .sairh-chat-input::placeholder {
@@ -577,11 +589,7 @@
 }
 
 .sairh-chat-watermark {
-  text-align: center;
-  font-size: 0.68rem;
-  color: #64748b;
-  padding-top: 6px;
-  user-select: none;
+  display: none !important;
 }
 
 /* ==========================================================================

@@ -17,6 +17,7 @@ namespace AIE
 
             if (!IsPostBack)
             {
+                linkHomeAr.HRef = ResolveUrl("~/Ar_Sa/Default.aspx");
 
                 string currentPage = Request.Url.AbsolutePath.ToLower();
 
@@ -50,14 +51,7 @@ namespace AIE
                 liLogin.Visible = false;
                 liProfile.Visible = true;
                 liLogOut.Visible = true;
-                if (Ado.UserDetails != null && Ado.UserDetails.UserLevel == "Admin")
-                {
-                    liDashboard.Visible = true;
-                }
-                else
-                {
-                    liDashboard.Visible = false;
-                }
+                liDashboard.Visible = false;
             }
             else
             {
@@ -134,9 +128,7 @@ namespace AIE
 
         protected void BtnSignOut_Click(object sender, EventArgs e)
         {
-            Session.Clear();
-            Session.Abandon();
-            FormsAuthentication.SignOut();
+            AuthService.EndSession();
             Response.Redirect("~/Ar_Sa");
         }
         protected void BtnProfile_Click(object sender, EventArgs e)

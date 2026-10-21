@@ -103,6 +103,17 @@ BEGIN
         ALTER TABLE [dbo].[Attendees] ADD [HasCompletedSurvey] BIT NOT NULL CONSTRAINT DF_Attendees_HasCompletedSurvey DEFAULT 0;
     IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Attendees]') AND name = N'UpdatedAtUtc')
         ALTER TABLE [dbo].[Attendees] ADD [UpdatedAtUtc] DATETIME2 NOT NULL CONSTRAINT DF_Attendees_UpdatedAtUtc DEFAULT SYSUTCDATETIME();
+
+    -- Drop inline UNIQUE constraint on PassCode if present (SQL Server inline UNIQUE allows at most 1 NULL)
+    DECLARE @dropPassCodeConstraint NVARCHAR(MAX) = N'';
+    SELECT @dropPassCodeConstraint += N'ALTER TABLE [dbo].[Attendees] DROP CONSTRAINT ' + QUOTENAME(kc.name) + N';'
+    FROM sys.key_constraints kc
+    JOIN sys.index_columns ic ON kc.parent_object_id = ic.object_id AND kc.unique_index_id = ic.index_id
+    JOIN sys.columns c ON ic.object_id = c.object_id AND ic.column_id = c.column_id
+    WHERE kc.parent_object_id = OBJECT_ID(N'[dbo].[Attendees]') AND c.name = 'PassCode';
+
+    IF @dropPassCodeConstraint <> N'' EXEC sp_executesql @dropPassCodeConstraint;
+
     PRINT N'[+] Verified/Updated existing columns in [dbo].[Attendees]';
 END
 GO
@@ -114,6 +125,8 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Attendees_UserLevel' 
     CREATE NONCLUSTERED INDEX IX_Attendees_UserLevel ON [dbo].[Attendees]([UserLevel]);
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Attendees_Lockout' AND object_id = OBJECT_ID(N'[dbo].[Attendees]'))
     CREATE NONCLUSTERED INDEX IX_Attendees_Lockout ON [dbo].[Attendees]([LockoutEndUtc], [FailedLoginCount]);
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Attendees_PassCode' AND object_id = OBJECT_ID(N'[dbo].[Attendees]'))
+    CREATE UNIQUE NONCLUSTERED INDEX IX_Attendees_PassCode ON [dbo].[Attendees]([PassCode]) WHERE [PassCode] IS NOT NULL;
 GO
 
 -- ----------------------------------------------------------------------------
@@ -167,6 +180,14 @@ BEGIN
     CREATE INDEX IX_PasswordResetTokens_Token_Status ON [dbo].[PasswordResetTokens]([ResetToken], [IsUsed], [ExpiresAtUtc]);
     CREATE INDEX IX_PasswordResetTokens_AttendeeID ON [dbo].[PasswordResetTokens]([AttendeeID], [CreatedAtUtc]);
     PRINT N'[+] Created table: [dbo].[PasswordResetTokens]';
+END
+ELSE
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[PasswordResetTokens]') AND name = N'UsedAtUtc')
+        ALTER TABLE [dbo].[PasswordResetTokens] ADD [UsedAtUtc] DATETIME2 NULL;
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[PasswordResetTokens]') AND name = N'RequestIpAddress')
+        ALTER TABLE [dbo].[PasswordResetTokens] ADD [RequestIpAddress] VARCHAR(45) NULL;
+    PRINT N'[+] Verified/Updated existing columns in [dbo].[PasswordResetTokens]';
 END
 GO
 
@@ -261,6 +282,12 @@ BEGIN
     CREATE INDEX IX_LoginAudit_Email_Date ON [dbo].[LoginAudit]([Email], [CreatedAtUtc]);
     PRINT N'[+] Created table: [dbo].[LoginAudit]';
 END
+ELSE
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[LoginAudit]') AND name = N'FailureReason')
+        ALTER TABLE [dbo].[LoginAudit] ADD [FailureReason] NVARCHAR(100) NULL;
+    PRINT N'[+] Verified/Updated existing columns in [dbo].[LoginAudit]';
+END
 GO
 
 -- ----------------------------------------------------------------------------
@@ -311,6 +338,12 @@ BEGIN
     CREATE INDEX IX_Booths_Type ON [dbo].[Booths]([Type]);
     PRINT N'[+] Created table: [dbo].[Booths]';
 END
+ELSE
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[Booths]') AND name = N'ProjectedAvgMinutes')
+        ALTER TABLE [dbo].[Booths] ADD [ProjectedAvgMinutes] INT NOT NULL CONSTRAINT DF_Booths_ProjectedAvgMinutes DEFAULT 5;
+    PRINT N'[+] Verified/Updated existing columns in [dbo].[Booths]';
+END
 GO
 
 -- ----------------------------------------------------------------------------
@@ -338,6 +371,24 @@ BEGIN
     CREATE INDEX IX_BoothVisits_EmailCode ON [dbo].[BoothVisits]([UserEmail], [BoothCode]);
     CREATE INDEX IX_BoothVisits_StartedAt ON [dbo].[BoothVisits]([StartedAtUtc]);
     PRINT N'[+] Created table: [dbo].[BoothVisits]';
+END
+ELSE
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[BoothVisits]') AND name = N'BoothType')
+        ALTER TABLE [dbo].[BoothVisits] ADD [BoothType] VARCHAR(50) NOT NULL CONSTRAINT DF_BoothVisits_BoothType DEFAULT 'SponsorBooth';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[BoothVisits]') AND name = N'BoothName')
+        ALTER TABLE [dbo].[BoothVisits] ADD [BoothName] NVARCHAR(200) NOT NULL CONSTRAINT DF_BoothVisits_BoothName DEFAULT '';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[BoothVisits]') AND name = N'ProjectedAvgMinutes')
+        ALTER TABLE [dbo].[BoothVisits] ADD [ProjectedAvgMinutes] INT NOT NULL CONSTRAINT DF_BoothVisits_ProjectedAvgMinutes DEFAULT 5;
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[BoothVisits]') AND name = N'StartedAtUtc')
+        ALTER TABLE [dbo].[BoothVisits] ADD [StartedAtUtc] DATETIME2 NOT NULL CONSTRAINT DF_BoothVisits_StartedAtUtc DEFAULT SYSUTCDATETIME();
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[BoothVisits]') AND name = N'CompletedAtUtc')
+        ALTER TABLE [dbo].[BoothVisits] ADD [CompletedAtUtc] DATETIME2 NULL;
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[BoothVisits]') AND name = N'Status')
+        ALTER TABLE [dbo].[BoothVisits] ADD [Status] VARCHAR(20) NOT NULL CONSTRAINT DF_BoothVisits_Status DEFAULT 'Active';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[BoothVisits]') AND name = N'UserIp')
+        ALTER TABLE [dbo].[BoothVisits] ADD [UserIp] VARCHAR(45) NULL;
+    PRINT N'[+] Verified/Updated existing columns in [dbo].[BoothVisits]';
 END
 GO
 
@@ -1140,13 +1191,13 @@ IF NOT EXISTS (SELECT 1 FROM [dbo].[Attendees] WHERE [Email] = 'admin@sairh.com'
 BEGIN
     INSERT INTO [dbo].[Attendees] (
         [FullName], [Email], [PasswordHash], [MobileNo], [Organization],
-        [JobTitle], [Specialty], [UserLevel], [IsBlocked], [IsEmailVerified]
+        [JobTitle], [Specialty], [UserLevel], [IsBlocked], [IsEmailVerified], [PassCode]
     )
     VALUES (
         N'SAIRH System Administrator', 'admin@sairh.com',
         'PBKDF2-SHA512$210000$SzIEvmPTW7K3sWS0dszu1Q==$EobVOQGvH3Dd3DMdlrWu8NBA2aN/M+03faGIHFnpIMQ=',
         '+966 50 000 0001', N'SAIRH Organizing Committee', N'Chief Technology Officer', N'Health AI',
-        'Admin', 0, 1
+        'Admin', 0, 1, 'PASS-ADMIN-001'
     );
 
     DECLARE @AdminID INT = SCOPE_IDENTITY();
@@ -1158,6 +1209,12 @@ BEGIN
     END
     PRINT N'[+] Seeded administrator account: admin@sairh.com';
 END
+ELSE
+BEGIN
+    UPDATE [dbo].[Attendees]
+    SET [PassCode] = 'PASS-ADMIN-001'
+    WHERE [Email] = 'admin@sairh.com' AND [PassCode] IS NULL;
+END
 GO
 
 -- 3. Seed Default Attendee Account (attendee@sairh.com / Sairh@Attendee2026!)
@@ -1166,13 +1223,13 @@ IF NOT EXISTS (SELECT 1 FROM [dbo].[Attendees] WHERE [Email] = 'attendee@sairh.c
 BEGIN
     INSERT INTO [dbo].[Attendees] (
         [FullName], [Email], [PasswordHash], [MobileNo], [Organization],
-        [JobTitle], [Specialty], [UserLevel], [IsBlocked], [IsEmailVerified]
+        [JobTitle], [Specialty], [UserLevel], [IsBlocked], [IsEmailVerified], [PassCode]
     )
     VALUES (
         N'Dr. Sarah Al-Ahmad', 'attendee@sairh.com',
         'PBKDF2-SHA512$210000$OmA5KPTUEKDSf291nAbGMg==$YCg6a7S9ScfG+99qu+MkHMdfknV4ilgG7lyFhyMky5U=',
         '+966 50 123 4567', N'King Faisal Specialist Hospital', N'Radiology Consultant', N'Neuroradiology & AI',
-        'User', 0, 1
+        'User', 0, 1, 'PASS-ATTENDEE-001'
     );
 
     DECLARE @AttendeeID INT = SCOPE_IDENTITY();
@@ -1183,6 +1240,12 @@ BEGIN
         VALUES (@AttendeeID, @AttendeeRoleID, 'SystemSeed');
     END
     PRINT N'[+] Seeded attendee account: attendee@sairh.com';
+END
+ELSE
+BEGIN
+    UPDATE [dbo].[Attendees]
+    SET [PassCode] = 'PASS-ATTENDEE-001'
+    WHERE [Email] = 'attendee@sairh.com' AND [PassCode] IS NULL;
 END
 GO
 

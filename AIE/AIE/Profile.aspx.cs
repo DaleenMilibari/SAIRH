@@ -1,5 +1,6 @@
 using DBFunction;
 using System;
+using System.Linq;
 using System.Web;
 
 namespace AIE
@@ -51,20 +52,6 @@ namespace AIE
                     pOrgTitle.Visible = false;
                 }
 
-                if (LblLastLogin != null)
-                {
-                    LblLastLogin.Text = account.LastLoginAtUtc.HasValue 
-                        ? account.LastLoginAtUtc.Value.ToLocalTime().ToString("MMM dd, yyyy HH:mm") 
-                        : "Active Session";
-                }
-
-                if (LblPasswordAge != null)
-                {
-                    LblPasswordAge.Text = account.PasswordChangedAtUtc.HasValue 
-                        ? account.PasswordChangedAtUtc.Value.ToLocalTime().ToString("MMM dd, yyyy") 
-                        : "Secured";
-                }
-
                 TxtEditFullName.Text = account.FullName;
                 TxtEditMobile.Text = account.MobileNo ?? string.Empty;
                 if (TxtEditOrg != null) TxtEditOrg.Text = account.Organization ?? string.Empty;
@@ -76,26 +63,42 @@ namespace AIE
                 var roadmap = SurveyService.GetUserRoadmap(account.Email);
                 if (roadmap != null && roadmap.Count > 0)
                 {
-                    LblSurveyBadge.Text = "Completed (" + roadmap.Count + " stops)";
-                    LblSurveyBadge.CssClass = "badge badge-success";
-                    pRoadmapDesc.InnerText = "Your personalized roadmap is active with " + roadmap.Count + " recommended booth and research stops.";
+                    if (LblSurveyBadge != null)
+                    {
+                        LblSurveyBadge.Visible = false;
+                        LblSurveyBadge.Text = string.Empty;
+                    }
+                    pRoadmapDesc.InnerText = "Your personalized itinerary is active with " + roadmap.Count + " recommended booth and research stops.";
                     pnlSurveyStops.Visible = true;
+                    pnlSurveyStops.Style["display"] = "block";
 
                     var sb = new System.Text.StringBuilder();
                     foreach (var code in roadmap)
                     {
-                        sb.AppendFormat("<span class=\"badge badge-primary mr-1 mb-1\" style=\"background:#0284c7;font-size:0.75rem;\">{0}</span>", HttpUtility.HtmlEncode(code));
+                        sb.AppendFormat("<span class=\"roadmap-stop-chip mr-1 mb-1\">{0}</span>", HttpUtility.HtmlEncode(code));
                     }
                     pnlStopsChips.InnerHtml = sb.ToString();
-                    lnkSurveyAction.InnerHtml = "<i class=\"bi bi-arrow-repeat mr-1\"></i> Retake Survey";
+
+                    if (pnlRoadmapActions != null)
+                    {
+                        pnlRoadmapActions.InnerHtml = "<a href=\"Schedules\" id=\"lnkFloorMapAction\" class=\"roadmap-highlight-cta\"><i class=\"bi bi-compass mr-2\"></i><span>View on Floor Map</span><i class=\"bi bi-arrow-right ml-2 cta-arrow\"></i></a>\n<a href=\"Survey\" id=\"lnkSurveyAction\" class=\"roadmap-retake-btn\"><i class=\"bi bi-arrow-repeat mr-2\"></i><span>Retake Survey</span></a>";
+                    }
                 }
                 else
                 {
-                    LblSurveyBadge.Text = "Not Completed";
-                    LblSurveyBadge.CssClass = "badge badge-warning";
-                    pRoadmapDesc.InnerText = "Take our short 1-minute survey to get a tailored tour of sponsor booths and research displays.";
+                    if (LblSurveyBadge != null)
+                    {
+                        LblSurveyBadge.Visible = false;
+                        LblSurveyBadge.Text = string.Empty;
+                    }
+                    pRoadmapDesc.InnerText = "Answer 3 quick questions to generate a personalized tour of exhibitor booths and research showcases.";
                     pnlSurveyStops.Visible = false;
-                    lnkSurveyAction.InnerHtml = "<i class=\"bi bi-magic mr-1\"></i> Build My Roadmap";
+                    pnlSurveyStops.Style["display"] = "none";
+
+                    if (pnlRoadmapActions != null)
+                    {
+                        pnlRoadmapActions.InnerHtml = "<a href=\"Survey\" id=\"lnkSurveyAction\" class=\"roadmap-highlight-cta\"><i class=\"bi bi-magic mr-2\"></i><span>Build My Roadmap</span><i class=\"bi bi-arrow-right ml-2 cta-arrow\"></i></a>";
+                    }
                 }
             }
         }
@@ -146,6 +149,11 @@ namespace AIE
             string specialty = (TxtEditSpecialty?.Text ?? string.Empty).Trim();
             string linkedIn = (TxtEditLinkedIn?.Text ?? string.Empty).Trim();
 
+            if (!string.IsNullOrEmpty(linkedIn) && !linkedIn.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !linkedIn.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                linkedIn = "https://" + linkedIn;
+            }
+
             try
             {
                 AuthService.UpdateProfile(Ado.UserDetails.UserID, name, mobile, org, jobTitle, specialty, linkedIn, null);
@@ -165,6 +173,10 @@ namespace AIE
                     string orgInfo = string.Join(" • ", new[] { jobTitle, org }.Where(s => !string.IsNullOrEmpty(s)));
                     if (LblOrgTitle != null) LblOrgTitle.Text = orgInfo;
                     if (pOrgTitle != null) pOrgTitle.Visible = true;
+                }
+                else if (pOrgTitle != null)
+                {
+                    pOrgTitle.Visible = false;
                 }
 
                 ShowProfileAlert(AuthMessages.Get("ProfileSaved", false), true);
@@ -197,7 +209,7 @@ namespace AIE
             var passErrs = AuthService.ValidatePasswordStrength(newPass, Ado.UserDetails.UserName, Ado.UserDetails.FullName);
             if (passErrs.Count > 0)
             {
-                ShowPasswordAlert(AuthMessages.RenderHtml(passErrs, false), false);
+                ShowPasswordAlert(AuthMessages.RenderHtml(passErrs, false), false, isRawHtml: true);
                 return;
             }
 
@@ -213,7 +225,7 @@ namespace AIE
                 bool ok = AuthService.ChangePassword(Ado.UserDetails.UserID, currentPass, newPass, out changeErrors);
                 if (!ok)
                 {
-                    ShowPasswordAlert(AuthMessages.RenderHtml(changeErrors, false), false);
+                    ShowPasswordAlert(AuthMessages.RenderHtml(changeErrors, false), false, isRawHtml: true);
                     return;
                 }
 
@@ -236,11 +248,11 @@ namespace AIE
             divErrorProfile.InnerHtml = HttpUtility.HtmlEncode(msg);
         }
 
-        private void ShowPasswordAlert(string msg, bool isSuccess)
+        private void ShowPasswordAlert(string htmlOrText, bool isSuccess, bool isRawHtml = false)
         {
             divError.Visible = true;
             divError.Attributes["class"] = isSuccess ? "auth-alert alert alert-success" : "auth-alert alert alert-danger";
-            divError.InnerHtml = HttpUtility.HtmlEncode(msg);
+            divError.InnerHtml = isRawHtml ? htmlOrText : HttpUtility.HtmlEncode(htmlOrText);
         }
     }
 }

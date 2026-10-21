@@ -17,6 +17,8 @@ namespace AIE
 
             if (!IsPostBack)
             {
+                linkHome.HRef = ResolveUrl("~/Default.aspx");
+
                 // New logic for setting the active class
                 string currentPage = Request.Url.AbsolutePath.ToLower();
 
@@ -50,14 +52,7 @@ namespace AIE
                 liLogin.Visible = false;
                 liProfile.Visible = true;
                 liLogOut.Visible = true;
-                if (Ado.UserDetails != null && Ado.UserDetails.UserLevel == "Admin")
-                {
-                    liDashboard.Visible = true;
-                }
-                else
-                {
-                    liDashboard.Visible = false;
-                }
+                liDashboard.Visible = false;
             }
             else
             {
@@ -133,9 +128,7 @@ namespace AIE
 
         protected void BtnSignOut_Click(object sender, EventArgs e)
         {
-            Session.Clear();
-            Session.Abandon();
-            FormsAuthentication.SignOut();
+            AuthService.EndSession();
             Response.Redirect("~/");
         }
 

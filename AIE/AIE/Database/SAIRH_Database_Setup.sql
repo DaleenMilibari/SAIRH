@@ -227,7 +227,7 @@ CREATE TABLE [dbo].[Attendees] (
     [JobTitle]          NVARCHAR(150) NULL,
     [Specialty]         NVARCHAR(150) NULL,
     [LinkedInUrl]       VARCHAR(300) NULL,
-    [PassCode]          VARCHAR(50) NULL UNIQUE,
+    [PassCode]          VARCHAR(50) NULL,
     [QrCodePath]        NVARCHAR(500) NULL,
     [IsCheckedIn]       BIT DEFAULT 0,
     [CheckedInAt]       DATETIME NULL,
@@ -248,7 +248,7 @@ CREATE TABLE [dbo].[Attendees] (
 );
 
 CREATE INDEX IX_Attendees_Email ON [dbo].[Attendees]([Email]);
-CREATE INDEX IX_Attendees_PassCode ON [dbo].[Attendees]([PassCode]);
+CREATE UNIQUE NONCLUSTERED INDEX IX_Attendees_PassCode ON [dbo].[Attendees]([PassCode]) WHERE [PassCode] IS NOT NULL;
 GO
 
 -- ----------------------------------------------------------------------------
@@ -261,6 +261,7 @@ CREATE TABLE [dbo].[LoginAudit] (
     [IpAddress]         VARCHAR(45) NULL,
     [UserAgent]         NVARCHAR(400) NULL,
     [Succeeded]         BIT NOT NULL,
+    [FailureReason]     NVARCHAR(100) NULL,
     [CreatedAtUtc]      DATETIME2 NOT NULL CONSTRAINT DF_LoginAudit_CreatedAtUtc DEFAULT SYSUTCDATETIME()
 );
 
@@ -1010,13 +1011,15 @@ GO
 -- 7. Password Reset Tokens Table
 -- ----------------------------------------------------------------------------
 CREATE TABLE [dbo].[PasswordResetTokens] (
-    [TokenID]        INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-    [AttendeeID]     INT NOT NULL,
-    [Email]          VARCHAR(100) NOT NULL,
-    [ResetToken]     VARCHAR(100) NOT NULL UNIQUE,
-    [ExpiresAtUtc]   DATETIME2 NOT NULL,
-    [IsUsed]         BIT NOT NULL CONSTRAINT DF_PasswordResetTokens_IsUsed DEFAULT 0,
-    [CreatedAtUtc]   DATETIME2 NOT NULL CONSTRAINT DF_PasswordResetTokens_CreatedAtUtc DEFAULT SYSUTCDATETIME(),
+    [TokenID]          INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [AttendeeID]       INT NOT NULL,
+    [Email]            VARCHAR(100) NOT NULL,
+    [ResetToken]       VARCHAR(100) NOT NULL UNIQUE,
+    [ExpiresAtUtc]     DATETIME2 NOT NULL,
+    [IsUsed]           BIT NOT NULL CONSTRAINT DF_PasswordResetTokens_IsUsed DEFAULT 0,
+    [UsedAtUtc]        DATETIME2 NULL,
+    [RequestIpAddress] VARCHAR(45) NULL,
+    [CreatedAtUtc]     DATETIME2 NOT NULL CONSTRAINT DF_PasswordResetTokens_CreatedAtUtc DEFAULT SYSUTCDATETIME(),
     
     CONSTRAINT FK_PasswordResetTokens_Attendees FOREIGN KEY ([AttendeeID])
         REFERENCES [dbo].[Attendees]([AttendeeID])
@@ -1031,22 +1034,23 @@ GO
 -- 8. Booths Table (15 Sponsor Booths & 30 Research Screens)
 -- ----------------------------------------------------------------------------
 CREATE TABLE [dbo].[Booths] (
-    [BoothID]          INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-    [BoothCode]        VARCHAR(10) NOT NULL UNIQUE,
-    [NameEn]           NVARCHAR(150) NOT NULL,
-    [NameAr]           NVARCHAR(150) NOT NULL,
-    [OrganizationEn]   NVARCHAR(200) NOT NULL,
-    [OrganizationAr]   NVARCHAR(200) NOT NULL,
-    [Type]             VARCHAR(50) NOT NULL, -- 'SponsorBooth' or 'ResearchScreen'
-    [HallEn]           NVARCHAR(100) NOT NULL, -- 'Sponsor Hall' or 'Research Screen Hall'
-    [HallAr]           NVARCHAR(100) NOT NULL,
-    [CategoriesEn]     NVARCHAR(500) NOT NULL,
-    [CategoriesAr]     NVARCHAR(500) NOT NULL,
-    [X]                INT NOT NULL DEFAULT 0,
-    [Y]                INT NOT NULL DEFAULT 0,
-    [CooldownMinutes]  INT NOT NULL DEFAULT 5,
-    [LastScannedAtUtc] DATETIME2 NULL,
-    [IsActive]         BIT NOT NULL DEFAULT 1
+    [BoothID]             INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [BoothCode]           VARCHAR(10) NOT NULL UNIQUE,
+    [NameEn]              NVARCHAR(150) NOT NULL,
+    [NameAr]              NVARCHAR(150) NOT NULL,
+    [OrganizationEn]      NVARCHAR(200) NOT NULL,
+    [OrganizationAr]      NVARCHAR(200) NOT NULL,
+    [Type]                VARCHAR(50) NOT NULL, -- 'SponsorBooth' or 'ResearchScreen'
+    [HallEn]              NVARCHAR(100) NOT NULL, -- 'Sponsor Hall' or 'Research Screen Hall'
+    [HallAr]              NVARCHAR(100) NOT NULL,
+    [CategoriesEn]        NVARCHAR(500) NOT NULL,
+    [CategoriesAr]        NVARCHAR(500) NOT NULL,
+    [ProjectedAvgMinutes] INT NOT NULL CONSTRAINT DF_Booths_ProjectedAvgMinutes DEFAULT 5,
+    [X]                   INT NOT NULL DEFAULT 0,
+    [Y]                   INT NOT NULL DEFAULT 0,
+    [CooldownMinutes]     INT NOT NULL DEFAULT 5,
+    [LastScannedAtUtc]    DATETIME2 NULL,
+    [IsActive]            BIT NOT NULL DEFAULT 1
 );
 
 CREATE INDEX IX_Booths_Code ON [dbo].[Booths]([BoothCode]);
@@ -1080,11 +1084,18 @@ GO
 -- 10. Booth Visits Table (NFC Tap & Check-in Scans)
 -- ----------------------------------------------------------------------------
 CREATE TABLE [dbo].[BoothVisits] (
-    [VisitID]        INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-    [AttendeeID]     INT NULL,
-    [UserEmail]      VARCHAR(100) NOT NULL,
-    [BoothCode]      VARCHAR(10) NOT NULL,
-    [VisitedAtUtc]   DATETIME2 NOT NULL CONSTRAINT DF_BoothVisits_VisitedAtUtc DEFAULT SYSUTCDATETIME(),
+    [VisitID]             BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [AttendeeID]          INT NULL,
+    [UserEmail]           VARCHAR(100) NOT NULL,
+    [BoothCode]           VARCHAR(10) NOT NULL,
+    [BoothType]           VARCHAR(50) NOT NULL DEFAULT 'SponsorBooth',
+    [BoothName]           NVARCHAR(200) NOT NULL DEFAULT '',
+    [ProjectedAvgMinutes] INT NOT NULL DEFAULT 5,
+    [StartedAtUtc]        DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    [CompletedAtUtc]      DATETIME2 NULL,
+    [Status]              VARCHAR(20) NOT NULL DEFAULT 'Active',
+    [UserIp]              VARCHAR(45) NULL,
+    [VisitedAtUtc]        DATETIME2 NOT NULL CONSTRAINT DF_BoothVisits_VisitedAtUtc DEFAULT SYSUTCDATETIME(),
 
     CONSTRAINT FK_BoothVisits_Attendees FOREIGN KEY ([AttendeeID])
         REFERENCES [dbo].[Attendees]([AttendeeID])

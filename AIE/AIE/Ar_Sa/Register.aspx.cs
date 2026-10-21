@@ -52,7 +52,7 @@ namespace AIE.Ar_Sa
                 if (status == AuthService.RegisterStatus.Success && account != null)
                 {
                     AuthService.StartSession(account);
-                    Response.Redirect("~/Ar_Sa/Survey.aspx?first=1");
+                    Response.Redirect("~/Ar_Sa/Profile.aspx");
                     return;
                 }
 

@@ -289,7 +289,8 @@ namespace AIE
             string[] parts = storedHash.Split('$');
             int iterations;
             if (parts.Length != 4 || parts[0] != HashPrefix ||
-                !int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out iterations) || iterations < 1)
+                !int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out iterations) ||
+                iterations < 1000 || iterations > 1000000)
                 return false;
 
             byte[] salt, expected;
@@ -302,6 +303,9 @@ namespace AIE
             {
                 return false;
             }
+
+            if (salt.Length != SaltSize || expected.Length != HashSize)
+                return false;
 
             byte[] actual = Pbkdf2(password, salt, iterations, expected.Length);
             return FixedTimeEquals(actual, expected);
@@ -1217,7 +1221,8 @@ namespace AIE
             {
                 HttpOnly = true,
                 Secure = FormsAuthentication.RequireSSL,
-                Path = FormsAuthentication.FormsCookiePath
+                Path = FormsAuthentication.FormsCookiePath,
+                SameSite = SameSiteMode.Lax
             };
             if (rememberMe) authCookie.Expires = ticket.Expiration;
             ctx.Response.Cookies.Add(authCookie);
@@ -1241,7 +1246,8 @@ namespace AIE
             HttpCookie clearSession = new HttpCookie("ASP.NET_SessionId", string.Empty)
             {
                 Expires = DateTime.UtcNow.AddYears(-1),
-                HttpOnly = true
+                HttpOnly = true,
+                SameSite = SameSiteMode.Lax
             };
             ctx.Response.Cookies.Add(clearSession);
 
@@ -1249,7 +1255,8 @@ namespace AIE
             {
                 Expires = DateTime.UtcNow.AddYears(-1),
                 HttpOnly = true,
-                Path = FormsAuthentication.FormsCookiePath
+                Path = FormsAuthentication.FormsCookiePath,
+                SameSite = SameSiteMode.Lax
             };
             ctx.Response.Cookies.Add(clearAuth);
         }
