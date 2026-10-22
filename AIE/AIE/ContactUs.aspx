@@ -71,28 +71,63 @@
                                 <div id="contact_form">
                                     <div class="form-group">
                                         <label for="<%= TxtName.ClientID %>">Your Full Name</label>
-                                        <asp:TextBox ID="TxtName" runat="server" CssClass="form-control" placeholder="e.g. Dr. Abdullah Al-Ghamdi"></asp:TextBox>
+                                        <asp:TextBox ID="TxtName" runat="server" CssClass="form-control" placeholder="e.g. Dr. Abdullah Al-Ghamdi" MaxLength="100" autocomplete="name" required="required"></asp:TextBox>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="<%= TxtEmail.ClientID %>">Your Email Address</label>
-                                        <asp:TextBox ID="TxtEmail" runat="server" CssClass="form-control" placeholder="name@institution.edu.sa"></asp:TextBox>
+                                        <asp:TextBox ID="TxtEmail" runat="server" TextMode="Email" CssClass="form-control" placeholder="name@institution.edu.sa" MaxLength="100" autocomplete="email" required="required"></asp:TextBox>
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="<%= TxtMobile.ClientID %>">Your Mobile Number</label>
-                                        <asp:TextBox ID="TxtMobile" runat="server" CssClass="form-control" placeholder="+966 5X XXX XXXX"></asp:TextBox>
+                                        <div class="auth-row-between">
+                                            <label for="<%= TxtMobile.ClientID %>">Your Mobile Number</label>
+                                            <span class="auth-optional">Optional</span>
+                                        </div>
+                                        <div class="phone-input-group">
+                                            <div class="phone-country-dropdown-wrap">
+                                                <select id="DdlContactCountryCode" name="DdlContactCountryCode" class="phone-country-select" aria-label="Country calling code" autocomplete="tel-country-code">
+                                                    <option value="+966" selected="selected">🇸🇦 +966 (KSA)</option>
+                                                    <option value="+971">🇦🇪 +971 (UAE)</option>
+                                                    <option value="+965">🇰🇼 +965 (Kuwait)</option>
+                                                    <option value="+973">🇧🇭 +973 (Bahrain)</option>
+                                                    <option value="+974">🇶🇦 +974 (Qatar)</option>
+                                                    <option value="+968">🇴🇲 +968 (Oman)</option>
+                                                    <option value="+20">🇪🇬 +20 (Egypt)</option>
+                                                    <option value="+962">🇯🇴 +962 (Jordan)</option>
+                                                    <option value="+961">🇱🇧 +961 (Lebanon)</option>
+                                                    <option value="+964">🇮🇶 +964 (Iraq)</option>
+                                                    <option value="+967">🇾🇪 +967 (Yemen)</option>
+                                                    <option value="+44">🇬🇧 +44 (UK)</option>
+                                                    <option value="+1">🇺🇸 +1 (US/CA)</option>
+                                                    <option value="+49">🇩🇪 +49 (Germany)</option>
+                                                    <option value="+33">🇫🇷 +33 (France)</option>
+                                                    <option value="+90">🇹🇷 +90 (Turkey)</option>
+                                                    <option value="+91">🇮🇳 +91 (India)</option>
+                                                    <option value="+92">🇵🇰 +92 (Pakistan)</option>
+                                                    <option value="+60">🇲🇾 +60 (Malaysia)</option>
+                                                    <option value="+65">🇸🇬 +65 (Singapore)</option>
+                                                    <option value="+61">🇦🇺 +61 (Australia)</option>
+                                                    <option value="">🌐 Other / Custom</option>
+                                                </select>
+                                                <i class="bi bi-chevron-down phone-dropdown-arrow" aria-hidden="true"></i>
+                                            </div>
+                                            <div class="phone-number-wrap">
+                                                <asp:TextBox ID="TxtMobile" runat="server" TextMode="Phone" CssClass="form-control phone-number-input" placeholder="50 123 4567" autocomplete="tel-national" MaxLength="15"></asp:TextBox>
+                                            </div>
+                                        </div>
+                                        <small class="auth-hint phone-hint" id="phoneHintContact">Saudi mobile format: 50 123 4567 (9 digits)</small>
+                                        <div class="phone-validation-feedback" id="phoneFeedbackContact" style="display: none;"></div>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="<%= TxtMessage.ClientID %>">Your Message</label>
-                                        <asp:TextBox ID="TxtMessage" runat="server" CssClass="form-control" placeholder="How can we assist you regarding the summit?" TextMode="MultiLine" Rows="4"></asp:TextBox>
+                                        <asp:TextBox ID="TxtMessage" runat="server" CssClass="form-control" placeholder="How can we assist you regarding the summit?" TextMode="MultiLine" Rows="4" MaxLength="2000" required="required"></asp:TextBox>
+                                        <div class="char-counter" id="messageCharCounter"><span id="charCount">0</span> / 2000 characters</div>
                                     </div>
 
                                     <div id="submit" class="mt-4">
-                                        <asp:LinkButton ID="BtnSubmit" runat="server" CssClass="cyan-glow-btn w-100 py-3" OnClick="BtnSubmit_Click">
-                                            <i class="bi bi-send mr-2"></i> Submit Message
-                                        </asp:LinkButton>
+                                        <asp:Button ID="BtnSubmit" runat="server" CssClass="cyan-glow-btn w-100 py-3 text-white font-weight-bold" Text="Submit Message" OnClick="BtnSubmit_Click" data-loading-text="Sending Message..." />
                                     </div>
 
                                     <div id="divError" class="alert alert-danger text-danger mt-3" runat="server" visible="false">Test Messages</div>

@@ -41,7 +41,7 @@
                         <!-- Logo -->
                         <div id="logo">
                             <a href="~/Ar_Sa/Default.aspx" runat="server">
-                                <img alt="SAIRH Logo" class="logo" src="<%= ResolveUrl("~/Content/images/background/SAIRH_logo_transparent.svg") %>" />
+                                <img alt="SAIRH Logo" class="logo" src="<%= ResolveUrl("~/Content/images/background/SAIRH_logo_ar.svg") %>" />
                             </a>
                         </div>
 

@@ -563,5 +563,85 @@
       "R4",
       "S1"
     ]
+  },
+  "walaaali@gmail.com": {
+    "fullName": "Walaa Ali",
+    "email": "walaaali@gmail.com",
+    "mobile": "",
+    "organization": "",
+    "jobTitle": "",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$/+8PxKt2qL7VG+kq3KDEMQ==$IecqaNPmG71xWvEZoYk+QMA8GMPxxEii2GPB08/IgBk=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$/+8PxKt2qL7VG+kq3KDEMQ==$IecqaNPmG71xWvEZoYk+QMA8GMPxxEii2GPB08/IgBk="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-22T10:57:03.329Z",
+    "passwordChangedDate": "2026-10-21T07:40:19.587Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "walaaali@gmail.como": {
+    "fullName": "Walaa Ali",
+    "email": "walaaali@gmail.como",
+    "mobile": "0533333333",
+    "organization": "",
+    "jobTitle": "",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$YWIEBHzFVZrTL79ZWnm1ZA==$S6CHAN83ShdoF0Mj9AgqZscHAEqXdUNye+UJe1xdsBQ=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$YWIEBHzFVZrTL79ZWnm1ZA==$S6CHAN83ShdoF0Mj9AgqZscHAEqXdUNye+UJe1xdsBQ="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-21T07:47:20.647Z",
+    "passwordChangedDate": "2026-10-21T07:47:20.647Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "sarasami@gmail.com": {
+    "fullName": "sarasami",
+    "email": "sarasami@gmail.com",
+    "mobile": "666633333",
+    "organization": "",
+    "jobTitle": "",
+    "specialty": "",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$ddCCZ+k7tDgRBDpuow958g==$RconR8i+3yTLOnJBTaR95ufcEnRfN6oGpJiL0N1xg9g=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$ddCCZ+k7tDgRBDpuow958g==$RconR8i+3yTLOnJBTaR95ufcEnRfN6oGpJiL0N1xg9g="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-21T08:15:01.193Z",
+    "passwordChangedDate": "2026-10-21T08:15:01.193Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
+  },
+  "aresf19@outliik.sa": {
+    "fullName": "33333\"",
+    "email": "aresf19@outliik.sa",
+    "mobile": "+966504567777",
+    "organization": "4455",
+    "jobTitle": "`@678_-",
+    "specialty": "4567890@'\"",
+    "linkedIn": "",
+    "role": "Attendee",
+    "passwordHash": "PBKDF2-SHA512$210000$0X5Uf60q/eOEyl90eRqISw==$O2kaBiBoUl8ielGHCD9tIO6b6QrHCsD7x6hW+uEo5w4=",
+    "passwordHistory": [
+      "PBKDF2-SHA512$210000$0X5Uf60q/eOEyl90eRqISw==$O2kaBiBoUl8ielGHCD9tIO6b6QrHCsD7x6hW+uEo5w4="
+    ],
+    "failedAttempts": 0,
+    "lockoutUntil": null,
+    "lastLogin": "2026-10-22T10:02:22.727Z",
+    "passwordChangedDate": "2026-10-22T10:02:22.728Z",
+    "hasCompletedSurvey": false,
+    "surveyRoadmap": []
   }
 }

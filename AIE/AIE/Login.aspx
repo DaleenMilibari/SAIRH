@@ -36,7 +36,7 @@
                                         <label for="<%= TxtEmail.ClientID %>" class="auth-label">
                                             <i class="bi bi-envelope mr-1 text-info"></i> Email Address
                                         </label>
-                                        <asp:TextBox ID="TxtEmail" runat="server" TextMode="Email" CssClass="form-control" placeholder="name@domain.com" autocomplete="username" required="required"></asp:TextBox>
+                                        <asp:TextBox ID="TxtEmail" runat="server" TextMode="Email" CssClass="form-control" placeholder="name@domain.com" autocomplete="username" required="required" MaxLength="100" pattern="^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$" title="Valid email address"></asp:TextBox>
                                     </div>
 
                                     <div class="auth-field">

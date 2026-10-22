@@ -68,6 +68,75 @@
     });
   });
 
+  // Regex definitions tailored for strict injection prevention
+  var LETTERS_ONLY_REGEX = /^[a-zA-Z\u0600-\u06FF\s]+$/;
+  var SAFE_EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+  var LINKEDIN_REGEX = /^https?:\/\/([a-zA-Z0-9-]+\.)?linkedin\.com\/(in|company|pub|school)\/[a-zA-Z0-9_/%-]+(?:\?[a-zA-Z0-9_=&%-]+)?$/i;
+
+  function attachLettersOnlyFilter(input) {
+    if (!input) return;
+    input.addEventListener('input', function () {
+      var val = this.value;
+      // Filter out numbers, punctuation, quotes, angle brackets, and symbols
+      var cleaned = val.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, '');
+      if (cleaned !== val) {
+        this.value = cleaned;
+      }
+      if (this.classList.contains('is-invalid') && cleaned.trim().length >= 2) {
+        this.classList.remove('is-invalid');
+      }
+    });
+    input.addEventListener('blur', function () {
+      this.value = this.value.replace(/\s+/g, ' ').trim();
+    });
+  }
+
+  function attachEmailFilter(input) {
+    if (!input) return;
+    input.addEventListener('input', function () {
+      var val = this.value;
+      // Strip control chars, newlines, angle brackets, quotes, spaces, and injection tokens
+      var cleaned = val.replace(/[<>"'\\\s\r\n\0;]/g, '');
+      if (cleaned !== val) {
+        this.value = cleaned;
+      }
+      if (this.classList.contains('is-invalid')) {
+        this.classList.remove('is-invalid');
+      }
+    });
+    input.addEventListener('blur', function () {
+      this.value = this.value.trim().toLowerCase();
+    });
+  }
+
+  function attachLinkedInFilter(input) {
+    if (!input) return;
+    input.addEventListener('input', function () {
+      var val = this.value;
+      // Strip angle brackets, quotes, semicolons, brackets, backslashes
+      var cleaned = val.replace(/[<>"';(){}[\]\\]/g, '');
+      if (cleaned !== val) {
+        this.value = cleaned;
+      }
+      if (this.classList.contains('is-invalid')) {
+        this.classList.remove('is-invalid');
+      }
+    });
+    input.addEventListener('blur', function () {
+      var v = this.value.trim();
+      if (v && !/^https?:\/\//i.test(v)) {
+        if (/^(?:www\.)?linkedin\.com/i.test(v) || /^in\//i.test(v)) {
+          v = 'https://' + (v.startsWith('in/') ? 'linkedin.com/' + v : v);
+        } else if (v.indexOf('/') === -1 && !v.includes('.')) {
+          v = 'https://linkedin.com/in/' + v;
+        } else {
+          v = 'https://' + v;
+        }
+        this.value = v;
+      }
+    });
+  }
+
   // Move keyboard / screen reader focus to the first server-side error so it is noticed.
   document.addEventListener('DOMContentLoaded', function () {
     var alert = document.querySelector('.auth-alert');
@@ -80,7 +149,11 @@
     initProfileTabs();
     initProfileForm();
     initPasswordChangeForm();
+    initRegisterForm();
+    initLoginForm();
     initUserDropdown();
+    initPhoneInputs();
+    initContactForm();
   });
 
   function initUserDropdown() {
@@ -338,48 +411,16 @@
       });
     }
 
-    // 2. Full Name input handling:
-    if (txtFullName) {
-      txtFullName.addEventListener('input', function () {
-        if (this.classList.contains('is-invalid') && this.value.trim().length >= 3) {
-          this.classList.remove('is-invalid');
-        }
-      });
-      txtFullName.addEventListener('blur', function () {
-        this.value = this.value.trim();
-      });
-    }
-
-    // 3. Organization, Job Title, Specialty trimming on blur
-    [txtOrg, txtJobTitle, txtSpecialty].forEach(function (input) {
+    // 2. Full Name, Organization, Job Title, Specialty inputs handling (Letters Only):
+    [txtFullName, txtOrg, txtJobTitle, txtSpecialty].forEach(function (input) {
       if (input) {
-        input.addEventListener('blur', function () {
-          this.value = this.value.trim();
-        });
+        attachLettersOnlyFilter(input);
       }
     });
 
     // 4. LinkedIn URL input handling:
     if (txtLinkedIn) {
-      txtLinkedIn.addEventListener('blur', function () {
-        var v = this.value.trim();
-        if (v && !/^https?:\/\//i.test(v)) {
-          if (/^(?:www\.)?linkedin\.com/i.test(v) || /^in\//i.test(v)) {
-            v = 'https://' + (v.startsWith('in/') ? 'linkedin.com/' + v : v);
-          } else if (v.indexOf('/') === -1 && !v.includes('.')) {
-            v = 'https://linkedin.com/in/' + v;
-          }
-          this.value = v;
-        }
-        if (this.classList.contains('is-invalid')) {
-          this.classList.remove('is-invalid');
-        }
-      });
-      txtLinkedIn.addEventListener('input', function () {
-        if (this.classList.contains('is-invalid')) {
-          this.classList.remove('is-invalid');
-        }
-      });
+      attachLinkedInFilter(txtLinkedIn);
     }
 
     // 5. Submit Handling for Profile Form
@@ -395,29 +436,104 @@
       var specialty = txtSpecialty ? txtSpecialty.value.trim() : '';
       var linkedIn = txtLinkedIn ? txtLinkedIn.value.trim() : '';
 
-      // Validate Full Name
-      if (fullName.length < 3) {
+      // Validate Full Name: letters only
+      if (fullName.length < 2) {
         if (txtFullName) {
           txtFullName.classList.add('is-invalid');
           txtFullName.focus();
         }
         showProfileMessage(
-          isArabic ? 'يرجى إدخال اسمك الكامل (3 أحرف على الأقل).' : 'Please enter your full name (at least 3 characters).',
+          isArabic ? 'يرجى إدخال اسمك الكامل (حرفين على الأقل).' : 'Please enter your full name (at least 2 characters).',
+          false
+        );
+        return;
+      }
+
+      if (!LETTERS_ONLY_REGEX.test(fullName)) {
+        if (txtFullName) {
+          txtFullName.classList.add('is-invalid');
+          txtFullName.focus();
+        }
+        showProfileMessage(
+          isArabic ? 'يجب أن يحتوي الاسم الكامل على أحرف فقط (كبيرة وصغيرة).' : 'Full name must contain letters only (uppercase and lowercase).',
+          false
+        );
+        return;
+      }
+
+      // Validate Organization: letters only if provided
+      if (org && !LETTERS_ONLY_REGEX.test(org)) {
+        if (txtOrg) {
+          txtOrg.classList.add('is-invalid');
+          txtOrg.focus();
+        }
+        showProfileMessage(
+          isArabic ? 'يجب أن يحتوي اسم جهة العمل / المنظمة على أحرف فقط (كبيرة وصغيرة).' : 'Organization must contain letters only (uppercase and lowercase).',
+          false
+        );
+        return;
+      }
+
+      // Validate Position (Job Title): letters only if provided
+      if (jobTitle && !LETTERS_ONLY_REGEX.test(jobTitle)) {
+        if (txtJobTitle) {
+          txtJobTitle.classList.add('is-invalid');
+          txtJobTitle.focus();
+        }
+        showProfileMessage(
+          isArabic ? 'يجب أن يحتوي المسمى الوظيفي على أحرف فقط (كبيرة وصغيرة).' : 'Position must contain letters only (uppercase and lowercase).',
+          false
+        );
+        return;
+      }
+
+      // Validate Field (Specialty): letters only if provided
+      if (specialty && !LETTERS_ONLY_REGEX.test(specialty)) {
+        if (txtSpecialty) {
+          txtSpecialty.classList.add('is-invalid');
+          txtSpecialty.focus();
+        }
+        showProfileMessage(
+          isArabic ? 'يجب أن يحتوي مجال التخصص على أحرف فقط (كبيرة وصغيرة).' : 'Field must contain letters only (uppercase and lowercase).',
           false
         );
         return;
       }
 
       // Validate Mobile if provided
+      var ddlCountry = document.getElementById('DdlEditCountryCode') || document.querySelector('select[name="DdlEditCountryCode"]');
+      var countryCode = ddlCountry ? ddlCountry.value : '+966';
+      var fullMobile = '';
       if (mobile) {
-        var cleanMobile = mobile.replace(/[\s\-()]/g, '');
-        if (!/^\+?[0-9]{7,15}$/.test(cleanMobile)) {
+        var cleanDigits = mobile.replace(/[\s\-()]/g, '');
+        if (cleanDigits.startsWith('0') && countryCode) {
+          cleanDigits = cleanDigits.substring(1);
+        }
+        if (countryCode && !cleanDigits.startsWith('+')) {
+          fullMobile = countryCode + cleanDigits;
+        } else {
+          fullMobile = cleanDigits;
+        }
+
+        if (countryCode === '+966') {
+          if (!/^\+9665\d{8}$/.test(fullMobile)) {
+            if (txtMobile) {
+              txtMobile.classList.add('is-invalid');
+              txtMobile.focus();
+            }
+            showProfileMessage(
+              isArabic ? 'يرجى إدخال رقم جوال سعودي صحيح يبدأ بـ 5 ويتكون من 9 أرقام (مثال: 501234567).' : 'Please enter a valid 9-digit Saudi mobile starting with 5 (e.g. 50 123 4567).',
+              false
+            );
+            return;
+          }
+        } else if (!/^\+[1-9]\d{6,14}$/.test(fullMobile)) {
           if (txtMobile) {
             txtMobile.classList.add('is-invalid');
             txtMobile.focus();
           }
           showProfileMessage(
-            isArabic ? 'يرجى إدخال رقم جوال صحيح (مثال: +966501234567 أو 0501234567).' : 'Please enter a valid mobile number (e.g. +966 50 123 4567).',
+            isArabic ? 'يرجى إدخال رقم جوال دولي صحيح.' : 'Please enter a valid international mobile number.',
             false
           );
           return;
@@ -426,13 +542,13 @@
 
       // Validate LinkedIn URL if provided
       if (linkedIn) {
-        if (!/^https?:\/\/[^\s$.?#].[^\s]*$/i.test(linkedIn)) {
+        if (/^(?:javascript|data|vbscript|file|about|blob):/i.test(linkedIn) || /[<>"';(){}[\]\\]/.test(linkedIn) || !LINKEDIN_REGEX.test(linkedIn)) {
           if (txtLinkedIn) {
             txtLinkedIn.classList.add('is-invalid');
             txtLinkedIn.focus();
           }
           showProfileMessage(
-            isArabic ? 'يرجى إدخال رابط لينكد إن صحيح (مثال: https://linkedin.com/in/username).' : 'Please enter a valid LinkedIn URL (e.g. https://linkedin.com/in/username).',
+            isArabic ? 'يرجى إدخال رابط لينكد إن صالح (مثال: https://linkedin.com/in/username).' : 'Please enter a valid LinkedIn URL (e.g. https://linkedin.com/in/username).',
             false
           );
           return;
@@ -450,7 +566,8 @@
       var params = new URLSearchParams();
       params.append('BtnPudateProfile', 'Save Changes');
       params.append('TxtEditFullName', fullName);
-      params.append('TxtEditMobile', mobile);
+      params.append('TxtEditMobile', fullMobile || mobile);
+      params.append('DdlEditCountryCode', countryCode);
       params.append('TxtEditOrg', org);
       params.append('TxtEditJobTitle', jobTitle);
       params.append('TxtEditSpecialty', specialty);
@@ -579,5 +696,313 @@
         return;
       }
     });
+  }
+
+  function initRegisterForm() {
+    var isArabic = document.documentElement.lang === 'ar' || document.documentElement.dir === 'rtl';
+    var btnRegister = document.getElementById('BtnRegister') || document.querySelector('input[id*="BtnRegister"], button[id*="BtnRegister"]');
+    var txtFullName = document.getElementById('TxtFullName') || document.querySelector('input[id*="TxtFullName"]');
+    var txtEmail = document.getElementById('TxtEmail') || document.querySelector('input[id*="TxtEmail"]');
+    var txtOrg = document.getElementById('TxtOrganization') || document.querySelector('input[id*="TxtOrganization"]');
+    var txtJobTitle = document.getElementById('TxtJobTitle') || document.querySelector('input[id*="TxtJobTitle"]');
+    var txtPassword = document.getElementById('TxtPassword') || document.querySelector('input[id*="TxtPassword"]');
+    var txtPasswordAgain = document.getElementById('TxtPasswordAgain') || document.querySelector('input[id*="TxtPasswordAgain"]');
+    var alertBox = document.getElementById('divError') || document.querySelector('.auth-alert');
+
+    if (!btnRegister) return;
+
+    attachLettersOnlyFilter(txtFullName);
+    attachLettersOnlyFilter(txtOrg);
+    attachLettersOnlyFilter(txtJobTitle);
+    attachEmailFilter(txtEmail);
+
+    function showRegError(msg) {
+      if (!alertBox) return;
+      alertBox.className = 'auth-alert alert alert-danger';
+      alertBox.style.display = 'block';
+      alertBox.innerHTML = '<i class="bi bi-exclamation-triangle mr-1"></i> ' + escapeHtml(msg);
+      alertBox.setAttribute('tabindex', '-1');
+      alertBox.focus({ preventScroll: false });
+    }
+
+    btnRegister.addEventListener('click', function (e) {
+      var fullName = txtFullName ? txtFullName.value.trim() : '';
+      var email = txtEmail ? txtEmail.value.trim() : '';
+      var org = txtOrg ? txtOrg.value.trim() : '';
+      var jobTitle = txtJobTitle ? txtJobTitle.value.trim() : '';
+      var pass = txtPassword ? txtPassword.value : '';
+      var passAgain = txtPasswordAgain ? txtPasswordAgain.value : '';
+
+      // Validate Full Name: letters only
+      if (!fullName || fullName.length < 2) {
+        e.preventDefault();
+        if (txtFullName) { txtFullName.classList.add('is-invalid'); txtFullName.focus(); }
+        showRegError(isArabic ? 'يرجى إدخال اسمك الكامل (حرفين على الأقل).' : 'Please enter your full name (at least 2 characters).');
+        return;
+      }
+
+      if (!LETTERS_ONLY_REGEX.test(fullName)) {
+        e.preventDefault();
+        if (txtFullName) { txtFullName.classList.add('is-invalid'); txtFullName.focus(); }
+        showRegError(isArabic ? 'يجب أن يحتوي الاسم الكامل على أحرف فقط (كبيرة وصغيرة).' : 'Full name must contain letters only (uppercase and lowercase).');
+        return;
+      }
+
+      // Validate Email: safe RFC email without injection tokens
+      if (!email || !SAFE_EMAIL_REGEX.test(email) || /[<>"'\\\r\n;]/.test(email)) {
+        e.preventDefault();
+        if (txtEmail) { txtEmail.classList.add('is-invalid'); txtEmail.focus(); }
+        showRegError(isArabic ? 'يرجى إدخال بريد إلكتروني صالح.' : 'Please enter a valid email address.');
+        return;
+      }
+
+      // Validate Organization: letters only if provided
+      if (org && !LETTERS_ONLY_REGEX.test(org)) {
+        e.preventDefault();
+        if (txtOrg) { txtOrg.classList.add('is-invalid'); txtOrg.focus(); }
+        showRegError(isArabic ? 'يجب أن تحتوي جهة العمل / المنظمة على أحرف فقط (كبيرة وصغيرة).' : 'Organization must contain letters only (uppercase and lowercase).');
+        return;
+      }
+
+      // Validate Position / Job Title: letters only if provided
+      if (jobTitle && !LETTERS_ONLY_REGEX.test(jobTitle)) {
+        e.preventDefault();
+        if (txtJobTitle) { txtJobTitle.classList.add('is-invalid'); txtJobTitle.focus(); }
+        showRegError(isArabic ? 'يجب أن يحتوي المسمى الوظيفي / التخصص على أحرف فقط (كبيرة وصغيرة).' : 'Position / Field must contain letters only (uppercase and lowercase).');
+        return;
+      }
+
+      // Validate Password
+      if (!pass || pass.length < 8) {
+        e.preventDefault();
+        if (txtPassword) { txtPassword.classList.add('is-invalid'); txtPassword.focus(); }
+        showRegError(isArabic ? 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.' : 'Password must be at least 8 characters long.');
+        return;
+      }
+
+      if (pass !== passAgain) {
+        e.preventDefault();
+        if (txtPasswordAgain) { txtPasswordAgain.classList.add('is-invalid'); txtPasswordAgain.focus(); }
+        showRegError(isArabic ? 'كلمتا المرور غير متطابقتين.' : 'Passwords do not match.');
+        return;
+      }
+    });
+  }
+
+  function initLoginForm() {
+    var isArabic = document.documentElement.lang === 'ar' || document.documentElement.dir === 'rtl';
+    var btnLogin = document.getElementById('BtnLogin') || document.querySelector('input[id*="BtnLogin"], button[id*="BtnLogin"]');
+    var txtEmail = document.getElementById('TxtEmail') || document.querySelector('input[id*="TxtEmail"]');
+    var txtPassword = document.getElementById('TxtPassword') || document.querySelector('input[id*="TxtPassword"]');
+    var alertBox = document.getElementById('divError') || document.querySelector('.auth-alert');
+
+    if (!btnLogin) return;
+
+    attachEmailFilter(txtEmail);
+
+    function showLoginError(msg) {
+      if (!alertBox) return;
+      alertBox.className = 'auth-alert alert alert-danger';
+      alertBox.style.display = 'block';
+      alertBox.innerHTML = '<i class="bi bi-exclamation-triangle mr-1"></i> ' + escapeHtml(msg);
+      alertBox.setAttribute('tabindex', '-1');
+      alertBox.focus({ preventScroll: false });
+    }
+
+    btnLogin.addEventListener('click', function (e) {
+      var email = txtEmail ? txtEmail.value.trim() : '';
+      var pass = txtPassword ? txtPassword.value : '';
+
+      if (!email || !pass) {
+        e.preventDefault();
+        showLoginError(isArabic ? 'يرجى إدخال البريد الإلكتروني وكلمة المرور.' : 'Please enter both your email address and password.');
+        if (!email && txtEmail) txtEmail.focus();
+        else if (txtPassword) txtPassword.focus();
+        return;
+      }
+
+      if (!SAFE_EMAIL_REGEX.test(email) || /[<>"'\\\r\n;]/.test(email)) {
+        e.preventDefault();
+        if (txtEmail) { txtEmail.classList.add('is-invalid'); txtEmail.focus(); }
+        showLoginError(isArabic ? 'يرجى إدخال بريد إلكتروني صالح.' : 'Please enter a valid email address.');
+        return;
+      }
+    });
+  }
+
+  function initPhoneInputs() {
+    var isArabic = document.documentElement.lang === 'ar' || document.documentElement.dir === 'rtl';
+    var groups = document.querySelectorAll('.phone-input-group');
+    if (!groups || groups.length === 0) return;
+
+    groups.forEach(function (group) {
+      var select = group.querySelector('.phone-country-select');
+      var input = group.querySelector('.phone-number-input') || group.querySelector('input[type="tel"], input[type="text"]');
+      var container = group.closest('.auth-field') || group.closest('.form-group');
+      var hint = container ? container.querySelector('.phone-hint') : null;
+      var feedback = container ? container.querySelector('.phone-validation-feedback') : null;
+
+      if (!input) return;
+
+      function updateCountryHints() {
+        if (!select) return;
+        var code = select.value;
+        if (code === '+966') {
+          input.placeholder = '50 123 4567';
+          if (hint) hint.textContent = isArabic ? 'صيغة الجوال السعودي: 50 123 4567 (9 أرقام)' : 'Saudi mobile format: 50 123 4567 (9 digits)';
+        } else if (code === '+971') {
+          input.placeholder = '50 123 4567';
+          if (hint) hint.textContent = isArabic ? 'صيغة الجوال الإماراتي: 50 123 4567 (9 أرقام)' : 'UAE mobile format: 50 123 4567 (9 digits)';
+        } else if (code === '+1') {
+          input.placeholder = '202 555 0123';
+          if (hint) hint.textContent = isArabic ? 'صيغة الهاتف الأمريكي/الكندي: 10 أرقام' : 'US/CA format: 10 digits (e.g. 202 555 0123)';
+        } else if (code === '+44') {
+          input.placeholder = '7911 123456';
+          if (hint) hint.textContent = isArabic ? 'صيغة الجوال البريطاني: 10 أرقام' : 'UK mobile format: 10 digits';
+        } else if (code === '+20') {
+          input.placeholder = '10 1234 5678';
+          if (hint) hint.textContent = isArabic ? 'صيغة الجوال المصري: 10-11 رقماً' : 'Egypt mobile format: 10-11 digits';
+        } else if (code === '') {
+          input.placeholder = '+1234567890';
+          if (hint) hint.textContent = isArabic ? 'أدخل الرمز الدولي ورقم الهاتف كاملاً' : 'Enter full number with international country code';
+        } else {
+          input.placeholder = '1234 5678';
+          if (hint) hint.textContent = isArabic ? 'أدخل رقم الهاتف بدون مفتاح الدولة' : 'Enter national phone number without country code';
+        }
+        validatePhone();
+      }
+
+      function cleanAndNormalizeNumber() {
+        var val = input.value;
+        // Convert Arabic/Persian digits
+        var converted = val.replace(/[\u0660-\u0669]/g, function (c) {
+          return c.charCodeAt(0) - 0x0660;
+        }).replace(/[\u06F0-\u06F9]/g, function (c) {
+          return c.charCodeAt(0) - 0x06F0;
+        });
+
+        var countryCode = select ? select.value : '';
+
+        // If custom/other country selected, allow leading +, otherwise digits and hyphens/spaces
+        var allowedRegex = countryCode === '' ? /[^\d+ -]/g : /[^\d -]/g;
+        converted = converted.replace(allowedRegex, '');
+
+        // If user typed duplicate country code in national field:
+        if (countryCode && countryCode.startsWith('+')) {
+          var cleanCode = countryCode.substring(1);
+          var digitsOnly = converted.replace(/[\s\-]/g, '');
+          if (digitsOnly.startsWith(countryCode)) {
+            converted = digitsOnly.substring(countryCode.length);
+          } else if (digitsOnly.startsWith(cleanCode)) {
+            converted = digitsOnly.substring(cleanCode.length);
+          }
+        }
+
+        // Auto-remove leading 0 if country code selected
+        if (countryCode) {
+          var trimmedDigits = converted.replace(/[\s\-]/g, '');
+          if (trimmedDigits.startsWith('0')) {
+            converted = trimmedDigits.substring(1);
+          }
+        }
+
+        if (converted !== val) {
+          input.value = converted;
+        }
+      }
+
+      function validatePhone() {
+        var raw = input.value.trim();
+        var digits = raw.replace(/[\s\-()]/g, '');
+        var countryCode = select ? select.value : '';
+
+        if (!digits) {
+          if (feedback) feedback.style.display = 'none';
+          input.classList.remove('is-invalid', 'is-valid');
+          return true;
+        }
+
+        var isValid = false;
+        var errorMsg = '';
+
+        if (countryCode === '+966') {
+          // Saudi Arabia: 9 digits starting with 5
+          if (/^5\d{8}$/.test(digits)) {
+            isValid = true;
+          } else {
+            isValid = false;
+            errorMsg = isArabic ? 'يجب أن يبدأ رقم الجوال بـ 5 ويتكون من 9 أرقام (مثال: 501234567)' : 'Must start with 5 and be 9 digits (e.g. 50 123 4567)';
+          }
+        } else if (countryCode === '+971') {
+          isValid = /^5\d{8}$/.test(digits);
+          if (!isValid) errorMsg = isArabic ? 'يجب أن يتكون من 9 أرقام (مثال: 501234567)' : 'Must be 9 digits (e.g. 50 123 4567)';
+        } else if (countryCode === '+1') {
+          isValid = /^\d{10}$/.test(digits);
+          if (!isValid) errorMsg = isArabic ? 'يجب أن يتكون من 10 أرقام' : 'Must be 10 digits';
+        } else if (countryCode === '+44') {
+          isValid = /^\d{10,11}$/.test(digits);
+          if (!isValid) errorMsg = isArabic ? 'يجب أن يتكون من 10-11 رقماً' : 'Must be 10-11 digits';
+        } else if (countryCode === '') {
+          isValid = /^\+?[1-9]\d{6,14}$/.test(digits);
+          if (!isValid) errorMsg = isArabic ? 'يرجى إدخال رقم هاتف دولي صحيح يتضمن رمز الدولة (+...)' : 'Please enter a valid international phone number (+...)';
+        } else {
+          // General E.164: national number 6-12 digits
+          isValid = /^\d{6,12}$/.test(digits);
+          if (!isValid) errorMsg = isArabic ? 'يرجى إدخال رقم هاتف صحيح' : 'Please enter a valid phone number';
+        }
+
+        if (feedback) {
+          if (isValid) {
+            feedback.style.display = 'flex';
+            feedback.className = 'phone-validation-feedback valid';
+            feedback.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + (isArabic ? 'رقم صالح' : 'Valid number format');
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+          } else {
+            feedback.style.display = 'flex';
+            feedback.className = 'phone-validation-feedback invalid';
+            feedback.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> ' + errorMsg;
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+          }
+        }
+        return isValid;
+      }
+
+      input.addEventListener('input', function () {
+        cleanAndNormalizeNumber();
+        validatePhone();
+      });
+
+      input.addEventListener('blur', function () {
+        cleanAndNormalizeNumber();
+        validatePhone();
+      });
+
+      if (select) {
+        select.addEventListener('change', function () {
+          cleanAndNormalizeNumber();
+          updateCountryHints();
+        });
+      }
+
+      // Initial run
+      updateCountryHints();
+      if (input.value.trim()) {
+        validatePhone();
+      }
+    });
+  }
+
+  function initContactForm() {
+    var txtMessage = document.getElementById('TxtMessage') || document.querySelector('textarea[id*="TxtMessage"]');
+    var charCount = document.getElementById('charCount');
+    if (txtMessage && charCount) {
+      function updateCount() {
+        charCount.textContent = txtMessage.value.length;
+      }
+      txtMessage.addEventListener('input', updateCount);
+      updateCount();
+    }
   }
 })();

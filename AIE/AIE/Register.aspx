@@ -36,14 +36,14 @@
                                         <label for="<%= TxtFullName.ClientID %>" class="auth-label">
                                             <i class="bi bi-person mr-1 text-info"></i> Full Name
                                         </label>
-                                        <asp:TextBox ID="TxtFullName" runat="server" CssClass="form-control" placeholder="e.g. Dr. Sarah Al-Ahmad" autocomplete="name" required="required"></asp:TextBox>
+                                        <asp:TextBox ID="TxtFullName" runat="server" CssClass="form-control" placeholder="e.g. Dr Sarah Al Ahmad" autocomplete="name" required="required" MaxLength="100" pattern="^[a-zA-Z\u0600-\u06FF\s]+$" title="Letters only (uppercase and lowercase)"></asp:TextBox>
                                     </div>
 
                                     <div class="auth-field">
                                         <label for="<%= TxtEmail.ClientID %>" class="auth-label">
                                             <i class="bi bi-envelope mr-1 text-info"></i> Email Address
                                         </label>
-                                        <asp:TextBox ID="TxtEmail" runat="server" TextMode="Email" CssClass="form-control" placeholder="name@domain.com" autocomplete="username" required="required"></asp:TextBox>
+                                        <asp:TextBox ID="TxtEmail" runat="server" TextMode="Email" CssClass="form-control" placeholder="name@domain.com" autocomplete="username" required="required" MaxLength="100" pattern="^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$" title="Valid email address"></asp:TextBox>
                                     </div>
 
                                     <div class="auth-field">
@@ -53,7 +53,40 @@
                                             </label>
                                             <span class="auth-optional">Optional</span>
                                         </div>
-                                        <asp:TextBox ID="TxtMobile" runat="server" TextMode="Phone" CssClass="form-control" placeholder="e.g. +966 50 123 4567" autocomplete="tel"></asp:TextBox>
+                                        <div class="phone-input-group">
+                                            <div class="phone-country-dropdown-wrap">
+                                                <select id="DdlCountryCode" name="DdlCountryCode" class="phone-country-select" aria-label="Country calling code" autocomplete="tel-country-code">
+                                                    <option value="+966" selected="selected">🇸🇦 +966 (KSA)</option>
+                                                    <option value="+971">🇦🇪 +971 (UAE)</option>
+                                                    <option value="+965">🇰🇼 +965 (Kuwait)</option>
+                                                    <option value="+973">🇧🇭 +973 (Bahrain)</option>
+                                                    <option value="+974">🇶🇦 +974 (Qatar)</option>
+                                                    <option value="+968">🇴🇲 +968 (Oman)</option>
+                                                    <option value="+20">🇪🇬 +20 (Egypt)</option>
+                                                    <option value="+962">🇯🇴 +962 (Jordan)</option>
+                                                    <option value="+961">🇱🇧 +961 (Lebanon)</option>
+                                                    <option value="+964">🇮🇶 +964 (Iraq)</option>
+                                                    <option value="+967">🇾🇪 +967 (Yemen)</option>
+                                                    <option value="+44">🇬🇧 +44 (UK)</option>
+                                                    <option value="+1">🇺🇸 +1 (US/CA)</option>
+                                                    <option value="+49">🇩🇪 +49 (Germany)</option>
+                                                    <option value="+33">🇫🇷 +33 (France)</option>
+                                                    <option value="+90">🇹🇷 +90 (Turkey)</option>
+                                                    <option value="+91">🇮🇳 +91 (India)</option>
+                                                    <option value="+92">🇵🇰 +92 (Pakistan)</option>
+                                                    <option value="+60">🇲🇾 +60 (Malaysia)</option>
+                                                    <option value="+65">🇸🇬 +65 (Singapore)</option>
+                                                    <option value="+61">🇦🇺 +61 (Australia)</option>
+                                                    <option value="">🌐 Other / Custom</option>
+                                                </select>
+                                                <i class="bi bi-chevron-down phone-dropdown-arrow" aria-hidden="true"></i>
+                                            </div>
+                                            <div class="phone-number-wrap">
+                                                <asp:TextBox ID="TxtMobile" runat="server" TextMode="Phone" CssClass="form-control phone-number-input" placeholder="50 123 4567" autocomplete="tel-national" MaxLength="15"></asp:TextBox>
+                                            </div>
+                                        </div>
+                                        <small class="auth-hint phone-hint" id="phoneHint">Saudi mobile format: 50 123 4567 (9 digits)</small>
+                                        <div class="phone-validation-feedback" id="phoneFeedback" style="display: none;"></div>
                                     </div>
 
                                     <div class="row">
@@ -65,7 +98,7 @@
                                                     </label>
                                                     <span class="auth-optional">Optional</span>
                                                 </div>
-                                                <asp:TextBox ID="TxtOrganization" runat="server" CssClass="form-control" placeholder="Hospital / University / Company" autocomplete="organization"></asp:TextBox>
+                                                <asp:TextBox ID="TxtOrganization" runat="server" CssClass="form-control" placeholder="Hospital / University / Company" autocomplete="organization" MaxLength="150" pattern="^[a-zA-Z\u0600-\u06FF\s]*$" title="Letters only (uppercase and lowercase)"></asp:TextBox>
                                             </div>
                                         </div>
                                         <div class="col-md-6 mb-3">
@@ -76,7 +109,7 @@
                                                     </label>
                                                     <span class="auth-optional">Optional</span>
                                                 </div>
-                                                <asp:TextBox ID="TxtJobTitle" runat="server" CssClass="form-control" placeholder="e.g. Radiologist, Researcher"></asp:TextBox>
+                                                <asp:TextBox ID="TxtJobTitle" runat="server" CssClass="form-control" placeholder="e.g. Radiologist, Researcher" MaxLength="100" pattern="^[a-zA-Z\u0600-\u06FF\s]*$" title="Letters only (uppercase and lowercase)"></asp:TextBox>
                                             </div>
                                         </div>
                                     </div>
@@ -88,7 +121,7 @@
                                                     <i class="bi bi-lock mr-1 text-info"></i> Password
                                                 </label>
                                                 <div class="auth-password">
-                                                    <asp:TextBox ID="TxtPassword" runat="server" TextMode="Password" CssClass="form-control" placeholder="Min. 8 characters" autocomplete="new-password" required="required"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtPassword" runat="server" TextMode="Password" CssClass="form-control" placeholder="Min. 8 characters" autocomplete="new-password" required="required" MaxLength="128"></asp:TextBox>
                                                     <button type="button" class="auth-password-toggle" data-toggle-password="<%= TxtPassword.ClientID %>" aria-label="Show password" data-label-show="Show password" data-label-hide="Hide password" aria-pressed="false">
                                                         <i class="bi bi-eye"></i>
                                                     </button>
@@ -102,7 +135,7 @@
                                                     <i class="bi bi-check-all mr-1 text-info"></i> Confirm Password
                                                 </label>
                                                 <div class="auth-password">
-                                                    <asp:TextBox ID="TxtPasswordAgain" runat="server" TextMode="Password" CssClass="form-control" placeholder="Re-enter password" autocomplete="new-password" required="required"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtPasswordAgain" runat="server" TextMode="Password" CssClass="form-control" placeholder="Re-enter password" autocomplete="new-password" required="required" MaxLength="128"></asp:TextBox>
                                                     <button type="button" class="auth-password-toggle" data-toggle-password="<%= TxtPasswordAgain.ClientID %>" aria-label="Show password" data-label-show="Show password" data-label-hide="Hide password" aria-pressed="false">
                                                         <i class="bi bi-eye"></i>
                                                     </button>

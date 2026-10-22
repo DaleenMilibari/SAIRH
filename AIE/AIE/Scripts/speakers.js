@@ -253,6 +253,11 @@
     var flag = card.getAttribute('data-flag') || '🇸🇦';
     var photo = card.getAttribute('data-photo') || '';
     var cv = card.getAttribute('data-cv') || '';
+    var trackName = card.getAttribute('data-track-name') || '';
+    var sessionRole = card.getAttribute('data-session-role') || '';
+    var room = card.getAttribute('data-room') || '';
+    var time = card.getAttribute('data-time') || '';
+    var day = card.getAttribute('data-day') || '';
 
     // Normalize paths to absolute root so they work from any route
     if (photo && !photo.startsWith('/') && !photo.startsWith('http')) {
@@ -273,18 +278,46 @@
     }
 
     var orgEl = document.getElementById('modalSpeakerOrg');
+    var orgWrap = document.getElementById('modalSpeakerOrgWrap');
     if (orgEl) {
       var orgSpan = orgEl.querySelector('span');
       if (orgSpan) orgSpan.textContent = org;
       else orgEl.textContent = org;
-      orgEl.style.display = org ? 'block' : 'none';
+    }
+    if (orgWrap) {
+      orgWrap.style.display = org ? 'inline-flex' : 'none';
     }
 
+    // Lecture & Presentation Details
     var lectureEl = document.getElementById('modalLectureTitle');
     var lectureWrap = document.getElementById('modalLectureWrapper');
     if (lectureEl) lectureEl.textContent = lecture;
     if (lectureWrap) {
       lectureWrap.style.display = lecture ? 'block' : 'none';
+    }
+
+    // Session Meta: Room, Time, Day
+    var roomEl = document.getElementById('modalMetaRoom');
+    var roomWrap = document.getElementById('modalMetaRoomWrap');
+    if (roomEl) roomEl.textContent = room;
+    if (roomWrap) roomWrap.style.display = room ? 'inline-flex' : 'none';
+
+    var timeEl = document.getElementById('modalMetaTime');
+    var timeWrap = document.getElementById('modalMetaTimeWrap');
+    if (timeEl) timeEl.textContent = time;
+    if (timeWrap) timeWrap.style.display = time ? 'inline-flex' : 'none';
+
+    var dayEl = document.getElementById('modalMetaDay');
+    var dayWrap = document.getElementById('modalMetaDayWrap');
+    if (dayEl) {
+      var isAr = document.documentElement.getAttribute('dir') === 'rtl' || document.body.getAttribute('dir') === 'rtl';
+      dayEl.textContent = day ? (isAr ? ('اليوم ' + day) : ('Day ' + day)) : '';
+    }
+    if (dayWrap) dayWrap.style.display = day ? 'inline-flex' : 'none';
+
+    var metaRow = document.getElementById('modalSessionMeta');
+    if (metaRow) {
+      metaRow.style.display = (room || time || day) ? 'flex' : 'none';
     }
 
     var initialsEl = document.getElementById('modalSpeakerInitials');
@@ -320,7 +353,7 @@
         if (noCvMsg) noCvMsg.style.display = 'none';
       } else {
         cvBtn.style.display = 'none';
-        if (noCvMsg) noCvMsg.style.display = 'block';
+        if (noCvMsg) noCvMsg.style.display = 'inline-flex';
       }
     }
 
@@ -335,6 +368,103 @@
       document.body.style.overflow = '';
     }
   };
+
+  /**
+   * Reloads speakers live from the /api/speakers database endpoint and refreshes the grid dynamically.
+   */
+  window.reloadSpeakers = async function () {
+    try {
+      var isAr = document.documentElement.getAttribute('dir') === 'rtl' || window.location.pathname.toLowerCase().includes('/ar_sa');
+      var res = await fetch('/api/speakers?lang=' + (isAr ? 'ar' : 'en'), { cache: 'no-store' });
+      if (!res.ok) return;
+      var data = await res.json();
+      if (!data || !data.speakers) return;
+
+      var grid = document.getElementById('speakersGrid');
+      if (!grid) return;
+
+      var trackIcons = { 'track-a': 'bi bi-cpu', 'track-b': 'bi bi-activity', 'track-c': 'bi bi-lightbulb' };
+      var sectorIcons = { 'clinical': 'bi bi-hospital', 'academic': 'bi bi-mortarboard', 'industry': 'bi bi-building', 'international': 'bi bi-globe' };
+
+      grid.innerHTML = data.speakers.map(function (s) {
+        var track = (s.track || 'track-a').toLowerCase();
+        var sector = (s.sector || 'clinical').toLowerCase();
+        var region = (s.region || 'national').toLowerCase();
+        var tIcon = trackIcons[track] || 'bi bi-cpu';
+        var sIcon = sectorIcons[sector] || 'bi bi-hospital';
+
+        var tBadge = isAr ? (track === 'track-a' ? 'المسار أ' : track === 'track-b' ? 'المسار ب' : 'المسار ج') : (track === 'track-a' ? 'Track A' : track === 'track-b' ? 'Track B' : 'Track C');
+        var sBadge = isAr ? (sector === 'clinical' ? 'قطاع سريري' : sector === 'academic' ? 'قطاع أكاديمي' : sector === 'industry' ? 'قطاع صناعي' : 'دولي') : (sector === 'clinical' ? 'Clinical' : sector === 'academic' ? 'Academic' : sector === 'industry' ? 'Industry' : 'International');
+        var lecLabel = isAr ? 'عنوان المحاضرة' : 'Lecture Presentation';
+        var quickBtn = isAr ? 'نظرة سريعة' : 'Quick Overview';
+
+        var lecHtml = s.lectureTitle ? '<div class="speaker-lecture-card">' +
+            '<div class="speaker-lecture-label"><i class="bi bi-mic-fill"></i> ' + lecLabel + '</div>' +
+            '<p class="speaker-lecture-title">' + s.lectureTitle + '</p>' +
+        '</div>' : '';
+
+        return '<article class="speaker-card ' + track + '"' +
+          ' data-photo="' + (s.photo || '') + '"' +
+          ' data-cv="' + (s.cvPdfPath || '') + '"' +
+          ' data-track="' + track + '"' +
+          ' data-sector="' + sector + '"' +
+          ' data-region="' + region + '"' +
+          ' data-name="' + (s.name || '') + '"' +
+          ' data-role="' + (s.role || '') + '"' +
+          ' data-org="' + (s.organization || '') + '"' +
+          ' data-lecture="' + (s.lectureTitle || '') + '"' +
+          ' data-track-name="' + (s.trackName || '') + '"' +
+          ' data-sector-name="' + (s.sectorName || '') + '"' +
+          ' data-region-name="' + (s.regionName || '') + '"' +
+          ' data-flag="' + (s.flag || '🇸🇦') + '"' +
+          ' data-initials="' + (s.initials || 'SP') + '"' +
+          ' data-room="' + (s.room || '') + '"' +
+          ' data-time="' + (s.time || '') + '"' +
+          ' data-day="' + (s.day || 1) + '"' +
+          ' data-session-role="' + (s.sessionRole || '') + '">' +
+          '<div class="speaker-card-header">' +
+              '<span class="speaker-track-tag tag-' + track + '" onclick="filterToTrack(\'' + track + '\')" style="cursor:pointer;">' +
+                  '<i class="' + tIcon + '"></i> ' + tBadge +
+              '</span>' +
+              '<span class="speaker-sector-tag">' +
+                  '<i class="' + sIcon + '"></i> ' + sBadge +
+              '</span>' +
+          '</div>' +
+          '<div class="speaker-avatar-wrap">' +
+              '<img src="' + (s.photo || '') + '" alt="' + (s.name || '') + '" class="speaker-avatar-img" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';" />' +
+              '<div class="speaker-monogram" style="display:none;">' + (s.initials || 'SP') + '</div>' +
+              '<span class="speaker-badge-flag" title="' + (s.regionName || '') + '">' + (s.flag || '🇸🇦') + '</span>' +
+          '</div>' +
+          '<div class="speaker-body">' +
+              '<h3 class="speaker-name">' + (s.name || '') + '</h3>' +
+              '<p class="speaker-title">' + (s.role || '') + '</p>' +
+              '<p class="speaker-org">' +
+                  '<i class="bi bi-bank sairh-organization-icon"></i>' +
+                  '<span>' + (s.organization || '') + '</span>' +
+              '</p>' +
+              lecHtml +
+          '</div>' +
+          '<div class="speaker-card-actions">' +
+              '<button type="button" class="btn-speaker-detail" onclick="openSpeakerModal(this.closest(\'.speaker-card\'))">' +
+                  '<i class="bi bi-info-circle"></i> ' + quickBtn +
+              '</button>' +
+          '</div>' +
+        '</article>';
+      }).join('\n');
+
+      updateCounts();
+      applyFilters();
+    } catch (err) {
+      console.warn('[SAIRH Speakers] Client-side reload error:', err);
+    }
+  };
+
+  // Close modal on Escape key press
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      window.closeSpeakerModal();
+    }
+  });
 
   // Initialize once DOM is ready
   if (document.readyState === 'loading') {

@@ -62,8 +62,8 @@
             position: absolute !important;
             top: 50% !important;
             transform: translateY(-50%) !important;
-            right: 20px !important;
-            left: auto !important;
+            left: 20px !important;
+            right: auto !important;
             color: #38bdf8 !important;
             font-size: 1.15rem !important;
             line-height: 1 !important;
@@ -84,8 +84,8 @@
             border: 1px solid var(--lg-glass-border) !important;
             border-radius: 16px !important;
             color: #ffffff !important;
-            padding-right: 54px !important;
-            padding-left: 48px !important;
+            padding-left: 54px !important;
+            padding-right: 48px !important;
             padding-top: 12px !important;
             padding-bottom: 12px !important;
             font-size: 0.98rem !important;
@@ -98,8 +98,8 @@
             position: absolute !important;
             top: 50% !important;
             transform: translateY(-50%) !important;
-            left: 18px !important;
-            right: auto !important;
+            right: 18px !important;
+            left: auto !important;
             background: transparent !important;
             border: none !important;
             color: var(--lg-text-muted) !important;
@@ -151,7 +151,7 @@
                 <!-- Track Filters Below It -->
                 <div class="speakers-track-tabs" role="tablist" aria-label="تصفية حسب المسار">
                     <button type="button" class="track-tab-btn active" data-track="all">
-                        <i class="bi bi-grid-fill"></i> جميع المسارات <span class="tab-count">30</span>
+                        <i class="bi bi-grid-fill"></i> جميع المسارات <span class="tab-count">29</span>
                     </button>
                     <button type="button" class="track-tab-btn" data-track="track-a">
                         <i class="bi bi-cpu"></i> المسار أ: الذكاء الاصطناعي والتحول الرقمي <span class="tab-count">10</span>
@@ -160,14 +160,14 @@
                         <i class="bi bi-activity"></i> المسار ب: الأشعة السريرية المتقدمة <span class="tab-count">13</span>
                     </button>
                     <button type="button" class="track-tab-btn" data-track="track-c">
-                        <i class="bi bi-lightbulb"></i> المسار ج: الابتكار الصحي <span class="tab-count">7</span>
+                        <i class="bi bi-lightbulb"></i> المسار ج: الابتكار الصحي <span class="tab-count">6</span>
                     </button>
                 </div>
 
                 <!-- Status & Reset Bar -->
                 <div class="speakers-status-bar">
                     <div>
-                        عرض <strong id="speakersCount" class="text-white">30</strong> من أصل <span id="speakersTotalCount">30</span> متحدثاً
+                        عرض <strong id="speakersCount" class="text-white">29</strong> من أصل <span id="speakersTotalCount">29</span> متحدثاً
                     </div>
                     <div>
                         <button type="button" id="btnResetFilters" class="btn-reset-filters" style="display:none;">
@@ -249,46 +249,60 @@
 
     <!-- نافذة تفاصيل المتحدث (نظرة سريعة) -->
     <div id="speakerModal" class="speaker-modal-backdrop" onclick="if(event.target===this)closeSpeakerModal()">
-        <div class="speaker-modal-window" style="max-width: 480px; text-align: center; padding: 36px 30px;">
+        <div class="speaker-modal-window">
             <button type="button" class="speaker-modal-close" onclick="closeSpeakerModal()" aria-label="إغلاق النافذة">&times;</button>
-            
+
             <!-- صورة المتحدث -->
-            <div class="speaker-avatar-wrap mx-auto mb-3" style="width: 105px; height: 105px;">
-                <img id="modalSpeakerPhoto" src="" alt="المتحدث" class="speaker-avatar-img" style="width: 105px; height: 105px; display: none;" />
-                <div id="modalSpeakerInitials" class="speaker-monogram" style="width: 105px; height: 105px; font-size: 1.8rem;">م.ت</div>
-                <span id="modalSpeakerFlag" class="speaker-badge-flag" style="font-size: 1.25rem;">🇸🇦</span>
+            <div class="speaker-modal-avatar-wrap">
+                <img id="modalSpeakerPhoto" src="" alt="المتحدث" class="speaker-modal-avatar-img" style="display: none;" />
+                <div id="modalSpeakerInitials" class="speaker-modal-monogram">م.ت</div>
+                <span id="modalSpeakerFlag" class="speaker-modal-badge-flag">🇸🇦</span>
             </div>
 
             <!-- الاسم الكامل -->
-            <h3 id="modalSpeakerName" class="text-white font-weight-bold mb-1" style="font-size: 1.45rem;">اسم المتحدث</h3>
+            <h3 id="modalSpeakerName" class="speaker-modal-name">اسم المتحدث</h3>
 
             <!-- المسمى والصفة -->
-            <p id="modalSpeakerRole" class="text-info font-weight-600 mb-1" style="font-size: 0.95rem;">المنصب والصفة</p>
+            <p id="modalSpeakerRole" class="speaker-modal-role">المنصب والصفة</p>
 
             <!-- جهة العمل -->
-            <p id="modalSpeakerOrg" class="text-secondary small mb-3" style="font-size: 0.88rem;">
-                <i class="bi bi-bank ml-1 text-secondary"></i> <span>جهة العمل</span>
-            </p>
+            <div id="modalSpeakerOrgWrap" class="speaker-modal-org-pill">
+                <i class="bi bi-bank2"></i>
+                <span id="modalSpeakerOrg">جهة العمل</span>
+            </div>
 
-            <!-- عنوان الجلسة / المحاضرة -->
-            <div id="modalLectureWrapper" class="speaker-lecture-card text-right my-3" style="background: rgba(4, 8, 22, 0.7); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08); text-align: right;">
-                <div class="speaker-lecture-label" style="font-size: 0.76rem; margin-bottom: 6px; color: #38bdf8;">
-                    <i class="bi bi-mic-fill ml-1"></i> الجلسة والمحاضرة العلمية
+            <!-- بطاقة الجلسة / المحاضرة العلمية -->
+            <div id="modalLectureWrapper" class="speaker-modal-lecture-card">
+                <div class="speaker-modal-lecture-header">
+                    <span class="speaker-modal-lecture-chip">
+                        <i class="bi bi-mic-fill"></i> الجلسة والمحاضرة العلمية
+                    </span>
                 </div>
-                <h4 id="modalLectureTitle" class="text-white font-weight-600 mb-0" style="font-size: 0.98rem; line-height: 1.5;">
+                <h4 id="modalLectureTitle" class="speaker-modal-lecture-title">
                     عنوان المحاضرة
                 </h4>
+                <div id="modalSessionMeta" class="speaker-modal-session-meta" style="display: none;">
+                    <div id="modalMetaRoomWrap" class="speaker-modal-meta-item" style="display: none;">
+                        <i class="bi bi-geo-alt-fill"></i> <span id="modalMetaRoom"></span>
+                    </div>
+                    <div id="modalMetaTimeWrap" class="speaker-modal-meta-item" style="display: none;">
+                        <i class="bi bi-clock-fill"></i> <span id="modalMetaTime"></span>
+                    </div>
+                    <div id="modalMetaDayWrap" class="speaker-modal-meta-item" style="display: none;">
+                        <i class="bi bi-calendar3"></i> <span id="modalMetaDay"></span>
+                    </div>
+                </div>
             </div>
 
             <!-- الإجراءات: عرض السيرة الذاتية PDF -->
-            <div class="d-flex flex-column align-items-center mt-3 pt-3 border-top border-secondary" style="gap: 10px;">
-                <a id="modalCvBtn" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-info rounded-pill px-4 py-2 font-weight-bold w-100" style="display:none; max-width: 260px;">
-                    <i class="bi bi-file-earmark-pdf ml-1"></i> عرض السيرة الذاتية (PDF)
+            <div class="speaker-modal-actions">
+                <a id="modalCvBtn" href="#" target="_blank" rel="noopener noreferrer" class="speaker-modal-cv-btn" style="display: none;">
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                    <span>عرض السيرة الذاتية (PDF)</span>
                 </a>
-                <span id="modalNoCvMsg" class="text-secondary small" style="display:none;">السيرة الذاتية غير متوفرة حالياً</span>
-                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2 font-weight-bold" onclick="closeSpeakerModal()">
-                    إغلاق
-                </button>
+                <span id="modalNoCvMsg" class="speaker-modal-no-cv-msg" style="display: none;">
+                    <i class="bi bi-info-circle"></i> السيرة الذاتية غير متوفرة حالياً
+                </span>
             </div>
         </div>
     </div>

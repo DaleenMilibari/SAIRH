@@ -4,22 +4,19 @@
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-    <!-- Header -->
-    <section class="py-5 simpler-main-bg" aria-label="Profile Header">
-        <div class="container text-center pt-4 pb-2">
-            <h1 class="text-white font-weight-bold display-4 mb-3">
-                Account Profile
-            </h1>
-            <div style="width: 80px; height: 3px; background: linear-gradient(90deg, #38bdf8, #2563eb); margin: 0 auto; border-radius: 2px;"></div>
-        </div>
-    </section>
-
-    <!-- Main Content -->
-    <section class="py-5" aria-label="Profile Management">
+    <!-- Profile Page Container -->
+    <section class="profile-page-section" aria-label="Profile Management">
         <div class="container">
+            <!-- Header Title -->
+            <div class="profile-page-header text-center mb-4">
+                <h1 class="text-white font-weight-bold mb-2">Account Profile</h1>
+                <p class="text-secondary small mb-3">Manage your attendee credentials, contact details, and summit preferences.</p>
+                <div style="width: 60px; height: 3px; background: linear-gradient(90deg, #38bdf8, #2563eb); margin: 0 auto; border-radius: 2px;"></div>
+            </div>
+
             <asp:UpdatePanel ID="UpdatePanel1" runat="server">
                 <ContentTemplate>
-                    <div class="row">
+                    <div class="row align-items-start">
                         <!-- Sidebar Card -->
                         <div class="col-lg-4 mb-4 mb-lg-0">
                             <div class="profile-user-card text-center">
@@ -30,21 +27,21 @@
                                 <h3 class="text-white font-weight-bold mb-1">
                                     <asp:Label ID="LblName" runat="server" Text="Attendee Name"></asp:Label>
                                 </h3>
-                                <div class="mb-2">
-                                    <asp:Label ID="LblUserRoleBadge" runat="server" CssClass="badge badge-info" Text="Attendee"></asp:Label>
+                                <div class="mb-3">
+                                    <asp:Label ID="LblUserRoleBadge" runat="server" CssClass="profile-role-badge" Text="Attendee"></asp:Label>
                                 </div>
                                 <p class="text-info mb-1 font-weight-semibold small" id="pOrgTitle" runat="server" visible="false">
                                     <i class="bi bi-building mr-1"></i> <asp:Label ID="LblOrgTitle" runat="server" Text=""></asp:Label>
                                 </p>
-                                <p class="text-secondary mb-1 small">
-                                    <i class="bi bi-telephone mr-1"></i> <asp:Label ID="TxtMobile" runat="server" Text="-"></asp:Label>
+                                <p class="text-secondary mb-1 small d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-telephone mr-2 text-info"></i> <asp:Label ID="TxtMobile" runat="server" Text="-"></asp:Label>
                                 </p>
-                                <p class="text-secondary mb-3 small">
-                                    <i class="bi bi-envelope mr-1"></i> <asp:Label ID="TxtEmail" runat="server" Text="-"></asp:Label>
+                                <p class="text-secondary mb-3 small d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-envelope mr-2 text-info"></i> <asp:Label ID="TxtEmail" runat="server" Text="-"></asp:Label>
                                 </p>
 
                                 <div class="mt-4">
-                                    <asp:LinkButton ID="BtnShowProfile" runat="server" CssClass="profile-nav-btn" OnClick="BtnShowProfile_Click">
+                                    <asp:LinkButton ID="BtnShowProfile" runat="server" CssClass="profile-nav-btn active" OnClick="BtnShowProfile_Click">
                                         <i class="bi bi-person-gear"></i> Edit Profile Information
                                     </asp:LinkButton>
                                     <asp:LinkButton ID="BtnShowChangePass" runat="server" CssClass="profile-nav-btn" OnClick="BtnShowChangePass_Click">
@@ -86,9 +83,9 @@
                             <div class="glass-card p-4">
                                 <!-- Edit Profile Box -->
                                 <div runat="server" id="div_editprofile" visible="true">
-                                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-secondary">
+                                    <div class="d-flex align-items-center mb-4 pb-3" style="border-bottom: 1px solid rgba(56, 189, 248, 0.18);">
                                         <i class="bi bi-person-badge text-info mr-2" style="font-size: 1.4rem;"></i>
-                                        <h3 class="text-white font-weight-bold m-0">Edit Profile Information</h3>
+                                        <h3 class="text-white font-weight-bold m-0" style="font-size: 1.35rem;">Edit Profile Information</h3>
                                     </div>
 
                                     <div id="divErrorProfile" class="auth-alert alert" runat="server" visible="false" role="alert" style="display:none;"></div>
@@ -98,14 +95,50 @@
                                             <label for="<%= TxtEditFullName.ClientID %>" class="auth-label">
                                                 <i class="bi bi-person mr-1 text-info"></i> Full Name
                                             </label>
-                                            <asp:TextBox ID="TxtEditFullName" runat="server" CssClass="form-control" placeholder="Enter your full name" autocomplete="name" required="required" MaxLength="100"></asp:TextBox>
+                                            <asp:TextBox ID="TxtEditFullName" runat="server" CssClass="form-control" placeholder="Enter your full name" autocomplete="name" required="required" MaxLength="100" pattern="^[a-zA-Z\u0600-\u06FF\s]+$" title="Letters only (uppercase and lowercase)"></asp:TextBox>
                                         </div>
 
                                         <div class="auth-field">
-                                            <label for="<%= TxtEditMobile.ClientID %>" class="auth-label">
-                                                <i class="bi bi-telephone mr-1 text-info"></i> Mobile Number
-                                            </label>
-                                            <asp:TextBox ID="TxtEditMobile" runat="server" TextMode="Phone" CssClass="form-control" placeholder="e.g. +966 50 123 4567" autocomplete="tel" MaxLength="25"></asp:TextBox>
+                                            <div class="auth-row-between">
+                                                <label for="<%= TxtEditMobile.ClientID %>" class="auth-label">
+                                                    <i class="bi bi-telephone mr-1 text-info"></i> Mobile Number
+                                                </label>
+                                                <span class="auth-optional">Optional</span>
+                                            </div>
+                                            <div class="phone-input-group">
+                                                <div class="phone-country-dropdown-wrap">
+                                                    <select id="DdlEditCountryCode" name="DdlEditCountryCode" class="phone-country-select" aria-label="Country calling code" autocomplete="tel-country-code">
+                                                        <option value="+966" selected="selected">🇸🇦 +966 (KSA)</option>
+                                                        <option value="+971">🇦🇪 +971 (UAE)</option>
+                                                        <option value="+965">🇰🇼 +965 (Kuwait)</option>
+                                                        <option value="+973">🇧🇭 +973 (Bahrain)</option>
+                                                        <option value="+974">🇶🇦 +974 (Qatar)</option>
+                                                        <option value="+968">🇴🇲 +968 (Oman)</option>
+                                                        <option value="+20">🇪🇬 +20 (Egypt)</option>
+                                                        <option value="+962">🇯🇴 +962 (Jordan)</option>
+                                                        <option value="+961">🇱🇧 +961 (Lebanon)</option>
+                                                        <option value="+964">🇮🇶 +964 (Iraq)</option>
+                                                        <option value="+967">🇾🇪 +967 (Yemen)</option>
+                                                        <option value="+44">🇬🇧 +44 (UK)</option>
+                                                        <option value="+1">🇺🇸 +1 (US/CA)</option>
+                                                        <option value="+49">🇩🇪 +49 (Germany)</option>
+                                                        <option value="+33">🇫🇷 +33 (France)</option>
+                                                        <option value="+90">🇹🇷 +90 (Turkey)</option>
+                                                        <option value="+91">🇮🇳 +91 (India)</option>
+                                                        <option value="+92">🇵🇰 +92 (Pakistan)</option>
+                                                        <option value="+60">🇲🇾 +60 (Malaysia)</option>
+                                                        <option value="+65">🇸🇬 +65 (Singapore)</option>
+                                                        <option value="+61">🇦🇺 +61 (Australia)</option>
+                                                        <option value="">🌐 Other / Custom</option>
+                                                    </select>
+                                                    <i class="bi bi-chevron-down phone-dropdown-arrow" aria-hidden="true"></i>
+                                                </div>
+                                                <div class="phone-number-wrap">
+                                                    <asp:TextBox ID="TxtEditMobile" runat="server" TextMode="Phone" CssClass="form-control phone-number-input" placeholder="50 123 4567" autocomplete="tel-national" MaxLength="15"></asp:TextBox>
+                                                </div>
+                                            </div>
+                                            <small class="auth-hint phone-hint" id="phoneHintEdit">Saudi mobile format: 50 123 4567 (9 digits)</small>
+                                            <div class="phone-validation-feedback" id="phoneFeedbackEdit" style="display: none;"></div>
                                         </div>
 
                                         <div class="row">
@@ -114,7 +147,7 @@
                                                     <label for="<%= TxtEditOrg.ClientID %>" class="auth-label">
                                                         <i class="bi bi-building mr-1 text-info"></i> Organization / Workplace
                                                     </label>
-                                                    <asp:TextBox ID="TxtEditOrg" runat="server" CssClass="form-control" placeholder="Hospital / University / Company" autocomplete="organization" MaxLength="200"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtEditOrg" runat="server" CssClass="form-control" placeholder="Hospital / University / Company" autocomplete="organization" MaxLength="200" pattern="^[a-zA-Z\u0600-\u06FF\s]*$" title="Letters only (uppercase and lowercase)"></asp:TextBox>
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
@@ -122,7 +155,7 @@
                                                     <label for="<%= TxtEditJobTitle.ClientID %>" class="auth-label">
                                                         <i class="bi bi-briefcase mr-1 text-info"></i> Job Title / Role
                                                     </label>
-                                                    <asp:TextBox ID="TxtEditJobTitle" runat="server" CssClass="form-control" placeholder="e.g. Consultant Radiologist" MaxLength="150"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtEditJobTitle" runat="server" CssClass="form-control" placeholder="e.g. Consultant Radiologist" MaxLength="150" pattern="^[a-zA-Z\u0600-\u06FF\s]*$" title="Letters only (uppercase and lowercase)"></asp:TextBox>
                                                 </div>
                                             </div>
                                         </div>
@@ -133,7 +166,7 @@
                                                     <label for="<%= TxtEditSpecialty.ClientID %>" class="auth-label">
                                                         <i class="bi bi-award mr-1 text-info"></i> Specialty / Field
                                                     </label>
-                                                    <asp:TextBox ID="TxtEditSpecialty" runat="server" CssClass="form-control" placeholder="e.g. Neuroradiology, AI in Health" MaxLength="150"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtEditSpecialty" runat="server" CssClass="form-control" placeholder="e.g. Neuroradiology, AI in Health" MaxLength="150" pattern="^[a-zA-Z\u0600-\u06FF\s]*$" title="Letters only (uppercase and lowercase)"></asp:TextBox>
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
@@ -141,7 +174,7 @@
                                                     <label for="<%= TxtEditLinkedIn.ClientID %>" class="auth-label">
                                                         <i class="bi bi-linkedin mr-1 text-info"></i> LinkedIn Profile
                                                     </label>
-                                                    <asp:TextBox ID="TxtEditLinkedIn" runat="server" CssClass="form-control" placeholder="https://linkedin.com/in/username" MaxLength="300"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtEditLinkedIn" runat="server" CssClass="form-control" placeholder="https://linkedin.com/in/username" MaxLength="300" pattern="^https?://([a-zA-Z0-9-]+\.)?linkedin\.com/.*$" title="Valid LinkedIn URL"></asp:TextBox>
                                                 </div>
                                             </div>
                                         </div>
@@ -154,9 +187,9 @@
 
                                 <!-- Change Password Box -->
                                 <div runat="server" id="div_changepasss" visible="false">
-                                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-secondary">
+                                    <div class="d-flex align-items-center mb-4 pb-3" style="border-bottom: 1px solid rgba(56, 189, 248, 0.18);">
                                         <i class="bi bi-shield-lock text-info mr-2" style="font-size: 1.4rem;"></i>
-                                        <h3 class="text-white font-weight-bold m-0">Change Security Password</h3>
+                                        <h3 class="text-white font-weight-bold m-0" style="font-size: 1.35rem;">Change Security Password</h3>
                                     </div>
 
                                     <div id="divError" class="auth-alert alert" runat="server" visible="false" role="alert" style="display:none;"></div>

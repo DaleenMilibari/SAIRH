@@ -107,6 +107,19 @@ namespace AIE
         // Input normalization & validation
         // ------------------------------------------------------------------
 
+        // Strictly letters (uppercase and lowercase English letters and Arabic letters) and whitespace
+        private static readonly Regex LettersOnlyRegex = new Regex(@"^[a-zA-Z\u0600-\u06FF\s]+$", RegexOptions.Compiled);
+
+        // Safe RFC email regex disallowing injection/malicious tokens
+        private static readonly Regex SafeEmailRegex = new Regex(
+            @"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$",
+            RegexOptions.Compiled);
+
+        // LinkedIn profile or company URL pattern
+        private static readonly Regex LinkedInRegex = new Regex(
+            @"^https?://([a-zA-Z0-9-]+\.)?linkedin\.com/(in|company|pub|school)/[a-zA-Z0-9_/%-]+(?:\?[a-zA-Z0-9_=&%-]+)?$",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         public static string NormalizeEmail(string email)
         {
             return (email ?? string.Empty).Trim().ToLowerInvariant();
@@ -130,24 +143,125 @@ namespace AIE
             return sb.ToString();
         }
 
+        public static string NormalizeMobile(string countryCode, string nationalNumber)
+        {
+            countryCode = (countryCode ?? string.Empty).Trim();
+            string cleanNational = NormalizeMobile(nationalNumber);
+
+            // Strip leading zero if country code selected
+            if (!string.IsNullOrEmpty(countryCode) && cleanNational.StartsWith("0"))
+            {
+                cleanNational = cleanNational.Substring(1);
+            }
+
+            // Strip duplicate country code if typed in national input
+            if (!string.IsNullOrEmpty(countryCode) && countryCode.StartsWith("+"))
+            {
+                string numOnly = countryCode.Substring(1);
+                if (cleanNational.StartsWith(countryCode))
+                {
+                    cleanNational = cleanNational.Substring(countryCode.Length);
+                }
+                else if (cleanNational.StartsWith(numOnly))
+                {
+                    cleanNational = cleanNational.Substring(numOnly.Length);
+                }
+            }
+
+            if (string.IsNullOrEmpty(cleanNational)) return string.Empty;
+
+            if (string.IsNullOrEmpty(countryCode))
+            {
+                return cleanNational.StartsWith("+") ? cleanNational : "+" + cleanNational;
+            }
+
+            return countryCode + cleanNational;
+        }
+
         public static string ValidateFullName(string fullName)
         {
-            if (string.IsNullOrEmpty(fullName) || fullName.Length < 2) return "NameRequired";
+            if (string.IsNullOrWhiteSpace(fullName) || fullName.Trim().Length < 2) return "NameRequired";
             if (fullName.Length > MaxFullNameLength) return "NameTooLong";
+            if (!LettersOnlyRegex.IsMatch(fullName.Trim())) return "NameLettersOnly";
+            return null;
+        }
+
+        public static string ValidatePosition(string position)
+        {
+            if (string.IsNullOrWhiteSpace(position)) return null; // Optional
+            if (position.Length > 150) return "PositionTooLong";
+            if (!LettersOnlyRegex.IsMatch(position.Trim())) return "PositionLettersOnly";
+            return null;
+        }
+
+        public static string ValidateField(string field)
+        {
+            if (string.IsNullOrWhiteSpace(field)) return null; // Optional
+            if (field.Length > 150) return "FieldTooLong";
+            if (!LettersOnlyRegex.IsMatch(field.Trim())) return "FieldLettersOnly";
+            return null;
+        }
+
+        public static string ValidateOrganization(string organization)
+        {
+            if (string.IsNullOrWhiteSpace(organization)) return null; // Optional
+            if (organization.Length > 200) return "OrganizationTooLong";
+            if (!LettersOnlyRegex.IsMatch(organization.Trim())) return "OrganizationLettersOnly";
             return null;
         }
 
         public static string ValidateEmail(string email)
         {
-            if (string.IsNullOrEmpty(email)) return "EmailRequired";
-            if (email.Length > MaxEmailLength || !Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$")) return "EmailInvalid";
+            if (string.IsNullOrWhiteSpace(email)) return "EmailRequired";
+            if (email.Length > MaxEmailLength) return "EmailInvalid";
+            // Strictly disallow control characters, newlines, and HTML/SQL injection tokens
+            if (email.IndexOfAny(new[] { '<', '>', '"', '\'', '\\', '\r', '\n', '\0', ';' }) >= 0) return "EmailInvalid";
+            if (!SafeEmailRegex.IsMatch(email)) return "EmailInvalid";
+            return null;
+        }
+
+        public static string ValidateLinkedIn(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return null; // Optional
+            if (url.Length > 300) return "LinkedInTooLong";
+
+            // Block script schemes, HTML tags, quotes, and dangerous injection characters
+            if (url.IndexOfAny(new[] { '<', '>', '"', '\'', ';', '(', ')', '{', '}', '[', ']', '\\' }) >= 0)
+                return "LinkedInInvalid";
+
+            string clean = url.Trim();
+            if (Regex.IsMatch(clean, @"^(javascript|data|vbscript|file|about|blob):", RegexOptions.IgnoreCase))
+                return "LinkedInInvalid";
+
+            if (!clean.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                !clean.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                if (Regex.IsMatch(clean, @"^(?:www\.)?linkedin\.com", RegexOptions.IgnoreCase) || clean.StartsWith("in/", StringComparison.OrdinalIgnoreCase))
+                {
+                    clean = "https://" + (clean.StartsWith("in/", StringComparison.OrdinalIgnoreCase) ? "linkedin.com/" + clean : clean);
+                }
+                else if (!clean.Contains("/") && !clean.Contains("."))
+                {
+                    clean = "https://linkedin.com/in/" + clean;
+                }
+                else
+                {
+                    clean = "https://" + clean;
+                }
+            }
+
+            if (!LinkedInRegex.IsMatch(clean)) return "LinkedInInvalid";
             return null;
         }
 
         public static string ValidateMobile(string mobile)
         {
             if (string.IsNullOrEmpty(mobile)) return null;
-            return Regex.IsMatch(mobile, @"^\+?[0-9]{7,15}$") ? null : "MobileInvalid";
+            if (mobile.StartsWith("+966"))
+            {
+                return Regex.IsMatch(mobile, @"^\+9665[0-9]{8}$") ? null : "MobileInvalid";
+            }
+            return Regex.IsMatch(mobile, @"^\+[1-9][0-9]{6,14}$") ? null : "MobileInvalid";
         }
 
         public static List<string> ValidatePasswordStrength(string password, string email, string fullName = null)
@@ -249,12 +363,16 @@ namespace AIE
             return errors.Count > 0 ? errors[0] : null;
         }
 
-        public static List<string> ValidateRegistration(string fullName, string email, string mobile, string password, string confirmPassword)
+        public static List<string> ValidateRegistration(
+            string fullName, string email, string mobile, string password, string confirmPassword,
+            string organization = null, string jobTitle = null)
         {
             var errors = new List<string>();
             AddIfError(errors, ValidateFullName(fullName));
             AddIfError(errors, ValidateEmail(email));
             AddIfError(errors, ValidateMobile(mobile));
+            AddIfError(errors, ValidateOrganization(organization));
+            AddIfError(errors, ValidatePosition(jobTitle));
             errors.AddRange(ValidatePasswordStrength(password, email, fullName));
             if (!string.IsNullOrEmpty(password) && !string.Equals(password, confirmPassword, StringComparison.Ordinal))
                 errors.Add("PasswordMismatch");
@@ -1425,6 +1543,15 @@ namespace AIE
             // code                     English                                                                          Arabic
             { "NameRequired",          new[] { "Please enter your full name.",                                          "يرجى إدخال اسمك الكامل." } },
             { "NameTooLong",           new[] { "Full name must be 150 characters or fewer.",                             "يجب ألا يتجاوز الاسم الكامل 150 حرفاً." } },
+            { "NameLettersOnly",       new[] { "Full name must contain letters only (uppercase and lowercase).",        "يجب أن يحتوي الاسم الكامل على أحرف فقط (كبيرة وصغيرة)." } },
+            { "PositionLettersOnly",   new[] { "Position / Job title must contain letters only (uppercase and lowercase).", "يجب أن يحتوي المسمى الوظيفي على أحرف فقط." } },
+            { "FieldLettersOnly",      new[] { "Field / Specialty must contain letters only (uppercase and lowercase).", "يجب أن يحتوي مجال التخصص على أحرف فقط." } },
+            { "OrganizationLettersOnly", new[] { "Organization must contain letters only (uppercase and lowercase).",   "يجب أن تحتوي جهة العمل / المنظمة على أحرف فقط." } },
+            { "PositionTooLong",       new[] { "Position / Job title must be 150 characters or fewer.",                  "يجب ألا يتجاوز المسمى الوظيفي 150 حرفاً." } },
+            { "FieldTooLong",          new[] { "Field / Specialty must be 150 characters or fewer.",                     "يجب ألا يتجاوز التخصص 150 حرفاً." } },
+            { "OrganizationTooLong",   new[] { "Organization must be 200 characters or fewer.",                         "يجب ألا تتجاوز جهة العمل 200 حرفاً." } },
+            { "LinkedInInvalid",       new[] { "Please enter a valid LinkedIn URL (e.g. https://linkedin.com/in/username).", "يرجى إدخال رابط لينكد إن صحيح (مثال: https://linkedin.com/in/username)." } },
+            { "LinkedInTooLong",       new[] { "LinkedIn URL must be 300 characters or fewer.",                         "يجب ألا يتجاوز رابط لينكد إن 300 حرف." } },
             { "EmailRequired",         new[] { "Please enter your email address.",                                      "يرجى إدخال بريدك الإلكتروني." } },
             { "EmailInvalid",          new[] { "Please enter a valid email address, e.g. name@example.com.",            "يرجى إدخال بريد إلكتروني صحيح، مثل name@example.com." } },
             { "MobileInvalid",         new[] { "Please enter a valid mobile number (digits only, may start with +).",   "يرجى إدخال رقم جوال صحيح (أرقام فقط، ويمكن أن يبدأ بـ +)." } },

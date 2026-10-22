@@ -82,8 +82,16 @@ namespace AIE.Controllers
             string mobile = AuthService.NormalizeMobile(req.MobileNo);
             string password = req.Password ?? string.Empty;
             string confirmPassword = req.ConfirmPassword ?? string.Empty;
+            string organization = (req.Organization ?? string.Empty).Trim();
+            string jobTitle = (req.JobTitle ?? string.Empty).Trim();
+            string specialty = (req.Specialty ?? string.Empty).Trim();
+            string linkedIn = (req.LinkedInUrl ?? string.Empty).Trim();
 
-            List<string> errors = AuthService.ValidateRegistration(fullName, email, mobile, password, confirmPassword);
+            List<string> errors = AuthService.ValidateRegistration(
+                fullName, email, mobile, password, confirmPassword, organization, jobTitle);
+            AuthService.AddIfError(errors, AuthService.ValidateField(specialty));
+            AuthService.AddIfError(errors, AuthService.ValidateLinkedIn(linkedIn));
+
             if (errors.Count > 0)
             {
                 var errorTexts = new List<string>();
@@ -96,7 +104,7 @@ namespace AIE.Controllers
                 AuthService.Account account;
                 var status = AuthService.Register(
                     fullName, email, mobile, password,
-                    req.Organization, req.JobTitle, req.Specialty, req.LinkedInUrl, req.CountryID,
+                    organization, jobTitle, specialty, linkedIn, req.CountryID,
                     out account);
 
                 if (status == AuthService.RegisterStatus.EmailTaken)
@@ -148,6 +156,24 @@ namespace AIE.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, new {
                     success = false,
                     error = AuthMessages.Get("CredentialsRequired", false)
+                });
+            }
+
+            string emailErr = AuthService.ValidateEmail(email);
+            if (emailErr != null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, new {
+                    success = false,
+                    error = AuthMessages.Get(emailErr, false)
+                });
+            }
+
+            if (password.Length > AuthService.MaxPasswordLength || password.Contains('\0'))
+            {
+                return Request.CreateResponse(HttpStatusCode.Unauthorized, new {
+                    success = false,
+                    error = AuthMessages.Get("InvalidCredentials", false),
+                    code = "InvalidCredentials"
                 });
             }
 
@@ -273,11 +299,44 @@ namespace AIE.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest, new { error = AuthMessages.Get(mobileErr, false) });
             }
 
+            string org = (req.Organization ?? string.Empty).Trim();
+            string orgErr = AuthService.ValidateOrganization(org);
+            if (orgErr != null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, new { error = AuthMessages.Get(orgErr, false) });
+            }
+
+            string jobTitle = (req.JobTitle ?? string.Empty).Trim();
+            string jobErr = AuthService.ValidatePosition(jobTitle);
+            if (jobErr != null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, new { error = AuthMessages.Get(jobErr, false) });
+            }
+
+            string specialty = (req.Specialty ?? string.Empty).Trim();
+            string specErr = AuthService.ValidateField(specialty);
+            if (specErr != null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, new { error = AuthMessages.Get(specErr, false) });
+            }
+
+            string linkedIn = (req.LinkedInUrl ?? string.Empty).Trim();
+            string linkedInErr = AuthService.ValidateLinkedIn(linkedIn);
+            if (linkedInErr != null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest, new { error = AuthMessages.Get(linkedInErr, false) });
+            }
+
+            if (!string.IsNullOrEmpty(linkedIn) && !linkedIn.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !linkedIn.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                linkedIn = "https://" + linkedIn;
+            }
+
             try
             {
                 AuthService.UpdateProfile(
                     user.UserID, name, mobile,
-                    req.Organization, req.JobTitle, req.Specialty, req.LinkedInUrl, req.CountryID);
+                    org, jobTitle, specialty, linkedIn, req.CountryID);
 
                 var updated = AuthService.GetById(user.UserID);
                 return Request.CreateResponse(HttpStatusCode.OK, new {

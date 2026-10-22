@@ -4,22 +4,19 @@
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
-    <!-- Header -->
-    <section class="py-5 simpler-main-bg" aria-label="الملف الشخصي">
-        <div class="container text-center pt-4 pb-2">
-            <h1 class="text-white font-weight-bold display-4 mb-3">
-                الملف الشخصي
-            </h1>
-            <div style="width: 80px; height: 3px; background: linear-gradient(90deg, #38bdf8, #2563eb); margin: 0 auto; border-radius: 2px;"></div>
-        </div>
-    </section>
-
-    <!-- Main Content -->
-    <section class="py-5" aria-label="إدارة الحساب">
+    <!-- Profile Page Container -->
+    <section class="profile-page-section" aria-label="إدارة الملف الشخصي">
         <div class="container">
+            <!-- Header Title -->
+            <div class="profile-page-header text-center mb-4">
+                <h1 class="text-white font-weight-bold mb-2">الملف الشخصي</h1>
+                <p class="text-secondary small mb-3">إدارة بيانات الحضور، معلومات الاتصال، وخيارات القمة الخاصة بك.</p>
+                <div style="width: 60px; height: 3px; background: linear-gradient(90deg, #38bdf8, #2563eb); margin: 0 auto; border-radius: 2px;"></div>
+            </div>
+
             <asp:UpdatePanel ID="UpdatePanel1" runat="server">
                 <ContentTemplate>
-                    <div class="row">
+                    <div class="row align-items-start">
                         <!-- Sidebar Card -->
                         <div class="col-lg-4 mb-4 mb-lg-0">
                             <div class="profile-user-card text-center">
@@ -30,21 +27,21 @@
                                 <h3 class="text-white font-weight-bold mb-1">
                                     <asp:Label ID="LblName" runat="server" Text="اسم المشترك"></asp:Label>
                                 </h3>
-                                <div class="mb-2">
-                                    <asp:Label ID="LblUserRoleBadge" runat="server" CssClass="badge badge-info" Text="مشترك"></asp:Label>
+                                <div class="mb-3">
+                                    <asp:Label ID="LblUserRoleBadge" runat="server" CssClass="profile-role-badge" Text="مشترك"></asp:Label>
                                 </div>
                                 <p class="text-info mb-1 font-weight-semibold small" id="pOrgTitle" runat="server" visible="false">
                                     <i class="bi bi-building ml-1"></i> <asp:Label ID="LblOrgTitle" runat="server" Text=""></asp:Label>
                                 </p>
-                                <p class="text-secondary mb-1 small">
-                                    <i class="bi bi-telephone ml-1"></i> <asp:Label ID="TxtMobile" runat="server" Text="-"></asp:Label>
+                                <p class="text-secondary mb-1 small d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-telephone ml-2 text-info"></i> <asp:Label ID="TxtMobile" runat="server" Text="-"></asp:Label>
                                 </p>
-                                <p class="text-secondary mb-3 small">
-                                    <i class="bi bi-envelope ml-1"></i> <asp:Label ID="TxtEmail" runat="server" Text="-"></asp:Label>
+                                <p class="text-secondary mb-3 small d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-envelope ml-2 text-info"></i> <asp:Label ID="TxtEmail" runat="server" Text="-"></asp:Label>
                                 </p>
 
                                 <div class="mt-4">
-                                    <asp:LinkButton ID="BtnShowProfile" runat="server" CssClass="profile-nav-btn" OnClick="BtnShowProfile_Click">
+                                    <asp:LinkButton ID="BtnShowProfile" runat="server" CssClass="profile-nav-btn active" OnClick="BtnShowProfile_Click">
                                         <i class="bi bi-person-gear"></i> تعديل البيانات الشخصية
                                     </asp:LinkButton>
                                     <asp:LinkButton ID="BtnShowChangePass" runat="server" CssClass="profile-nav-btn" OnClick="BtnShowChangePass_Click">
@@ -89,9 +86,9 @@
                             <div class="glass-card p-4">
                                 <!-- Edit Profile Box -->
                                 <div runat="server" id="div_editprofile" visible="true">
-                                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-secondary">
+                                    <div class="d-flex align-items-center mb-4 pb-3" style="border-bottom: 1px solid rgba(56, 189, 248, 0.18);">
                                         <i class="bi bi-person-badge text-info ml-2" style="font-size: 1.4rem;"></i>
-                                        <h3 class="text-white font-weight-bold m-0">تعديل البيانات الشخصية</h3>
+                                        <h3 class="text-white font-weight-bold m-0" style="font-size: 1.35rem;">تعديل البيانات الشخصية</h3>
                                     </div>
 
                                     <div id="divErrorProfile" class="auth-alert alert" runat="server" visible="false" role="alert" style="display:none;"></div>
@@ -101,14 +98,50 @@
                                             <label for="<%= TxtEditFullName.ClientID %>" class="auth-label">
                                                 <i class="bi bi-person ml-1 text-info"></i> الاسم الكامل
                                             </label>
-                                            <asp:TextBox ID="TxtEditFullName" runat="server" CssClass="form-control" placeholder="أدخل اسمك الكامل" autocomplete="name" required="required" MaxLength="100"></asp:TextBox>
+                                            <asp:TextBox ID="TxtEditFullName" runat="server" CssClass="form-control" placeholder="أدخل اسمك الكامل" autocomplete="name" required="required" MaxLength="100" pattern="^[a-zA-Z\u0600-\u06FF\s]+$" title="أحرف فقط (كبيرة وصغيرة)"></asp:TextBox>
                                         </div>
 
                                         <div class="auth-field">
-                                            <label for="<%= TxtEditMobile.ClientID %>" class="auth-label">
-                                                <i class="bi bi-telephone ml-1 text-info"></i> رقم الجوال
-                                            </label>
-                                            <asp:TextBox ID="TxtEditMobile" runat="server" TextMode="Phone" CssClass="form-control" placeholder="مثال: 0501234567 أو +966 50 123 4567" autocomplete="tel" MaxLength="25"></asp:TextBox>
+                                            <div class="auth-row-between">
+                                                <label for="<%= TxtEditMobile.ClientID %>" class="auth-label">
+                                                    <i class="bi bi-telephone ml-1 text-info"></i> رقم الجوال
+                                                </label>
+                                                <span class="auth-optional">اختياري</span>
+                                            </div>
+                                            <div class="phone-input-group">
+                                                <div class="phone-country-dropdown-wrap">
+                                                    <select id="DdlEditCountryCode" name="DdlEditCountryCode" class="phone-country-select" aria-label="رمز الدولة" autocomplete="tel-country-code">
+                                                        <option value="+966" selected="selected">🇸🇦 +966 (السعودية)</option>
+                                                        <option value="+971">🇦🇪 +971 (الإمارات)</option>
+                                                        <option value="+965">🇰🇼 +965 (الكويت)</option>
+                                                        <option value="+973">🇧🇭 +973 (البحرين)</option>
+                                                        <option value="+974">🇶🇦 +974 (قطر)</option>
+                                                        <option value="+968">🇴🇲 +968 (عُمان)</option>
+                                                        <option value="+20">🇪🇬 +20 (مصر)</option>
+                                                        <option value="+962">🇯🇴 +962 (الأردن)</option>
+                                                        <option value="+961">🇱🇧 +961 (لبنان)</option>
+                                                        <option value="+964">🇮🇶 +964 (العراق)</option>
+                                                        <option value="+967">🇾🇪 +967 (اليمن)</option>
+                                                        <option value="+44">🇬🇧 +44 (المملكة المتحدة)</option>
+                                                        <option value="+1">🇺🇸 +1 (أمريكا / كندا)</option>
+                                                        <option value="+49">🇩🇪 +49 (ألمانيا)</option>
+                                                        <option value="+33">🇫🇷 +33 (فرنسا)</option>
+                                                        <option value="+90">🇹🇷 +90 (تركيا)</option>
+                                                        <option value="+91">🇮🇳 +91 (الهند)</option>
+                                                        <option value="+92">🇵🇰 +92 (باكستان)</option>
+                                                        <option value="+60">🇲🇾 +60 (ماليزيا)</option>
+                                                        <option value="+65">🇸🇬 +65 (سنغافورة)</option>
+                                                        <option value="+61">🇦🇺 +61 (أستراليا)</option>
+                                                        <option value="">🌐 أخرى / دولي مخصص</option>
+                                                    </select>
+                                                    <i class="bi bi-chevron-down phone-dropdown-arrow" aria-hidden="true"></i>
+                                                </div>
+                                                <div class="phone-number-wrap">
+                                                    <asp:TextBox ID="TxtEditMobile" runat="server" TextMode="Phone" CssClass="form-control phone-number-input" placeholder="50 123 4567" autocomplete="tel-national" MaxLength="15"></asp:TextBox>
+                                                </div>
+                                            </div>
+                                            <small class="auth-hint phone-hint" id="phoneHintEdit">صيغة الجوال السعودي: 50 123 4567 (9 أرقام)</small>
+                                            <div class="phone-validation-feedback" id="phoneFeedbackEdit" style="display: none;"></div>
                                         </div>
 
                                         <div class="row">
@@ -117,7 +150,7 @@
                                                     <label for="<%= TxtEditOrg.ClientID %>" class="auth-label">
                                                         <i class="bi bi-building ml-1 text-info"></i> جهة العمل / المنظمة
                                                     </label>
-                                                    <asp:TextBox ID="TxtEditOrg" runat="server" CssClass="form-control" placeholder="مستشفى / جامعة / شركة" autocomplete="organization" MaxLength="200"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtEditOrg" runat="server" CssClass="form-control" placeholder="مستشفى / جامعة / شركة" autocomplete="organization" MaxLength="200" pattern="^[a-zA-Z\u0600-\u06FF\s]*$" title="أحرف فقط (كبيرة وصغيرة)"></asp:TextBox>
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
@@ -125,7 +158,7 @@
                                                     <label for="<%= TxtEditJobTitle.ClientID %>" class="auth-label">
                                                         <i class="bi bi-briefcase ml-1 text-info"></i> المسمى الوظيفي / الدور
                                                     </label>
-                                                    <asp:TextBox ID="TxtEditJobTitle" runat="server" CssClass="form-control" placeholder="مثال: استشاري أشعة" MaxLength="150"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtEditJobTitle" runat="server" CssClass="form-control" placeholder="مثال: استشاري أشعة" MaxLength="150" pattern="^[a-zA-Z\u0600-\u06FF\s]*$" title="أحرف فقط (كبيرة وصغيرة)"></asp:TextBox>
                                                 </div>
                                             </div>
                                         </div>
@@ -136,7 +169,7 @@
                                                     <label for="<%= TxtEditSpecialty.ClientID %>" class="auth-label">
                                                         <i class="bi bi-award ml-1 text-info"></i> التخصص / المجال الدقيق
                                                     </label>
-                                                    <asp:TextBox ID="TxtEditSpecialty" runat="server" CssClass="form-control" placeholder="مثال: أشعة الأعصاب، الذكاء الاصطناعي الصحي" MaxLength="150"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtEditSpecialty" runat="server" CssClass="form-control" placeholder="مثال: أشعة الأعصاب، الذكاء الاصطناعي الصحي" MaxLength="150" pattern="^[a-zA-Z\u0600-\u06FF\s]*$" title="أحرف فقط (كبيرة وصغيرة)"></asp:TextBox>
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
@@ -144,7 +177,7 @@
                                                     <label for="<%= TxtEditLinkedIn.ClientID %>" class="auth-label">
                                                         <i class="bi bi-linkedin ml-1 text-info"></i> رابط حساب لينكد إن
                                                     </label>
-                                                    <asp:TextBox ID="TxtEditLinkedIn" runat="server" CssClass="form-control" placeholder="https://linkedin.com/in/username" MaxLength="300"></asp:TextBox>
+                                                    <asp:TextBox ID="TxtEditLinkedIn" runat="server" CssClass="form-control" placeholder="https://linkedin.com/in/username" MaxLength="300" pattern="^https?://([a-zA-Z0-9-]+\.)?linkedin\.com/.*$" title="رابط لينكد إن صالح"></asp:TextBox>
                                                 </div>
                                             </div>
                                         </div>
@@ -157,9 +190,9 @@
 
                                 <!-- Change Password Box -->
                                 <div runat="server" id="div_changepasss" visible="false">
-                                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-secondary">
+                                    <div class="d-flex align-items-center mb-4 pb-3" style="border-bottom: 1px solid rgba(56, 189, 248, 0.18);">
                                         <i class="bi bi-shield-lock text-info ml-2" style="font-size: 1.4rem;"></i>
-                                        <h3 class="text-white font-weight-bold m-0">تغيير كلمة المرور</h3>
+                                        <h3 class="text-white font-weight-bold m-0" style="font-size: 1.35rem;">تغيير كلمة المرور</h3>
                                     </div>
 
                                     <div id="divError" class="auth-alert alert" runat="server" visible="false" role="alert" style="display:none;"></div>

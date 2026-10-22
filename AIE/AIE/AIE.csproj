@@ -944,6 +944,8 @@
     <Content Include="Content\images\background\footer.png" />
     <Content Include="Content\images\background\hero-ai-bg.png" />
     <Content Include="Content\images\background\SAIRH_logo_transparent.svg" />
+    <Content Include="Content\images\background\SAIRH_logo_en.svg" />
+    <Content Include="Content\images\background\SAIRH_logo_ar.svg" />
     <Content Include="Content\images\mbs-portrait.jpg" />
     <Content Include="Content\images\year-of-ai-2026-logo.png" />
     <Content Include="Content\images\year-of-ai-2026-logo-white.png" />

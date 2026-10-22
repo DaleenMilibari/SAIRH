@@ -44,6 +44,237 @@ const COMMON_PASSWORDS = new Set([
 const USERS_FILE = path.join(BASE_DIR, 'mock_users.json');
 let DEV_USERS = {};
 
+// Database Connection (SQL Server on localhost:14333) & Dynamic Data Providers
+let sql = null;
+let dbPool = null;
+
+try {
+  sql = require('mssql');
+} catch (e) {
+  console.info("[SAIRH DB] 'mssql' package not installed in Node.js. Running in local fallback storage mode.");
+}
+
+function getDbConfigCandidates() {
+  const candidates = [];
+
+  // 1. Try reading Web.config
+  const webConfigPath = path.join(BASE_DIR, 'Web.config');
+  if (fs.existsSync(webConfigPath)) {
+    try {
+      const content = fs.readFileSync(webConfigPath, 'utf8');
+      const m = content.match(/name=["']AIEConnectionString["']\s+connectionString=["']([^"']+)["']/i);
+      if (m) {
+        const parts = {};
+        m[1].split(';').forEach(p => {
+          const idx = p.indexOf('=');
+          if (idx > -1) parts[p.slice(0, idx).trim().toLowerCase()] = p.slice(idx + 1).trim();
+        });
+        const serverRaw = parts['server'] || parts['data source'] || 'localhost';
+        let host = serverRaw;
+        let port = 14333;
+        if (host.includes(',')) {
+          const split = host.split(',');
+          host = split[0].trim();
+          port = parseInt(split[1].trim(), 10) || 14333;
+        } else if (host.includes(':')) {
+          const split = host.split(':');
+          host = split[0].trim();
+          port = parseInt(split[1].trim(), 10) || 14333;
+        }
+        candidates.push({
+          user: parts['user id'] || parts['uid'] || 'sa',
+          password: parts['password'] || parts['pwd'] || 'SAdaleenRH@1013',
+          server: host,
+          port: port,
+          database: parts['database'] || parts['initial catalog'] || 'SAIRH',
+          options: { trustServerCertificate: true, encrypt: false, connectTimeout: 4000 }
+        });
+      }
+    } catch (e) {}
+  }
+
+  // 2. Default SAIRH config on 14333
+  candidates.push({
+    user: 'sa',
+    password: process.env.SA_PASSWORD || 'SAdaleenRH@1013',
+    server: process.env.DB_SERVER || 'localhost',
+    port: parseInt(process.env.DB_PORT || '14333', 10),
+    database: process.env.DB_DATABASE || 'SAIRH',
+    options: { trustServerCertificate: true, encrypt: false, connectTimeout: 4000 }
+  });
+
+  // 3. Fallback database name SAIRH_DB
+  candidates.push({
+    user: 'sa',
+    password: process.env.SA_PASSWORD || 'SairhPass2026!',
+    server: 'localhost',
+    port: 14333,
+    database: 'SAIRH_DB',
+    options: { trustServerCertificate: true, encrypt: false, connectTimeout: 4000 }
+  });
+
+  return candidates;
+}
+
+let connectingPromise = null;
+async function getDbPool() {
+  if (dbPool && dbPool.connected) return dbPool;
+  if (connectingPromise) return connectingPromise;
+
+  connectingPromise = (async () => {
+    if (!sql) {
+      try { sql = require('mssql'); } catch (e) { return null; }
+    }
+    const candidates = getDbConfigCandidates();
+    for (const cfg of candidates) {
+      try {
+        const pool = await new sql.ConnectionPool(cfg).connect();
+        dbPool = pool;
+        console.log(`[SAIRH DB] Connected successfully to SQL Server (${cfg.server}:${cfg.port}/${cfg.database})!`);
+        syncMockUsersToDatabase(pool).catch(() => {});
+        return dbPool;
+      } catch (err) {
+        // try next candidate
+      }
+    }
+    return null;
+  })();
+
+  try {
+    const res = await connectingPromise;
+    connectingPromise = null;
+    return res;
+  } catch (err) {
+    connectingPromise = null;
+    return null;
+  }
+}
+
+// Initial connection attempt on startup
+if (sql) {
+  getDbPool().catch(err => {
+    console.warn('[SAIRH DB] Initial connection notice:', err.message);
+  });
+}
+
+function computeInitials(name) {
+  if (!name || typeof name !== 'string') return 'SP';
+  const clean = name.replace(/^(Dr\.|Prof\.|Mr\.|Ms\.|Eng\.|د\.|أ\.|م\.|بروفيسور\.)\s*/i, '').trim();
+  const parts = clean.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  if (parts.length === 1 && parts[0].length >= 2) {
+    return parts[0].substring(0, 2).toUpperCase();
+  }
+  return 'SP';
+}
+
+async function getLiveSpeakersDataset() {
+  const pool = await getDbPool();
+  if (pool && sql) {
+    try {
+      const query = `
+        IF OBJECT_ID(N'[dbo].[vw_SummitSpeakers]', N'V') IS NOT NULL
+        BEGIN
+            SELECT * FROM [dbo].[vw_SummitSpeakers] ORDER BY [Sorting] ASC, [SpeakerID] ASC;
+        END
+        ELSE IF OBJECT_ID(N'[dbo].[Sessions]', N'U') IS NOT NULL
+        BEGIN
+            SELECT s.*, 
+                   sess.[SessionID],
+                   sess.[TitleEn] AS [LectureTitleEn],
+                   sess.[TitleAr] AS [LectureTitleAr],
+                   sess.[Track] AS [Track],
+                   sess.[TrackNameEn] AS [TrackNameEn],
+                   sess.[TrackNameAr] AS [TrackNameAr],
+                   sess.[RoomEn], sess.[RoomAr],
+                   sess.[DayNumber], sess.[StartTime], sess.[EndTime],
+                   sess.[RoleEn] AS [SessionRoleEn], sess.[RoleAr] AS [SessionRoleAr]
+            FROM [dbo].[Speakers] s
+            LEFT JOIN [dbo].[Sessions] sess ON s.[SpeakerID] = sess.[SpeakerID]
+            WHERE s.[IsActive] = 1
+            ORDER BY s.[Sorting] ASC, s.[SpeakerID] ASC;
+        END
+        ELSE
+        BEGIN
+            SELECT * FROM [dbo].[Speakers] WHERE [IsActive] = 1 ORDER BY [Sorting] ASC, [SpeakerID] ASC;
+        END
+      `;
+      const result = await pool.request().query(query);
+      if (result.recordset && result.recordset.length > 0) {
+        const liveSpeakers = result.recordset;
+        // Asynchronously update speakers.json cache so file fallback is always fresh
+        try {
+          const speakersJsonPath = path.join(BASE_DIR, 'Content', 'data', 'speakers.json');
+          fs.writeFile(speakersJsonPath, JSON.stringify(liveSpeakers, null, 2), 'utf8', () => {});
+        } catch (e) {}
+        return {
+          speakers: liveSpeakers,
+          source: 'Live SQL Server database (dbo.vw_SummitSpeakers)',
+          fromDb: true
+        };
+      }
+    } catch (err) {
+      console.warn('[SAIRH DB] Error querying live speakers from SQL Server:', err.message);
+    }
+  }
+
+  // Fallback to speakers.json
+  const speakersJsonPath = path.join(BASE_DIR, 'Content', 'data', 'speakers.json');
+  if (fs.existsSync(speakersJsonPath)) {
+    try {
+      const spList = JSON.parse(fs.readFileSync(speakersJsonPath, 'utf8'));
+      return {
+        speakers: spList,
+        source: 'static speakers.json cache',
+        fromDb: false
+      };
+    } catch (err) {
+      console.error('Error reading speakers.json:', err);
+    }
+  }
+  return { speakers: [], source: 'empty', fromDb: false };
+}
+
+async function syncMockUsersToDatabase(pool) {
+  if (!pool || !sql) return;
+  try {
+    for (const [email, u] of Object.entries(DEV_USERS)) {
+      if (!u || !email) continue;
+      const cleanEmail = email.trim().toLowerCase();
+      const chk = await pool.request()
+        .input('Email', sql.VarChar, cleanEmail)
+        .query('SELECT COUNT(1) AS cnt FROM dbo.Attendees WHERE Email = @Email');
+
+      if (chk.recordset[0].cnt === 0) {
+        const passCode = 'PASS-' + Math.floor(100000 + Math.random() * 900000);
+        await pool.request()
+          .input('FullName', sql.NVarChar, u.fullName || 'Attendee')
+          .input('Email', sql.VarChar, cleanEmail)
+          .input('MobileNo', sql.VarChar, u.mobile || '')
+          .input('PasswordHash', sql.NVarChar, u.passwordHash || '')
+          .input('Organization', sql.NVarChar, u.organization || '')
+          .input('JobTitle', sql.NVarChar, u.jobTitle || '')
+          .input('UserLevel', sql.VarChar, u.role === 'Administrator' ? 'Admin' : 'User')
+          .input('PassCode', sql.VarChar, passCode)
+          .query(`
+            INSERT INTO dbo.Attendees (
+              FullName, Email, MobileNo, PasswordHash, Organization, JobTitle,
+              UserLevel, PassCode, IsBlocked, IsEmailVerified, SecurityStamp, RegisteredAt, UpdatedAtUtc
+            ) VALUES (
+              @FullName, @Email, @MobileNo, @PasswordHash, @Organization, @JobTitle,
+              @UserLevel, @PassCode, 0, 1, NEWID(), GETDATE(), SYSUTCDATETIME()
+            )
+          `);
+        console.log(`[SAIRH DB] Synced existing account '${cleanEmail}' into SQL Server dbo.Attendees!`);
+      }
+    }
+  } catch (err) {
+    console.warn('[SAIRH DB] syncMockUsersToDatabase warning:', err.message);
+  }
+}
+
 try {
   if (fs.existsSync(USERS_FILE)) {
     DEV_USERS = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
@@ -522,6 +753,217 @@ function buildClearSessionCookieHeader(req) {
   return header;
 }
 
+function escapeRegExp(str) {
+  if (!str) return '';
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+const LETTERS_ONLY_REGEX = /^[a-zA-Z\u0600-\u06FF\s]+$/;
+const SAFE_EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+const LINKEDIN_REGEX = /^https?:\/\/([a-zA-Z0-9-]+\.)?linkedin\.com\/(in|company|pub|school)\/[a-zA-Z0-9_/%-]+(?:\?[a-zA-Z0-9_=&%-]+)?$/i;
+
+function validateLettersOnly(val, minLen = 0, maxLen = 150) {
+  if (!val || typeof val !== 'string') return minLen === 0;
+  const trimmed = val.trim();
+  if (minLen > 0 && trimmed.length < minLen) return false;
+  if (maxLen > 0 && trimmed.length > maxLen) return false;
+  return LETTERS_ONLY_REGEX.test(trimmed);
+}
+
+function sanitizeLettersOnly(val, maxLen = 150) {
+  if (!val || typeof val !== 'string') return '';
+  let cleaned = val.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, '');
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  if (maxLen > 0) cleaned = cleaned.slice(0, maxLen);
+  return cleaned;
+}
+
+function validateEmailAddress(email) {
+  if (!email || typeof email !== 'string') return false;
+  const clean = email.trim();
+  if (clean.length < 5 || clean.length > 100) return false;
+  // Disallow injection characters: quotes, angle brackets, newlines, null bytes, backslashes, semicolons
+  if (/[<>"'\\\r\n\0;]/.test(clean)) return false;
+  return SAFE_EMAIL_REGEX.test(clean);
+}
+
+function sanitizeInput(val, maxLen = 200) {
+  if (!val || typeof val !== 'string') return '';
+  // Strip null bytes and ASCII control characters except tab and newline
+  let cleaned = val.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+  // Unicode normalization (NFKC)
+  try { cleaned = cleaned.normalize('NFKC'); } catch (_) {}
+  // Strip dangerous tag brackets to prevent stored HTML/XSS injection
+  cleaned = cleaned.replace(/[<>]/g, '');
+  cleaned = cleaned.trim();
+  if (maxLen > 0) {
+    cleaned = cleaned.slice(0, maxLen);
+  }
+  return cleaned;
+}
+
+function splitPhoneNumber(phone) {
+  if (!phone || typeof phone !== 'string') return { countryCode: '+966', nationalNumber: '' };
+  let p = phone.trim();
+  // Normalize Arabic/Persian digits
+  p = p.replace(/[\u0660-\u0669]/g, c => String(c.charCodeAt(0) - 0x0660))
+       .replace(/[\u06F0-\u06F9]/g, c => String(c.charCodeAt(0) - 0x06F0));
+
+  // Common international calling codes
+  const codes = ['+966', '+971', '+965', '+973', '+974', '+968', '+20', '+962', '+961', '+964', '+967', '+44', '+1', '+49', '+33', '+90', '+91', '+92', '+60', '+65', '+61'];
+  for (const code of codes) {
+    if (p.startsWith(code)) {
+      return { countryCode: code, nationalNumber: p.substring(code.length).replace(/^0+/, '') };
+    }
+  }
+
+  // Saudi local format (05XXXXXXXX -> 5XXXXXXXX)
+  if (/^0?5\d{8}$/.test(p)) {
+    return { countryCode: '+966', nationalNumber: p.replace(/^0/, '') };
+  }
+
+  if (p.startsWith('+')) {
+    return { countryCode: '', nationalNumber: p };
+  }
+
+  return { countryCode: '+966', nationalNumber: p.replace(/^0+/, '') };
+}
+
+function formatDisplayPhone(mobile) {
+  if (!mobile) return '-';
+  const clean = String(mobile).trim();
+  if (!clean || clean === '-') return '-';
+  if (clean.startsWith('+')) {
+    const split = splitPhoneNumber(clean);
+    if (split.countryCode && split.nationalNumber) {
+      if (split.countryCode === '+966' && split.nationalNumber.length === 9) {
+        return `+966 ${split.nationalNumber.slice(0, 2)} ${split.nationalNumber.slice(2, 5)} ${split.nationalNumber.slice(5)}`;
+      }
+      return `${split.countryCode} ${split.nationalNumber}`;
+    }
+    return clean;
+  }
+  if (/^0?5\d{8}$/.test(clean)) {
+    const digits = clean.replace(/^0/, '');
+    return `+966 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`;
+  }
+  return clean;
+}
+
+function normalizeAndValidatePhone(countryCode, nationalNumber, isArabic = false) {
+  countryCode = (countryCode || '').trim();
+  let raw = (nationalNumber || '').trim();
+
+  if (!raw) {
+    return { valid: true, fullPhone: '', error: null };
+  }
+
+  // Convert Arabic/Persian digits
+  raw = raw.replace(/[\u0660-\u0669]/g, c => String(c.charCodeAt(0) - 0x0660))
+           .replace(/[\u06F0-\u06F9]/g, c => String(c.charCodeAt(0) - 0x06F0));
+
+  // Strip spaces, dashes, parentheses
+  let digits = raw.replace(/[\s\-()]/g, '');
+
+  // Strip duplicate country prefix in national number
+  if (countryCode && countryCode.startsWith('+')) {
+    const codeNum = countryCode.substring(1);
+    if (digits.startsWith(countryCode)) {
+      digits = digits.substring(countryCode.length);
+    } else if (digits.startsWith(codeNum)) {
+      digits = digits.substring(codeNum.length);
+    }
+  }
+
+  // Strip leading 0 if country code is selected
+  if (countryCode && digits.startsWith('0')) {
+    digits = digits.substring(1);
+  }
+
+  // Validate only digits remain (or leading + for custom)
+  if (countryCode) {
+    if (!/^\d+$/.test(digits)) {
+      return {
+        valid: false,
+        fullPhone: '',
+        error: isArabic ? 'يجب أن يحتوي رقم الجوال على أرقام فقط.' : 'Phone number must contain digits only.'
+      };
+    }
+  } else {
+    // Custom/other
+    if (!/^\+?\d+$/.test(digits)) {
+      return {
+        valid: false,
+        fullPhone: '',
+        error: isArabic ? 'يرجى إدخال رقم هاتف دولي صحيح يتضمن رمز الدولة (+...)' : 'Please enter a valid international phone number (+...)'
+      };
+    }
+  }
+
+  // Validate according to country
+  if (countryCode === '+966') {
+    if (!/^5\d{8}$/.test(digits)) {
+      return {
+        valid: false,
+        fullPhone: '',
+        error: isArabic
+          ? 'يرجى إدخال رقم جوال سعودي صحيح يتكون من 9 أرقام ويبدأ بـ 5 (مثال: 501234567).'
+          : 'Please enter a valid 9-digit Saudi mobile starting with 5 (e.g. 50 123 4567).'
+      };
+    }
+    return { valid: true, fullPhone: '+966' + digits, error: null };
+  }
+
+  if (countryCode) {
+    const combined = countryCode + digits;
+    if (!/^\+[1-9]\d{6,14}$/.test(combined)) {
+      return {
+        valid: false,
+        fullPhone: '',
+        error: isArabic ? 'يرجى إدخال رقم هاتف دولي صالح يتراوح طوله بين 7 و 15 رقماً.' : 'Please enter a valid international phone number (7 to 15 digits).'
+      };
+    }
+    return { valid: true, fullPhone: combined, error: null };
+  }
+
+  // Custom
+  const full = digits.startsWith('+') ? digits : '+' + digits;
+  if (!/^\+[1-9]\d{6,14}$/.test(full)) {
+    return {
+      valid: false,
+      fullPhone: '',
+      error: isArabic ? 'يرجى إدخال رقم هاتف دولي صالح يتضمن مفتاح الدولة.' : 'Please enter a valid international phone number with country code.'
+    };
+  }
+  return { valid: true, fullPhone: full, error: null };
+}
+
+function validateLinkedInUrl(url) {
+  if (!url || typeof url !== 'string') return { valid: true, url: '' };
+  let clean = url.trim();
+  if (!clean) return { valid: true, url: '' };
+
+  // Reject dangerous protocols and characters outright to prevent stored/DOM XSS
+  if (/^(?:javascript|data|vbscript|file|about|blob):/i.test(clean) || /[<>"';(){}[\]\\]/.test(clean)) {
+    return { valid: false, url: '' };
+  }
+
+  if (!/^https?:\/\//i.test(clean)) {
+    if (/^(?:www\.)?linkedin\.com/i.test(clean) || /^in\//i.test(clean)) {
+      clean = 'https://' + (clean.startsWith('in/') ? 'linkedin.com/' + clean : clean);
+    } else if (clean.indexOf('/') === -1 && !clean.includes('.')) {
+      clean = 'https://linkedin.com/in/' + clean;
+    } else {
+      clean = 'https://' + clean;
+    }
+  }
+
+  if (clean.length > 300) return { valid: false, url: '' };
+  if (!LINKEDIN_REGEX.test(clean)) return { valid: false, url: '' };
+
+  return { valid: true, url: clean };
+}
+
 function getSafeReturnUrl(returnUrl, fallbackUrl) {
   if (!returnUrl || typeof returnUrl !== 'string') return fallbackUrl;
   const trimmed = returnUrl.trim();
@@ -630,7 +1072,7 @@ function render403AccessDenied(isAr) {
 </html>`;
 }
 
-function parseAspx(aspxPath, relativeUrl, options = {}) {
+async function parseAspx(aspxPath, relativeUrl, options = {}) {
   if (!fs.existsSync(aspxPath)) return null;
 
   const {
@@ -706,7 +1148,28 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
 
   // Handle Literal tags
   rendered = rendered.replace(/<asp:Literal[^>]*ID=["']LitUserName["'][^>]*>[\s\S]*?<\/asp:Literal>/gi, () => {
-    return user ? user.fullName : 'Attendee';
+    return user ? escapeHtml(user.fullName) : 'Attendee';
+  });
+
+  // Handle select country code dropdowns
+  rendered = rendered.replace(/<select\b([^>]*\bid=["'](DdlCountryCode|DdlEditCountryCode|DdlContactCountryCode)["'][^>]*)>([\s\S]*?)<\/select>/gi, (m, selectAttrs, selectId, optionsHtml) => {
+    let desiredCode = '+966';
+    if (formData && formData[selectId] !== undefined) {
+      desiredCode = formData[selectId];
+    } else if (selectId === 'DdlEditCountryCode' && user && user.mobile) {
+      desiredCode = splitPhoneNumber(user.mobile).countryCode || '+966';
+    } else if (selectId === 'DdlContactCountryCode' && user && user.mobile) {
+      desiredCode = splitPhoneNumber(user.mobile).countryCode || '+966';
+    }
+
+    let updatedOptions = optionsHtml.replace(/\s*selected(?:=["'][^"']*["'])?/gi, '');
+    const valPattern = new RegExp(`(<option\\b[^>]*value=["']${escapeRegExp(desiredCode)}["'][^>]*)>`, 'i');
+    if (valPattern.test(updatedOptions)) {
+      updatedOptions = updatedOptions.replace(valPattern, '$1 selected="selected">');
+    } else {
+      updatedOptions = updatedOptions.replace(/<option\b/i, '<option selected="selected"');
+    }
+    return `<select${selectAttrs}>${updatedOptions}</select>`;
   });
 
   // Replace TextBox
@@ -727,11 +1190,18 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
     let val = formData[id] !== undefined ? formData[id] : '';
     if (!val && user) {
       if (id === 'TxtEditFullName') val = user.fullName || '';
-      else if (id === 'TxtEditMobile') val = user.mobile || '';
+      else if (id === 'TxtEditMobile') {
+        val = splitPhoneNumber(user.mobile || '').nationalNumber;
+      }
       else if (id === 'TxtEditOrg') val = user.organization || '';
       else if (id === 'TxtEditJobTitle') val = user.jobTitle || '';
       else if (id === 'TxtEditSpecialty') val = user.specialty || '';
       else if (id === 'TxtEditLinkedIn') val = user.linkedIn || user.linkedInUrl || '';
+      else if (id === 'TxtName' && relativeUrl.toLowerCase().includes('contactus')) val = user.fullName || '';
+      else if (id === 'TxtEmail' && relativeUrl.toLowerCase().includes('contactus')) val = user.email || '';
+      else if (id === 'TxtMobile' && relativeUrl.toLowerCase().includes('contactus')) {
+        val = splitPhoneNumber(user.mobile || '').nationalNumber;
+      }
     }
 
     const valAttr = val ? ` value="${escapeHtml(val)}"` : '';
@@ -785,19 +1255,19 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
 
     if (user) {
       const isArPage = relativeUrl.toLowerCase().includes('/ar_sa');
-      if (id === 'LblName') txt = user.fullName;
-      else if (id === 'TxtEmail') txt = user.email;
-      else if (id === 'TxtMobile') txt = user.mobile || '-';
+      if (id === 'LblName') txt = escapeHtml(user.fullName);
+      else if (id === 'TxtEmail') txt = escapeHtml(user.email);
+      else if (id === 'TxtMobile') txt = escapeHtml(formatDisplayPhone(user.mobile));
       else if (id === 'LblUserRoleBadge') {
         const role = user.role || 'Attendee';
         if (isArPage) {
           txt = role === 'Administrator' ? 'مشرف النظام' : (role === 'Speaker' ? 'متحدث رئيسي' : 'حاضر ومشارك');
         } else {
-          txt = role;
+          txt = escapeHtml(role);
         }
       }
       else if (id === 'LblOrgTitle') {
-        const parts = [user.jobTitle, user.organization].filter(Boolean);
+        const parts = [user.jobTitle, user.organization].filter(Boolean).map(escapeHtml);
         txt = parts.join(' • ');
       }
       else if (id === 'LblLastLogin') {
@@ -806,7 +1276,7 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
             const dt = new Date(user.lastLogin);
             txt = isArPage ? dt.toLocaleDateString('ar-SA') + ' ' + dt.toLocaleTimeString('ar-SA') : dt.toLocaleString('en-US');
           } catch (e) {
-            txt = user.lastLogin;
+            txt = escapeHtml(user.lastLogin);
           }
         } else {
           txt = isArPage ? 'الجلسة الحالية الأولى' : 'Current active session';
@@ -818,7 +1288,7 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
             const dt = new Date(user.passwordChangedDate);
             txt = isArPage ? dt.toLocaleDateString('ar-SA') : dt.toLocaleDateString('en-US');
           } catch (e) {
-            txt = user.passwordChangedDate;
+            txt = escapeHtml(user.passwordChangedDate);
           }
         } else {
           txt = isArPage ? 'محدثة (نشطة)' : 'Active / Up to date';
@@ -859,7 +1329,7 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
         const clean = attrs.replace(/\bvisible=["']false["']/i, '');
         return `<div${clean} style="display:block;">`;
       });
-      rendered = rendered.replace(/(id=["']BtnShowChangePass["'][^>]*class=["'][^"']*)/i, '$1 active');
+      rendered = rendered.replace(/(id=["']BtnShowChangePass["'][^>]*class=["'][^"']*)/i, (m) => m.includes('active') ? m : m + ' active');
       rendered = rendered.replace(/(id=["']BtnShowProfile["'][^>]*class=["'][^"']*)\bactive\b/i, '$1');
 
       const passErr = options.passwordErrorAlert || (errorAlert && activeTab === 'password' ? errorAlert : null);
@@ -878,6 +1348,8 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
         return `<div${clean} style="display:block;">`;
       });
       rendered = rendered.replace(/<div([^>]*\bid=["']div_changepasss["'][^>]*)>/i, '<div$1 style="display:none;">');
+      rendered = rendered.replace(/(id=["']BtnShowProfile["'][^>]*class=["'][^"']*)/i, (m) => m.includes('active') ? m : m + ' active');
+      rendered = rendered.replace(/(id=["']BtnShowChangePass["'][^>]*class=["'][^"']*)\bactive\b/i, '$1');
 
       const profErr = options.profileErrorAlert || (errorAlert && activeTab !== 'password' ? errorAlert : null);
       const profSucc = options.profileSuccessAlert || (successAlert && activeTab !== 'password' ? successAlert : null);
@@ -903,6 +1375,15 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
   // Guest / No user: only Registration and Sign In (hide liProfile)
   if (user) {
     rendered = rendered.replace(/\bid=["']liLogin["']/g, 'id="liLogin" style="display:none;"');
+    const isArPage = relativeUrl.toLowerCase().includes('/ar_sa');
+    const displayName = user.fullName || (isArPage ? 'حسابي' : 'Account');
+    rendered = rendered.replace(/<button([^>]*id=["']userDropdownTrigger["'][^>]*)>([\s\S]*?)<\/button>/i, (m, attrs) => {
+      let updatedAttrs = attrs;
+      if (isProfilePage && !attrs.includes('active')) {
+        updatedAttrs = attrs.replace(/class=["']([^"']*)["']/i, 'class="$1 active"');
+      }
+      return `<button${updatedAttrs}><i class="bi bi-person-circle"></i> <span>${escapeHtml(displayName)}</span> <i class="bi bi-chevron-down user-dropdown-caret"></i></button>`;
+    });
   } else {
     rendered = rendered.replace(/\bid=["']liProfile["']/g, 'id="liProfile" style="display:none;"');
   }
@@ -912,127 +1393,124 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
   rendered = rendered.replace(/<\/?asp:UpdatePanel[^>]*>/gi, '');
   rendered = rendered.replace(/<\/?ContentTemplate>/gi, '');
 
-  // Render <asp:Repeater ID="rptSpeakers"> dynamically
+  // Render <asp:Repeater ID="rptSpeakers"> dynamically from SQL Server DB
   if (rendered.includes('rptSpeakers')) {
     const isArPage = relativeUrl.toLowerCase().includes('/ar_sa');
-    const speakersJsonPath = path.join(BASE_DIR, 'Content', 'data', 'speakers.json');
-    let cardsHtml = [];
-    if (fs.existsSync(speakersJsonPath)) {
-      try {
-        const spList = JSON.parse(fs.readFileSync(speakersJsonPath, 'utf8'));
-        const trackIcons = { 'track-a': 'bi bi-cpu', 'track-b': 'bi bi-activity', 'track-c': 'bi bi-lightbulb' };
-        const sectorIcons = { 'clinical': 'bi bi-hospital', 'academic': 'bi bi-mortarboard', 'industry': 'bi bi-building', 'international': 'bi bi-globe' };
+    const { speakers: spList, source: speakerSource, fromDb } = await getLiveSpeakersDataset();
+    const trackIcons = { 'track-a': 'bi bi-cpu', 'track-b': 'bi bi-activity', 'track-c': 'bi bi-lightbulb' };
+    const sectorIcons = { 'clinical': 'bi bi-hospital', 'academic': 'bi bi-mortarboard', 'industry': 'bi bi-building', 'international': 'bi bi-globe' };
 
-        cardsHtml = spList.map(s => {
-          const track = (s.Track || 'track-a').toLowerCase().trim();
-          const sector = (s.Sector || 'clinical').toLowerCase().trim();
-          const region = (s.Region || 'national').toLowerCase().trim();
+    const cardsHtml = spList.map(s => {
+      const track = (s.Track || 'track-a').toLowerCase().trim();
+      const sector = (s.Sector || 'clinical').toLowerCase().trim();
+      const region = (s.Region || 'national').toLowerCase().trim();
 
-          const name = escapeHtml(isArPage && s.FullNameAr ? s.FullNameAr : (s.FullNameEn || ''));
-          const role = escapeHtml(isArPage && s.JobTitleAr ? s.JobTitleAr : (s.JobTitleEn || ''));
-          const org = escapeHtml(isArPage && s.OrganizationAr ? s.OrganizationAr : (s.OrganizationEn || ''));
-          const lecture = escapeHtml(isArPage && s.LectureTitleAr ? s.LectureTitleAr : (s.LectureTitleEn || ''));
+      const name = escapeHtml(isArPage && s.FullNameAr ? s.FullNameAr : (s.FullNameEn || s.Name || ''));
+      const role = escapeHtml(isArPage && s.JobTitleAr ? s.JobTitleAr : (s.JobTitleEn || s.JobTitle || ''));
+      const org = escapeHtml(isArPage && s.OrganizationAr ? s.OrganizationAr : (s.OrganizationEn || s.Organization || ''));
+      const lecture = escapeHtml(isArPage && s.LectureTitleAr ? s.LectureTitleAr : (s.LectureTitleEn || s.LectureTitle || ''));
 
-          const trackName = escapeHtml(isArPage && s.TrackNameAr ? s.TrackNameAr : (s.TrackNameEn || ''));
-          const sectorName = escapeHtml(isArPage && s.SectorNameAr ? s.SectorNameAr : (s.SectorNameEn || ''));
-          const regionName = escapeHtml(isArPage && s.RegionNameAr ? s.RegionNameAr : (s.RegionNameEn || ''));
+      const trackName = escapeHtml(isArPage && s.TrackNameAr ? s.TrackNameAr : (s.TrackNameEn || s.TrackName || ''));
+      const sectorName = escapeHtml(isArPage && s.SectorNameAr ? s.SectorNameAr : (s.SectorNameEn || s.SectorName || ''));
+      const regionName = escapeHtml(isArPage && s.RegionNameAr ? s.RegionNameAr : (s.RegionNameEn || s.RegionName || ''));
 
-          let photo = s.ImagePath || '';
-          if (photo.startsWith('~')) photo = photo.slice(1);
-          let cv = s.CvPdfPath || '';
-          if (cv && cv.startsWith('~')) cv = cv.slice(1);
+      let photo = s.ImagePath || '/Content/images/speakers/Speaker-Photo.png';
+      if (photo.startsWith('~')) photo = photo.slice(1);
+      let cv = s.CvPdfPath || '';
+      if (cv && cv.startsWith('~')) cv = cv.slice(1);
 
-          const flag = s.Flag || '🇸🇦';
-          const initials = escapeHtml(s.Initials || 'SP');
-          const roomVal = isArPage && s.RoomAr ? s.RoomAr : (s.RoomEn || '');
-          const room = escapeHtml(roomVal);
-          const startT = s.StartTime || '';
-          const endT = s.EndTime || '';
-          const timeVal = (startT && endT) ? `${startT} - ${endT}` : startT;
-          const timeStr = escapeHtml(timeVal);
-          const day = String(s.DayNumber || 1);
-          const sessionRole = escapeHtml(isArPage && s.RoleAr ? s.RoleAr : (s.RoleEn || 'Speaker'));
+      const flag = s.Flag || '🇸🇦';
+      const initials = escapeHtml(s.Initials || computeInitials(name) || 'SP');
+      const roomVal = isArPage ? (s.RoomAr || s.RoomEn || '') : (s.RoomEn || s.RoomAr || '');
+      const room = escapeHtml(roomVal);
+      const startT = s.StartTime || '';
+      const endT = s.EndTime || '';
+      const timeVal = (startT && endT) ? `${startT} - ${endT}` : startT;
+      const timeStr = escapeHtml(timeVal);
+      const day = String(s.DayNumber || 1);
+      const sessionRole = escapeHtml(isArPage ? (s.SessionRoleAr || s.RoleAr || 'متحدث') : (s.SessionRoleEn || s.RoleEn || 'Speaker'));
 
-          const tBadge = isArPage ? (track === 'track-a' ? 'المسار أ' : track === 'track-b' ? 'المسار ب' : 'المسار ج') : (track === 'track-a' ? 'Track A' : track === 'track-b' ? 'Track B' : 'Track C');
-          const tIcon = trackIcons[track] || 'bi bi-cpu';
+      const tBadge = isArPage ? (track === 'track-a' ? 'المسار أ' : track === 'track-b' ? 'المسار ب' : 'المسار ج') : (track === 'track-a' ? 'Track A' : track === 'track-b' ? 'Track B' : 'Track C');
+      const tIcon = trackIcons[track] || 'bi bi-cpu';
 
-          const sBadge = isArPage ? (sector === 'clinical' ? 'قطاع سريري' : sector === 'academic' ? 'قطاع أكاديمي' : sector === 'industry' ? 'قطاع صناعي' : 'دولي') : (sector === 'clinical' ? 'Clinical' : sector === 'academic' ? 'Academic' : sector === 'industry' ? 'Industry' : 'International');
-          const sIcon = sectorIcons[sector] || 'bi bi-hospital';
+      const sBadge = isArPage ? (sector === 'clinical' ? 'قطاع سريري' : sector === 'academic' ? 'قطاع أكاديمي' : sector === 'industry' ? 'قطاع صناعي' : 'دولي') : (sector === 'clinical' ? 'Clinical' : sector === 'academic' ? 'Academic' : sector === 'industry' ? 'Industry' : 'International');
+      const sIcon = sectorIcons[sector] || 'bi bi-hospital';
 
-          const lecLabel = isArPage ? 'عنوان المحاضرة' : 'Lecture Presentation';
-          const quickBtn = isArPage ? 'نظرة سريعة' : 'Quick Overview';
+      const lecLabel = isArPage ? 'عنوان المحاضرة' : 'Lecture Presentation';
+      const quickBtn = isArPage ? 'نظرة سريعة' : 'Quick Overview';
 
-          const lecHtml = lecture ? `<div class="speaker-lecture-card">
-              <div class="speaker-lecture-label"><i class="bi bi-mic-fill"></i> ${lecLabel}</div>
-              <p class="speaker-lecture-title">${lecture}</p>
-          </div>` : '';
+      const lecHtml = lecture ? `<div class="speaker-lecture-card">
+          <div class="speaker-lecture-label"><i class="bi bi-mic-fill"></i> ${lecLabel}</div>
+          <p class="speaker-lecture-title">${lecture}</p>
+      </div>` : '';
 
-          return `<article class="speaker-card ${track}"
-                   data-photo="${photo}"
-                   data-cv="${cv}"
-                   data-track="${track}"
-                   data-sector="${sector}"
-                   data-region="${region}"
-                   data-name="${name}"
-                   data-role="${role}"
-                   data-org="${org}"
-                   data-lecture="${lecture}"
-                   data-track-name="${trackName}"
-                   data-sector-name="${sectorName}"
-                   data-region-name="${regionName}"
-                   data-flag="${flag}"
-                   data-initials="${initials}"
-                   data-room="${room}"
-                   data-time="${timeStr}"
-                   data-day="${day}"
-                   data-session-role="${sessionRole}">
-              <div class="speaker-card-header">
-                  <span class="speaker-track-tag tag-${track}" onclick="filterToTrack('${track}')" style="cursor:pointer;">
-                      <i class="${tIcon}"></i> ${tBadge}
-                  </span>
-                  <span class="speaker-sector-tag">
-                      <i class="${sIcon}"></i> ${sBadge}
-                  </span>
-              </div>
-              <div class="speaker-avatar-wrap">
-                  <img src="${photo}" alt="${name}" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-                  <div class="speaker-monogram" style="display:none;">${initials}</div>
-                  <span class="speaker-badge-flag" title="${regionName}">${flag}</span>
-              </div>
-              <div class="speaker-body">
-                  <h3 class="speaker-name">${name}</h3>
-                  <p class="speaker-title">${role}</p>
-                  <p class="speaker-org">
-                      <i class="bi bi-bank sairh-organization-icon"></i>
-                      <span>${org}</span>
-                  </p>
-                  ${lecHtml}
-              </div>
-              <div class="speaker-card-actions">
-                  <button type="button" class="btn-speaker-detail" onclick="openSpeakerModal(this.closest('.speaker-card'))">
-                      <i class="bi bi-info-circle"></i> ${quickBtn}
-                  </button>
-              </div>
-          </article>`;
-        });
-        // Update tab counts and total counts in HTML
-        const totalCnt = spList.length;
-        const trackACnt = spList.filter(s => (s.Track || '').toLowerCase().trim() === 'track-a').length;
-        const trackBCnt = spList.filter(s => (s.Track || '').toLowerCase().trim() === 'track-b').length;
-        const trackCCnt = spList.filter(s => (s.Track || '').toLowerCase().trim() === 'track-c').length;
+      return `<article class="speaker-card ${track}"
+               data-photo="${photo}"
+               data-cv="${cv}"
+               data-track="${track}"
+               data-sector="${sector}"
+               data-region="${region}"
+               data-name="${name}"
+               data-role="${role}"
+               data-org="${org}"
+               data-lecture="${lecture}"
+               data-track-name="${trackName}"
+               data-sector-name="${sectorName}"
+               data-region-name="${regionName}"
+               data-flag="${flag}"
+               data-initials="${initials}"
+               data-room="${room}"
+               data-time="${timeStr}"
+               data-day="${day}"
+               data-session-role="${sessionRole}">
+          <div class="speaker-card-header">
+              <span class="speaker-track-tag tag-${track}" onclick="filterToTrack('${track}')" style="cursor:pointer;">
+                  <i class="${tIcon}"></i> ${tBadge}
+              </span>
+              <span class="speaker-sector-tag">
+                  <i class="${sIcon}"></i> ${sBadge}
+              </span>
+          </div>
+          <div class="speaker-avatar-wrap">
+              <img src="${photo}" alt="${name}" class="speaker-avatar-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="speaker-monogram" style="display:none;">${initials}</div>
+              <span class="speaker-badge-flag" title="${regionName}">${flag}</span>
+          </div>
+          <div class="speaker-body">
+              <h3 class="speaker-name">${name}</h3>
+              <p class="speaker-title">${role}</p>
+              <p class="speaker-org">
+                  <i class="bi bi-bank sairh-organization-icon"></i>
+                  <span>${org}</span>
+              </p>
+              ${lecHtml}
+          </div>
+          <div class="speaker-card-actions">
+              <button type="button" class="btn-speaker-detail" onclick="openSpeakerModal(this.closest('.speaker-card'))">
+                  <i class="bi bi-info-circle"></i> ${quickBtn}
+              </button>
+          </div>
+      </article>`;
+    });
 
-        rendered = rendered.replace(/(data-track="all"[^>]*>[\s\S]*?<span class="tab-count">)\d+(<\/span>)/gi, `$1${totalCnt}$2`);
-        rendered = rendered.replace(/(data-track="track-a"[^>]*>[\s\S]*?<span class="tab-count">)\d+(<\/span>)/gi, `$1${trackACnt}$2`);
-        rendered = rendered.replace(/(data-track="track-b"[^>]*>[\s\S]*?<span class="tab-count">)\d+(<\/span>)/gi, `$1${trackBCnt}$2`);
-        rendered = rendered.replace(/(data-track="track-c"[^>]*>[\s\S]*?<span class="tab-count">)\d+(<\/span>)/gi, `$1${trackCCnt}$2`);
-        rendered = rendered.replace(/(id="speakersCount"[^>]*>)\d+(<)/gi, `$1${totalCnt}$2`);
-        rendered = rendered.replace(/(id="speakersTotalCount"[^>]*>)\d+(<)/gi, `$1${totalCnt}$2`);
+    // Update tab counts and total counts in HTML
+    const totalCnt = spList.length;
+    const trackACnt = spList.filter(s => (s.Track || '').toLowerCase().trim() === 'track-a').length;
+    const trackBCnt = spList.filter(s => (s.Track || '').toLowerCase().trim() === 'track-b').length;
+    const trackCCnt = spList.filter(s => (s.Track || '').toLowerCase().trim() === 'track-c').length;
 
-        rendered = rendered.replace('</body>', `<script>console.warn("[SAIRH Node Server] Loaded ${totalCnt} speakers from speakers.json cache. To sync live database changes, run: ./tools/sync_speakers.sh");</script>\n</body>`);
-      } catch (err) {
-        console.error('Error reading speakers.json:', err);
-      }
-    }
+    rendered = rendered.replace(/(data-track="all"[^>]*>[\s\S]*?<span class="tab-count">)[^<]*(<\/span>)/gi, `$1${totalCnt}$2`);
+    rendered = rendered.replace(/(data-track="track-a"[^>]*>[\s\S]*?<span class="tab-count">)[^<]*(<\/span>)/gi, `$1${trackACnt}$2`);
+    rendered = rendered.replace(/(data-track="track-b"[^>]*>[\s\S]*?<span class="tab-count">)[^<]*(<\/span>)/gi, `$1${trackBCnt}$2`);
+    rendered = rendered.replace(/(data-track="track-c"[^>]*>[\s\S]*?<span class="tab-count">)[^<]*(<\/span>)/gi, `$1${trackCCnt}$2`);
+    rendered = rendered.replace(/(id="speakersCount"[^>]*>)[^<]*(<)/gi, `$1${totalCnt}$2`);
+    rendered = rendered.replace(/(id="speakersTotalCount"[^>]*>)[^<]*(<)/gi, `$1${totalCnt}$2`);
+
+    const consoleLog = fromDb
+      ? `console.info("[SAIRH DB] Loaded ${totalCnt} speakers dynamically from ${speakerSource}.");`
+      : `console.warn("[SAIRH DB] Loaded ${totalCnt} speakers from ${speakerSource}.");`;
+    rendered = rendered.replace('</body>', `<script>${consoleLog}</script>\n</body>`);
+
     rendered = rendered.replace(/<asp:Repeater[^>]*ID=["']rptSpeakers["'][^>]*>[\s\S]*?<\/asp:Repeater>/gi, cardsHtml.join('\n'));
   }
 
@@ -1047,7 +1525,7 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
     else if (reqLower.includes('judges') || reqLower.includes('speaker')) rendered = rendered.replace('id="linkSpeakersAr"', 'id="linkSpeakersAr" class="active"').replace('id="linkJudgesAr"', 'id="linkJudgesAr" class="active"');
     else if (reqLower.includes('sponsors')) rendered = rendered.replace('id="linkSponsorsAr"', 'id="linkSponsorsAr" class="active"');
     else if (reqLower.includes('contactus')) rendered = rendered.replace('id="linkContactUsAr"', 'id="linkContactUsAr" class="active"');
-    else rendered = rendered.replace('id="linkHomeAr"', 'id="linkHomeAr" class="active"');
+    else if (reqLower === '/ar_sa' || reqLower === '/ar_sa/' || reqLower.endsWith('/default') || reqLower.endsWith('/default.aspx')) rendered = rendered.replace('id="linkHomeAr"', 'id="linkHomeAr" class="active"');
   } else {
     if (reqLower.includes('publication')) rendered = rendered.replace('id="linkPublication"', 'id="linkPublication" class="active"');
     else if (reqLower.includes('schedules')) rendered = rendered.replace('id="linkSchedules"', 'id="linkSchedules" class="active"');
@@ -1055,7 +1533,7 @@ function parseAspx(aspxPath, relativeUrl, options = {}) {
     else if (reqLower.includes('judges') || reqLower.includes('speaker')) rendered = rendered.replace('id="linkSpeakers"', 'id="linkSpeakers" class="active"').replace('id="linkJudges"', 'id="linkJudges" class="active"');
     else if (reqLower.includes('sponsors')) rendered = rendered.replace('id="linkSponsors"', 'id="linkSponsors" class="active"');
     else if (reqLower.includes('contactus')) rendered = rendered.replace('id="linkContactUs"', 'id="linkContactUs" class="active"');
-    else rendered = rendered.replace('id="linkHome"', 'id="linkHome" class="active"');
+    else if (reqLower === '/' || reqLower === '' || reqLower.endsWith('/default') || reqLower.endsWith('/default.aspx')) rendered = rendered.replace('id="linkHome"', 'id="linkHome" class="active"');
   }
 
   rendered = rendered.replace(/href="~\/Default\.aspx"/gi, 'href="/Default.aspx"');
@@ -1229,7 +1707,7 @@ function handleAuthApi(req, res, pathname, currentUser) {
     return res.end(JSON.stringify(currentUser));
   }
 
-  readRequestBody(req, payload => {
+  readRequestBody(req, async payload => {
     // POST /api/auth/logout
     if (endpoint === 'api/auth/logout' && method === 'POST') {
       res.writeHead(200, {
@@ -1240,19 +1718,44 @@ function handleAuthApi(req, res, pathname, currentUser) {
 
     // POST /api/auth/register
     if (endpoint === 'api/auth/register' && method === 'POST') {
-      const fullName = (payload.FullName || payload.fullName || '').trim();
-      const email = (payload.Email || payload.email || '').trim().toLowerCase();
-      const mobile = (payload.MobileNo || payload.mobile || payload.mobileNo || '').trim();
-      const organization = (payload.Organization || payload.organization || '').trim();
-      const jobTitle = (payload.JobTitle || payload.jobTitle || '').trim();
-      const specialty = (payload.Specialty || payload.specialty || '').trim();
-      const linkedIn = (payload.LinkedInUrl || payload.linkedIn || payload.linkedInUrl || '').trim();
+      const fullName = sanitizeLettersOnly(payload.FullName || payload.fullName || '', 100);
+      const email = (payload.Email || payload.email || '').trim().toLowerCase().slice(0, 100);
+      const mobile = (payload.MobileNo || payload.mobile || payload.mobileNo || '').trim().slice(0, 25);
+      const organization = sanitizeLettersOnly(payload.Organization || payload.organization || '', 150);
+      const jobTitle = sanitizeLettersOnly(payload.JobTitle || payload.jobTitle || '', 100);
+      const specialty = sanitizeLettersOnly(payload.Specialty || payload.specialty || '', 100);
+      const rawLinkedIn = (payload.LinkedInUrl || payload.linkedIn || payload.linkedInUrl || '').trim().slice(0, 300);
       const password = payload.Password || payload.password || '';
       const confirmPassword = payload.ConfirmPassword || payload.confirmPassword || '';
 
       const errors = [];
-      if (!fullName || fullName.length < 3) errors.push('Please enter your full name (at least 3 characters).');
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Please enter a valid email address.');
+      if (!fullName || fullName.length < 2) errors.push('Please enter your full name (at least 2 characters).');
+      else if (!validateLettersOnly(fullName, 2, 100)) errors.push('Full name must contain letters only (uppercase and lowercase).');
+
+      if (!validateEmailAddress(email)) errors.push('Please enter a valid email address.');
+
+      if (payload.Organization && !validateLettersOnly(payload.Organization, 1, 150)) {
+        errors.push('Organization must contain letters only (uppercase and lowercase).');
+      }
+
+      if (payload.JobTitle && !validateLettersOnly(payload.JobTitle, 1, 100)) {
+        errors.push('Position / Job title must contain letters only (uppercase and lowercase).');
+      }
+
+      if (payload.Specialty && !validateLettersOnly(payload.Specialty, 1, 100)) {
+        errors.push('Field / Specialty must contain letters only (uppercase and lowercase).');
+      }
+
+      let linkedIn = '';
+      if (rawLinkedIn) {
+        const linkRes = validateLinkedInUrl(rawLinkedIn);
+        if (!linkRes.valid) {
+          errors.push('Please enter a valid LinkedIn URL.');
+        } else {
+          linkedIn = linkRes.url;
+        }
+      }
+
       errors.push(...validatePasswordStrength(password, email, fullName, false));
       if (password && password !== confirmPassword) errors.push('Passwords do not match.');
 
@@ -1288,6 +1791,38 @@ function handleAuthApi(req, res, pathname, currentUser) {
       DEV_USERS[email] = newUser;
       saveUsers();
 
+      // Persist directly into SQL Server
+      if (dbPool && sql) {
+        try {
+          const passCode = 'PASS-' + Math.floor(100000 + Math.random() * 900000);
+          await dbPool.request()
+            .input('FullName', sql.NVarChar, fullName)
+            .input('Email', sql.VarChar, email)
+            .input('MobileNo', sql.VarChar, mobile)
+            .input('PasswordHash', sql.NVarChar, pHash)
+            .input('Organization', sql.NVarChar, organization)
+            .input('JobTitle', sql.NVarChar, jobTitle)
+            .input('Specialty', sql.NVarChar, specialty)
+            .input('LinkedInUrl', sql.VarChar, linkedIn)
+            .input('PassCode', sql.VarChar, passCode)
+            .query(`
+              IF NOT EXISTS (SELECT 1 FROM dbo.Attendees WHERE Email = @Email)
+              BEGIN
+                INSERT INTO dbo.Attendees (
+                  FullName, Email, MobileNo, PasswordHash, Organization, JobTitle,
+                  Specialty, LinkedInUrl, UserLevel, PassCode, IsBlocked, IsEmailVerified, SecurityStamp, RegisteredAt, UpdatedAtUtc
+                ) VALUES (
+                  @FullName, @Email, @MobileNo, @PasswordHash, @Organization, @JobTitle,
+                  @Specialty, @LinkedInUrl, 'User', @PassCode, 0, 1, NEWID(), GETDATE(), SYSUTCDATETIME()
+                );
+              END
+            `);
+          console.log(`[SAIRH DB] Live SQL Server: Saved attendee '${email}' via API into dbo.Attendees!`);
+        } catch (dbErr) {
+          console.error('[SAIRH DB] Error inserting attendee via API into SQL Server:', dbErr.message);
+        }
+      }
+
       res.writeHead(201, {
         'Set-Cookie': buildSessionCookieHeader(req, email, false)
       });
@@ -1303,6 +1838,11 @@ function handleAuthApi(req, res, pathname, currentUser) {
       if (!email || !password) {
         res.writeHead(400);
         return res.end(JSON.stringify({ success: false, error: 'Please enter both your email address and password.' }));
+      }
+
+      if (!validateEmailAddress(email)) {
+        res.writeHead(400);
+        return res.end(JSON.stringify({ success: false, error: 'Please enter a valid email address.', code: 'EmailInvalid' }));
       }
 
       const user = DEV_USERS[email];
@@ -1361,24 +1901,67 @@ function handleAuthApi(req, res, pathname, currentUser) {
         return res.end(JSON.stringify({ error: 'Authentication required.' }));
       }
 
-      const fullName = (payload.FullName || payload.fullName || '').trim();
+      const rawName = (payload.FullName || payload.fullName || '').trim();
       const mobile = (payload.MobileNo || payload.mobile || payload.mobileNo || '').trim();
-      const organization = (payload.Organization || payload.organization || '').trim();
-      const jobTitle = (payload.JobTitle || payload.jobTitle || '').trim();
-      const specialty = (payload.Specialty || payload.specialty || '').trim();
-      const linkedIn = (payload.LinkedInUrl || payload.linkedIn || payload.linkedInUrl || '').trim();
+      const rawOrg = (payload.Organization || payload.organization || '').trim();
+      const rawJob = (payload.JobTitle || payload.jobTitle || '').trim();
+      const rawSpec = (payload.Specialty || payload.specialty || '').trim();
+      const rawLinkedIn = (payload.LinkedInUrl || payload.linkedIn || payload.linkedInUrl || '').trim();
 
-      if (fullName && fullName.length < 3) {
-        res.writeHead(400);
-        return res.end(JSON.stringify({ error: 'Please enter your full name (at least 3 characters).' }));
+      if (rawName) {
+        if (rawName.length < 2) {
+          res.writeHead(400);
+          return res.end(JSON.stringify({ error: 'Please enter your full name (at least 2 characters).' }));
+        }
+        if (!validateLettersOnly(rawName, 2, 100)) {
+          res.writeHead(400);
+          return res.end(JSON.stringify({ error: 'Full name must contain letters only (uppercase and lowercase).' }));
+        }
+        currentUser.fullName = sanitizeLettersOnly(rawName, 100);
       }
 
-      if (fullName) currentUser.fullName = fullName;
-      if (mobile !== undefined) currentUser.mobile = mobile;
-      if (organization !== undefined) currentUser.organization = organization;
-      if (jobTitle !== undefined) currentUser.jobTitle = jobTitle;
-      if (specialty !== undefined) currentUser.specialty = specialty;
-      if (linkedIn !== undefined) currentUser.linkedIn = linkedIn;
+      if (rawOrg) {
+        if (!validateLettersOnly(rawOrg, 1, 150)) {
+          res.writeHead(400);
+          return res.end(JSON.stringify({ error: 'Organization must contain letters only (uppercase and lowercase).' }));
+        }
+        currentUser.organization = sanitizeLettersOnly(rawOrg, 150);
+      } else if (payload.Organization !== undefined || payload.organization !== undefined) {
+        currentUser.organization = '';
+      }
+
+      if (rawJob) {
+        if (!validateLettersOnly(rawJob, 1, 100)) {
+          res.writeHead(400);
+          return res.end(JSON.stringify({ error: 'Position / Job title must contain letters only (uppercase and lowercase).' }));
+        }
+        currentUser.jobTitle = sanitizeLettersOnly(rawJob, 100);
+      } else if (payload.JobTitle !== undefined || payload.jobTitle !== undefined) {
+        currentUser.jobTitle = '';
+      }
+
+      if (rawSpec) {
+        if (!validateLettersOnly(rawSpec, 1, 100)) {
+          res.writeHead(400);
+          return res.end(JSON.stringify({ error: 'Field / Specialty must contain letters only (uppercase and lowercase).' }));
+        }
+        currentUser.specialty = sanitizeLettersOnly(rawSpec, 100);
+      } else if (payload.Specialty !== undefined || payload.specialty !== undefined) {
+        currentUser.specialty = '';
+      }
+
+      if (rawLinkedIn) {
+        const linkRes = validateLinkedInUrl(rawLinkedIn);
+        if (!linkRes.valid) {
+          res.writeHead(400);
+          return res.end(JSON.stringify({ error: 'Please enter a valid LinkedIn URL.' }));
+        }
+        currentUser.linkedIn = linkRes.url;
+      } else if (payload.LinkedInUrl !== undefined || payload.linkedIn !== undefined || payload.linkedInUrl !== undefined) {
+        currentUser.linkedIn = '';
+      }
+
+      if (mobile !== undefined) currentUser.mobile = mobile.slice(0, 25);
 
       DEV_USERS[currentUser.email.toLowerCase()] = currentUser;
       saveUsers();
@@ -1424,6 +2007,23 @@ function handleAuthApi(req, res, pathname, currentUser) {
       currentUser.passwordChangedDate = new Date().toISOString();
       DEV_USERS[currentUser.email.toLowerCase()] = currentUser;
       saveUsers();
+
+      // Update in live SQL Server
+      if (dbPool && sql) {
+        try {
+          await dbPool.request()
+            .input('Email', sql.VarChar, currentUser.email.toLowerCase())
+            .input('PasswordHash', sql.NVarChar, newHash)
+            .query(`
+              UPDATE dbo.Attendees
+              SET PasswordHash = @PasswordHash, PasswordChangedAtUtc = SYSUTCDATETIME(), UpdatedAtUtc = SYSUTCDATETIME()
+              WHERE Email = @Email;
+            `);
+          console.log(`[SAIRH DB] Live SQL Server: Updated password for '${currentUser.email}' in dbo.Attendees!`);
+        } catch (dbErr) {
+          console.error('[SAIRH DB] Error updating password in SQL Server:', dbErr.message);
+        }
+      }
 
       res.writeHead(200);
       return res.end(JSON.stringify({ success: true, message: 'Password has been successfully changed.' }));
@@ -1504,11 +2104,15 @@ function handleAuthApi(req, res, pathname, currentUser) {
   });
 }
 
-function handleRequest(req, res) {
+async function handleRequest(req, res) {
   const parsed = url.parse(req.url, true);
   let pathname = decodeURIComponent(parsed.pathname).replace(/^\/+/, '');
 
-  // Enable CORS & no-cache
+  // Standard Security Headers & no-cache
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
@@ -1543,6 +2147,89 @@ function handleRequest(req, res) {
   const rawCookie = getCookie(req, SESSION_COOKIE_NAME);
   const userEmail = verifySessionCookie(rawCookie);
   const currentUser = (userEmail && DEV_USERS[userEmail.toLowerCase()]) ? DEV_USERS[userEmail.toLowerCase()] : null;
+
+  // Handle Speakers RESTful API (Dynamic from DB)
+  if (pathname.toLowerCase() === 'api/speakers' || pathname.toLowerCase() === 'api/summit/speakers') {
+    const isAr = (parsed.query.lang || '').toLowerCase() === 'ar' || (req.headers['accept-language'] && req.headers['accept-language'].startsWith('ar'));
+    const trackFilter = (parsed.query.track || '').toLowerCase().trim();
+    const dataset = await getLiveSpeakersDataset();
+    let list = dataset.speakers || [];
+    if (trackFilter && trackFilter !== 'all') {
+      list = list.filter(s => (s.Track || '').toLowerCase().trim() === trackFilter);
+    }
+    const formatted = list.map(s => {
+      const track = (s.Track || 'track-a').toLowerCase().trim();
+      const sector = (s.Sector || 'clinical').toLowerCase().trim();
+      const region = (s.Region || 'national').toLowerCase().trim();
+      const name = isAr && s.FullNameAr ? s.FullNameAr : (s.FullNameEn || s.Name || '');
+      const role = isAr && s.JobTitleAr ? s.JobTitleAr : (s.JobTitleEn || s.JobTitle || '');
+      const org = isAr && s.OrganizationAr ? s.OrganizationAr : (s.OrganizationEn || s.Organization || '');
+      const lecture = isAr && s.LectureTitleAr ? s.LectureTitleAr : (s.LectureTitleEn || s.LectureTitle || '');
+      const trackName = isAr && s.TrackNameAr ? s.TrackNameAr : (s.TrackNameEn || s.TrackName || '');
+      const sectorName = isAr && s.SectorNameAr ? s.SectorNameAr : (s.SectorNameEn || s.SectorName || '');
+      const regionName = isAr && s.RegionNameAr ? s.RegionNameAr : (s.RegionNameEn || s.RegionName || '');
+      const room = isAr ? (s.RoomAr || s.RoomEn || '') : (s.RoomEn || s.RoomAr || '');
+      const sessionRole = isAr ? (s.SessionRoleAr || s.RoleAr || 'متحدث') : (s.SessionRoleEn || s.RoleEn || 'Speaker');
+      let photo = s.ImagePath || '/Content/images/speakers/Speaker-Photo.png';
+      if (photo.startsWith('~')) photo = photo.slice(1);
+      let cv = s.CvPdfPath || '';
+      if (cv && cv.startsWith('~')) cv = cv.slice(1);
+      const startT = s.StartTime || '';
+      const endT = s.EndTime || '';
+      const timeStr = (startT && endT) ? `${startT} - ${endT}` : startT;
+
+      return {
+        speakerId: s.SpeakerID,
+        name,
+        role,
+        organization: org,
+        lectureTitle: lecture,
+        track,
+        trackName,
+        sector,
+        sectorName,
+        region,
+        regionName,
+        flag: s.Flag || '🇸🇦',
+        initials: s.Initials || computeInitials(name),
+        room,
+        time: timeStr,
+        day: s.DayNumber || 1,
+        sessionRole,
+        photo,
+        cvPdfPath: cv,
+        sorting: s.Sorting
+      };
+    });
+
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
+    });
+    return res.end(JSON.stringify({
+      success: true,
+      source: dataset.source,
+      fromDb: dataset.fromDb,
+      totalCount: formatted.length,
+      speakers: formatted
+    }));
+  }
+
+  // Handle Manual Speakers Sync API
+  if (pathname.toLowerCase() === 'api/speakers/sync') {
+    const dataset = await getLiveSpeakersDataset();
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
+    });
+    return res.end(JSON.stringify({
+      success: true,
+      message: 'Speakers successfully loaded and synchronized!',
+      source: dataset.source,
+      fromDb: dataset.fromDb,
+      count: dataset.speakers.length
+    }));
+  }
 
   // Handle Auth RESTful API
   if (pathname.toLowerCase().startsWith('api/auth/')) {
@@ -1757,10 +2444,10 @@ function handleRequest(req, res) {
       if (body.length > 1e6) req.connection.destroy();
     });
 
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const post = querystring.parse(body);
-        handlePostRequest(req, res, pathname, post, currentUser);
+        await handlePostRequest(req, res, pathname, post, currentUser);
       } catch (err) {
         console.error('Error in handlePostRequest:', err);
         if (!res.headersSent) {
@@ -1774,7 +2461,7 @@ function handleRequest(req, res) {
 
   // Handle GET requests
   try {
-    handleGetRequest(req, res, pathname, currentUser);
+    await handleGetRequest(req, res, pathname, currentUser);
   } catch (err) {
     console.error('Error in handleGetRequest:', err);
     if (!res.headersSent) {
@@ -1784,30 +2471,71 @@ function handleRequest(req, res) {
   }
 }
 
-function handlePostRequest(req, res, pathname, post, currentUser) {
+async function handlePostRequest(req, res, pathname, post, currentUser) {
   const isArabic = pathname.toLowerCase().startsWith('ar_sa');
   const sub = isArabic ? pathname.slice(5).replace(/^\/+/, '') : pathname;
   const page = sub.toLowerCase();
 
   // Registration POST
   if (['register', 'register.aspx'].includes(page)) {
-    const fullName = (post.TxtFullName || '').trim();
-    const email = (post.TxtEmail || '').trim().toLowerCase();
-    const mobile = (post.TxtMobile || '').trim();
-    const organization = (post.TxtOrganization || '').trim();
-    const jobTitle = (post.TxtJobTitle || '').trim();
-    const password = post.TxtPassword || '';
-    const passwordAgain = post.TxtPasswordAgain || '';
+    const rawFullName = (post.TxtFullName || '').trim();
+    const fullName = sanitizeLettersOnly(post.TxtFullName || '', 100);
+    const email = (post.TxtEmail || '').trim().toLowerCase().slice(0, 100);
+    const countryCode = (post.DdlCountryCode || '+966').trim();
+    const rawMobile = (post.TxtMobile || '').trim().slice(0, 25);
+    const rawOrg = (post.TxtOrganization || '').trim();
+    const organization = sanitizeLettersOnly(post.TxtOrganization || '', 150);
+    const rawJobTitle = (post.TxtJobTitle || '').trim();
+    const jobTitle = sanitizeLettersOnly(post.TxtJobTitle || '', 100);
+    const password = (post.TxtPassword || '').slice(0, 128);
+    const passwordAgain = (post.TxtPasswordAgain || '').slice(0, 128);
 
     const validationErrors = [];
-    if (!fullName || fullName.length < 3) {
-      validationErrors.push(isArabic ? 'يرجى إدخال الاسم الكامل (3 أحرف على الأقل).' : 'Please enter your full name (at least 3 characters).');
+    if (!rawFullName || rawFullName.length < 2) {
+      validationErrors.push(isArabic ? 'يرجى إدخال الاسم الكامل (حرفين على الأقل).' : 'Please enter your full name (at least 2 characters).');
+    } else if (!validateLettersOnly(rawFullName, 2, 100)) {
+      validationErrors.push(isArabic ? 'يجب أن يحتوي الاسم الكامل على أحرف فقط (كبيرة وصغيرة).' : 'Full name must contain letters only (uppercase and lowercase).');
     }
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+
+    if (!validateEmailAddress(email)) {
       validationErrors.push(isArabic ? 'يرجى إدخال بريد إلكتروني صالح.' : 'Please enter a valid email address.');
     }
+
+    if (rawOrg && !validateLettersOnly(rawOrg, 1, 150)) {
+      validationErrors.push(isArabic ? 'يجب أن يحتوي اسم جهة العمل / المنظمة على أحرف فقط (كبيرة وصغيرة).' : 'Organization must contain letters only (uppercase and lowercase).');
+    }
+
+    if (rawJobTitle && !validateLettersOnly(rawJobTitle, 1, 100)) {
+      validationErrors.push(isArabic ? 'يجب أن يحتوي المسمى الوظيفي / التخصص على أحرف فقط (كبيرة وصغيرة).' : 'Position / Field must contain letters only (uppercase and lowercase).');
+    }
+
     if (DEV_USERS[email]) {
       validationErrors.push(isArabic ? 'هذا البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول أو استعادة كلمة المرور.' : 'This email is already registered. Please sign in or reset your password.');
+    }
+
+    // Check duplicate in live SQL Server if connected
+    if (dbPool && sql && !DEV_USERS[email]) {
+      try {
+        const dupCheck = await dbPool.request()
+          .input('Email', sql.VarChar, email)
+          .query('SELECT COUNT(1) AS cnt FROM dbo.Attendees WHERE Email = @Email');
+        if (dupCheck.recordset[0].cnt > 0) {
+          validationErrors.push(isArabic ? 'هذا البريد الإلكتروني مسجل بالفعل في قاعدة البيانات.' : 'This email is already registered in the database.');
+        }
+      } catch (err) {
+        // ignore check error, fallback to memory
+      }
+    }
+
+    // Validate phone number if provided
+    let finalMobile = '';
+    if (rawMobile) {
+      const phoneRes = normalizeAndValidatePhone(countryCode, rawMobile, isArabic);
+      if (!phoneRes.valid) {
+        validationErrors.push(phoneRes.error);
+      } else {
+        finalMobile = phoneRes.fullPhone;
+      }
     }
 
     // Enforce stronger password scheme
@@ -1820,7 +2548,7 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
 
     if (validationErrors.length > 0) {
       const template = isArabic ? 'Ar_Sa/Register.aspx' : 'Register.aspx';
-      const html = parseAspx(path.join(BASE_DIR, template), req.url, { errorAlert: renderErrorList(validationErrors), formData: post });
+      const html = await parseAspx(path.join(BASE_DIR, template), req.url, { errorAlert: renderErrorList(validationErrors), formData: post });
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
@@ -1830,7 +2558,7 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
     DEV_USERS[email] = {
       fullName,
       email,
-      mobile,
+      mobile: finalMobile,
       organization,
       jobTitle,
       specialty: '',
@@ -1846,6 +2574,36 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
       surveyRoadmap: []
     };
     saveUsers();
+
+    // Persist directly into SQL Server dbo.Attendees
+    if (dbPool && sql) {
+      try {
+        const passCode = 'PASS-' + Math.floor(100000 + Math.random() * 900000);
+        await dbPool.request()
+          .input('FullName', sql.NVarChar, fullName)
+          .input('Email', sql.VarChar, email)
+          .input('MobileNo', sql.VarChar, finalMobile)
+          .input('PasswordHash', sql.NVarChar, pHash)
+          .input('Organization', sql.NVarChar, organization)
+          .input('JobTitle', sql.NVarChar, jobTitle)
+          .input('PassCode', sql.VarChar, passCode)
+          .query(`
+            IF NOT EXISTS (SELECT 1 FROM dbo.Attendees WHERE Email = @Email)
+            BEGIN
+              INSERT INTO dbo.Attendees (
+                FullName, Email, MobileNo, PasswordHash, Organization, JobTitle,
+                UserLevel, PassCode, IsBlocked, IsEmailVerified, SecurityStamp, RegisteredAt, UpdatedAtUtc
+              ) VALUES (
+                @FullName, @Email, @MobileNo, @PasswordHash, @Organization, @JobTitle,
+                'User', @PassCode, 0, 1, NEWID(), GETDATE(), SYSUTCDATETIME()
+              );
+            END
+          `);
+        console.log(`[SAIRH DB] Live SQL Server: Saved attendee '${email}' into dbo.Attendees!`);
+      } catch (dbErr) {
+        console.error('[SAIRH DB] Error inserting attendee into SQL Server:', dbErr.message);
+      }
+    }
 
     const redirectPath = isArabic ? '/Ar_Sa/Profile' : '/Profile';
     res.writeHead(302, {
@@ -1880,10 +2638,10 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
   // ForgotPassword POST
   if (['forgotpassword', 'forgotpassword.aspx'].includes(page)) {
     const email = (post.TxtEmail || '').trim().toLowerCase();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!validateEmailAddress(email)) {
       const err = isArabic ? 'يرجى إدخال بريد إلكتروني صالح.' : 'Please enter a valid email address.';
       const template = isArabic ? 'Ar_Sa/ForgotPassword.aspx' : 'ForgotPassword.aspx';
-      const html = parseAspx(path.join(BASE_DIR, template), req.url, { errorAlert: err, formData: post });
+      const html = await parseAspx(path.join(BASE_DIR, template), req.url, { errorAlert: err, formData: post });
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
@@ -1899,7 +2657,7 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
       resetUrl = isArabic ? `/Ar_Sa/ResetPassword?token=${token}` : `/ResetPassword?token=${token}`;
     }
     const template = isArabic ? 'Ar_Sa/ForgotPassword.aspx' : 'ForgotPassword.aspx';
-    const html = parseAspx(path.join(BASE_DIR, template), req.url, { resetSuccessUrl: resetUrl });
+    const html = await parseAspx(path.join(BASE_DIR, template), req.url, { resetSuccessUrl: resetUrl });
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     return res.end(html);
   }
@@ -1912,7 +2670,7 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
 
     if (!tokenInfo || tokenInfo.used || tokenInfo.expires < Date.now()) {
       const template = isArabic ? 'Ar_Sa/ResetPassword.aspx' : 'ResetPassword.aspx';
-      const html = parseAspx(path.join(BASE_DIR, template), req.url, { invalidToken: true });
+      const html = await parseAspx(path.join(BASE_DIR, template), req.url, { invalidToken: true });
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
@@ -1920,7 +2678,7 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
     const targetEmail = tokenInfo.email;
     if (!DEV_USERS[targetEmail.toLowerCase()]) {
       const template = isArabic ? 'Ar_Sa/ResetPassword.aspx' : 'ResetPassword.aspx';
-      const html = parseAspx(path.join(BASE_DIR, template), req.url, { invalidToken: true });
+      const html = await parseAspx(path.join(BASE_DIR, template), req.url, { invalidToken: true });
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
@@ -1940,7 +2698,7 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
 
     if (valErrors.length > 0) {
       const template = isArabic ? 'Ar_Sa/ResetPassword.aspx' : 'ResetPassword.aspx';
-      const html = parseAspx(path.join(BASE_DIR, template), req.url, { errorAlert: renderErrorList(valErrors), formData: post });
+      const html = await parseAspx(path.join(BASE_DIR, template), req.url, { errorAlert: renderErrorList(valErrors), formData: post });
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
@@ -1959,7 +2717,7 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
     saveUsers();
 
     const template = isArabic ? 'Ar_Sa/ResetPassword.aspx' : 'ResetPassword.aspx';
-    const html = parseAspx(path.join(BASE_DIR, template), req.url, { resetDone: true });
+    const html = await parseAspx(path.join(BASE_DIR, template), req.url, { resetDone: true });
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     return res.end(html);
   }
@@ -1971,7 +2729,40 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
     const rememberMe = post.ChkRememberMe === 'true' || post.ChkRememberMe === 'on';
 
     let error = null;
-    let user = DEV_USERS[email];
+
+    if (!email || !password) {
+      error = isArabic ? 'يرجى إدخال البريد الإلكتروني وكلمة المرور.' : 'Please enter both your email address and password.';
+    } else if (!validateEmailAddress(email)) {
+      error = isArabic ? 'يرجى إدخال بريد إلكتروني صالح.' : 'Please enter a valid email address.';
+    }
+
+    let user = (!error && email) ? DEV_USERS[email] : null;
+
+    // Check live SQL Server if connected and user not found locally
+    if (dbPool && sql && !user && email && !error) {
+      try {
+        const dbRes = await dbPool.request()
+          .input('Email', sql.VarChar, email)
+          .query('SELECT * FROM dbo.Attendees WHERE Email = @Email AND IsBlocked = 0');
+        if (dbRes.recordset && dbRes.recordset.length > 0) {
+          const dbRow = dbRes.recordset[0];
+          user = {
+            fullName: dbRow.FullName,
+            email: dbRow.Email,
+            mobile: dbRow.MobileNo || '',
+            organization: dbRow.Organization || '',
+            jobTitle: dbRow.JobTitle || '',
+            role: dbRow.UserLevel === 'Admin' ? 'Administrator' : 'Attendee',
+            passwordHash: dbRow.PasswordHash,
+            failedAttempts: dbRow.FailedLoginCount || 0,
+            hasCompletedSurvey: !!dbRow.HasCompletedSurvey
+          };
+          DEV_USERS[email] = user;
+        }
+      } catch (err) {
+        // fallback
+      }
+    }
 
     if (!email || !password) {
       error = isArabic ? 'يرجى إدخال البريد الإلكتروني وكلمة المرور.' : 'Please enter both your email address and password.';
@@ -2014,7 +2805,7 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
 
     if (error) {
       const template = isArabic ? 'Ar_Sa/Login.aspx' : 'Login.aspx';
-      const html = parseAspx(path.join(BASE_DIR, template), req.url, { errorAlert: error, formData: post });
+      const html = await parseAspx(path.join(BASE_DIR, template), req.url, { errorAlert: error, formData: post });
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
@@ -2045,51 +2836,143 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
     if (post.BtnPudateProfile !== undefined || post.TxtEditFullName || post.TxtEditOrg !== undefined) {
       const isAjax = req.headers['x-requested-with'] === 'XMLHttpRequest' || (req.headers['accept'] && req.headers['accept'].includes('application/json'));
 
-      let name = (post.TxtEditFullName || '').trim().slice(0, 100);
-      let mobile = (post.TxtEditMobile || '').trim().slice(0, 25);
-      const org = (post.TxtEditOrg || '').trim().slice(0, 200);
-      const jobTitle = (post.TxtEditJobTitle || '').trim().slice(0, 150);
-      const specialty = (post.TxtEditSpecialty || '').trim().slice(0, 150);
-      let linkedIn = (post.TxtEditLinkedIn || '').trim().slice(0, 300);
+      const rawName = (post.TxtEditFullName || '').trim();
+      let name = sanitizeLettersOnly(rawName, 100);
+      let countryCode = (post.DdlEditCountryCode || '+966').trim();
+      let rawMobile = (post.TxtEditMobile || '').trim().slice(0, 25);
+      const rawOrg = (post.TxtEditOrg || '').trim();
+      const org = sanitizeLettersOnly(rawOrg, 150);
+      const rawJobTitle = (post.TxtJobTitle || post.TxtEditJobTitle || '').trim();
+      const jobTitle = sanitizeLettersOnly(rawJobTitle, 100);
+      const rawSpecialty = (post.TxtEditSpecialty || '').trim();
+      const specialty = sanitizeLettersOnly(rawSpecialty, 100);
+      let rawLinkedIn = (post.TxtEditLinkedIn || '').trim().slice(0, 300);
 
-      // Normalize Arabic Indic digits in mobile
-      if (mobile) {
-        mobile = mobile.replace(/[\u0660-\u0669]/g, c => String(c.charCodeAt(0) - 0x0660))
-                       .replace(/[\u06F0-\u06F9]/g, c => String(c.charCodeAt(0) - 0x06F0))
-                       .replace(/[^\d+() -]/g, '');
-      }
-
-      // Normalize LinkedIn URL
-      if (linkedIn && !/^https?:\/\//i.test(linkedIn)) {
-        linkedIn = 'https://' + linkedIn;
-      }
-
-      if (name.length < 3) {
-        const errorMsg = isArabic ? 'يرجى إدخال اسم كامل صحيح (3 أحرف على الأقل).' : 'Please enter a valid full name (at least 3 characters).';
+      if (!rawName || rawName.length < 2) {
+        const errorMsg = isArabic ? 'يرجى إدخال اسم كامل صحيح (حرفين على الأقل).' : 'Please enter a valid full name (at least 2 characters).';
         if (isAjax) {
           res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
           return res.end(JSON.stringify({ success: false, error: errorMsg }));
         }
-        const html = parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'profile', profileErrorAlert: errorMsg, formData: post });
+        const html = await parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'profile', profileErrorAlert: errorMsg, formData: post });
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         return res.end(html);
       }
 
+      if (!validateLettersOnly(rawName, 2, 100)) {
+        const errorMsg = isArabic ? 'يجب أن يحتوي الاسم الكامل على أحرف فقط (كبيرة وصغيرة).' : 'Full name must contain letters only (uppercase and lowercase).';
+        if (isAjax) {
+          res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+          return res.end(JSON.stringify({ success: false, error: errorMsg }));
+        }
+        const html = await parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'profile', profileErrorAlert: errorMsg, formData: post });
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        return res.end(html);
+      }
+
+      if (rawOrg && !validateLettersOnly(rawOrg, 1, 150)) {
+        const errorMsg = isArabic ? 'يجب أن يحتوي اسم جهة العمل / المنظمة على أحرف فقط (كبيرة وصغيرة).' : 'Organization must contain letters only (uppercase and lowercase).';
+        if (isAjax) {
+          res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+          return res.end(JSON.stringify({ success: false, error: errorMsg }));
+        }
+        const html = await parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'profile', profileErrorAlert: errorMsg, formData: post });
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        return res.end(html);
+      }
+
+      if (rawJobTitle && !validateLettersOnly(rawJobTitle, 1, 100)) {
+        const errorMsg = isArabic ? 'يجب أن يحتوي المسمى الوظيفي على أحرف فقط (كبيرة وصغيرة).' : 'Position must contain letters only (uppercase and lowercase).';
+        if (isAjax) {
+          res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+          return res.end(JSON.stringify({ success: false, error: errorMsg }));
+        }
+        const html = await parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'profile', profileErrorAlert: errorMsg, formData: post });
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        return res.end(html);
+      }
+
+      if (rawSpecialty && !validateLettersOnly(rawSpecialty, 1, 100)) {
+        const errorMsg = isArabic ? 'يجب أن يحتوي مجال التخصص على أحرف فقط (كبيرة وصغيرة).' : 'Field must contain letters only (uppercase and lowercase).';
+        if (isAjax) {
+          res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+          return res.end(JSON.stringify({ success: false, error: errorMsg }));
+        }
+        const html = await parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'profile', profileErrorAlert: errorMsg, formData: post });
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        return res.end(html);
+      }
+
+      let finalMobile = '';
+      if (rawMobile) {
+        const phoneRes = normalizeAndValidatePhone(countryCode, rawMobile, isArabic);
+        if (!phoneRes.valid) {
+          if (isAjax) {
+            res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+            return res.end(JSON.stringify({ success: false, error: phoneRes.error }));
+          }
+          const html = await parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'profile', profileErrorAlert: phoneRes.error, formData: post });
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          return res.end(html);
+        }
+        finalMobile = phoneRes.fullPhone;
+      }
+
+      let finalLinkedIn = '';
+      if (rawLinkedIn) {
+        const linkRes = validateLinkedInUrl(rawLinkedIn);
+        if (!linkRes.valid) {
+          const errorMsg = isArabic ? 'يرجى إدخال رابط لينكد إن صالح (مثال: https://linkedin.com/in/username).' : 'Please enter a valid LinkedIn URL (e.g. https://linkedin.com/in/username).';
+          if (isAjax) {
+            res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+            return res.end(JSON.stringify({ success: false, error: errorMsg }));
+          }
+          const html = await parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'profile', profileErrorAlert: errorMsg, formData: post });
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          return res.end(html);
+        }
+        finalLinkedIn = linkRes.url;
+      }
+
       currentUser.fullName = name;
-      currentUser.mobile = mobile;
+      currentUser.mobile = finalMobile;
       currentUser.organization = org;
       currentUser.jobTitle = jobTitle;
       currentUser.specialty = specialty;
-      currentUser.linkedIn = linkedIn;
+      currentUser.linkedIn = finalLinkedIn;
       DEV_USERS[currentUser.email.toLowerCase()] = currentUser;
       saveUsers();
+
+      // Update in live SQL Server
+      if (dbPool && sql) {
+        try {
+          await dbPool.request()
+            .input('Email', sql.VarChar, currentUser.email.toLowerCase())
+            .input('FullName', sql.NVarChar, name)
+            .input('MobileNo', sql.VarChar, finalMobile)
+            .input('Organization', sql.NVarChar, org)
+            .input('JobTitle', sql.NVarChar, jobTitle)
+            .input('Specialty', sql.NVarChar, specialty)
+            .input('LinkedInUrl', sql.VarChar, finalLinkedIn)
+            .query(`
+              UPDATE dbo.Attendees
+              SET FullName = @FullName, MobileNo = @MobileNo, Organization = @Organization,
+                  JobTitle = @JobTitle, Specialty = @Specialty, LinkedInUrl = @LinkedInUrl,
+                  UpdatedAtUtc = SYSUTCDATETIME()
+              WHERE Email = @Email;
+            `);
+          console.log(`[SAIRH DB] Live SQL Server: Updated profile for '${currentUser.email}' in dbo.Attendees!`);
+        } catch (dbErr) {
+          console.error('[SAIRH DB] Error updating profile in SQL Server:', dbErr.message);
+        }
+      }
 
       const successMsg = isArabic ? 'تم حفظ التعديلات بنجاح!' : 'Your profile changes have been saved successfully!';
       if (isAjax) {
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
         return res.end(JSON.stringify({ success: true, message: successMsg, user: currentUser }));
       }
-      const html = parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'profile', profileSuccessAlert: successMsg });
+      const html = await parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'profile', profileSuccessAlert: successMsg });
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
@@ -2119,7 +3002,7 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
       }
 
       if (errors.length > 0) {
-        const html = parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'password', passwordErrorAlert: renderErrorList(errors) });
+        const html = await parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'password', passwordErrorAlert: renderErrorList(errors) });
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         return res.end(html);
       }
@@ -2134,18 +3017,112 @@ function handlePostRequest(req, res, pathname, post, currentUser) {
       DEV_USERS[currentUser.email.toLowerCase()] = currentUser;
       saveUsers();
 
+      // Update in live SQL Server
+      if (dbPool && sql) {
+        try {
+          await dbPool.request()
+            .input('Email', sql.VarChar, currentUser.email.toLowerCase())
+            .input('PasswordHash', sql.NVarChar, newHash)
+            .query(`
+              UPDATE dbo.Attendees
+              SET PasswordHash = @PasswordHash, PasswordChangedAtUtc = SYSUTCDATETIME(), UpdatedAtUtc = SYSUTCDATETIME()
+              WHERE Email = @Email;
+            `);
+          console.log(`[SAIRH DB] Live SQL Server: Updated password for '${currentUser.email}' in dbo.Attendees!`);
+        } catch (dbErr) {
+          console.error('[SAIRH DB] Error updating password in SQL Server:', dbErr.message);
+        }
+      }
+
       const successMsg = isArabic ? 'تم تغيير كلمة المرور بنجاح!' : 'Your password has been changed successfully!';
-      const html = parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'password', passwordSuccessAlert: successMsg });
+      const html = await parseAspx(path.join(BASE_DIR, template), req.url, { user: currentUser, activeTab: 'password', passwordSuccessAlert: successMsg });
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
     }
   }
 
+  // ContactUs POST
+  if (['contactus', 'contactus.aspx'].includes(page)) {
+    const isAjax = req.headers['x-requested-with'] === 'XMLHttpRequest' || (req.headers['accept'] && req.headers['accept'].includes('application/json'));
+    const template = isArabic ? 'Ar_Sa/ContactUs.aspx' : 'ContactUs.aspx';
+
+    const name = sanitizeInput(post.TxtName || '', 100);
+    const email = (post.TxtEmail || '').trim().toLowerCase().slice(0, 100);
+    const countryCode = (post.DdlContactCountryCode || '+966').trim();
+    const rawMobile = (post.TxtMobile || '').trim().slice(0, 25);
+    const message = sanitizeInput(post.TxtMessage || '', 2000);
+
+    const errors = [];
+    if (!name || name.length < 3) {
+      errors.push(isArabic ? 'يرجى إدخال الاسم الكامل (3 أحرف على الأقل).' : 'Please enter your full name (at least 3 characters).');
+    }
+    if (!email || !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(email)) {
+      errors.push(isArabic ? 'يرجى إدخال بريد إلكتروني صالح.' : 'Please enter a valid email address.');
+    }
+    if (!message || message.length < 10) {
+      errors.push(isArabic ? 'يرجى كتابة رسالة توضيحية (10 أحرف على الأقل).' : 'Please enter a message (at least 10 characters).');
+    }
+
+    let finalMobile = '';
+    if (rawMobile) {
+      const pRes = normalizeAndValidatePhone(countryCode, rawMobile, isArabic);
+      if (!pRes.valid) {
+        errors.push(pRes.error);
+      } else {
+        finalMobile = pRes.fullPhone;
+      }
+    }
+
+    if (errors.length > 0) {
+      const errHtml = renderErrorList(errors);
+      if (isAjax) {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        return res.end(JSON.stringify({ success: false, errors }));
+      }
+      const html = await parseAspx(path.join(BASE_DIR, template), req.url, { errorAlert: errHtml, formData: post });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      return res.end(html);
+    }
+
+    // Success: save into DB if connected or log
+    if (dbPool && sql) {
+      try {
+        await dbPool.request()
+          .input('FullName', sql.NVarChar, name)
+          .input('Email', sql.VarChar, email)
+          .input('MobileNo', sql.VarChar, finalMobile)
+          .input('Message', sql.NVarChar, message)
+          .query(`
+            IF OBJECT_ID('dbo.ContactInquiries', 'U') IS NOT NULL
+            BEGIN
+              INSERT INTO dbo.ContactInquiries (FullName, Email, MobileNo, Message, CreatedAtUtc)
+              VALUES (@FullName, @Email, @MobileNo, @Message, SYSUTCDATETIME());
+            END
+          `);
+      } catch (dbErr) {
+        console.warn('[SAIRH DB] Contact inquiry db insert note:', dbErr.message);
+      }
+    }
+
+    const successMsg = isArabic
+      ? 'تم إرسال رسالتك بنجاح! شكراً لتواصلك مع فريق SAIRH 2026.'
+      : 'Your message has been submitted successfully! Thank you for contacting SAIRH 2026.';
+
+    if (isAjax) {
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      return res.end(JSON.stringify({ success: true, message: successMsg }));
+    }
+
+    const html = await parseAspx(path.join(BASE_DIR, template), req.url, { successAlert: successMsg, formData: {} });
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    return res.end(html);
+  }
+
   // Default POST fallback: re-render page
-  handleGetRequest(req, res, pathname, currentUser);
+  await handleGetRequest(req, res, pathname, currentUser);
 }
 
-function handleGetRequest(req, res, pathname, currentUser) {
+async function handleGetRequest(req, res, pathname, currentUser) {
   const isArabic = pathname.toLowerCase().startsWith('ar_sa');
   const sub = isArabic ? pathname.slice(5).replace(/^\/+/, '') : pathname;
   let aspxFile = null;
@@ -2253,7 +3230,7 @@ function handleGetRequest(req, res, pathname, currentUser) {
         invTok = true;
       }
     }
-    const html = parseAspx(full, req.url, { user: currentUser, invalidToken: invTok });
+    const html = await parseAspx(full, req.url, { user: currentUser, invalidToken: invTok });
     if (html) {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(html);
@@ -2269,8 +3246,18 @@ const httpsPort = 7198;
 const httpPort = 52541;
 
 if (require.main === module) {
+  const requestListener = (req, res) => {
+    handleRequest(req, res).catch(err => {
+      console.error('Unhandled request error:', err);
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(`<h3>500 Internal Server Error</h3><pre>${err.stack || err.message}</pre>`);
+      }
+    });
+  };
+
   // Start HTTP Server
-  http.createServer(handleRequest).listen(httpPort, '0.0.0.0', () => {
+  http.createServer(requestListener).listen(httpPort, '0.0.0.0', () => {
     console.log(`[*] SAIRH HTTP Server active on http://localhost:${httpPort}`);
   });
 
@@ -2280,7 +3267,7 @@ if (require.main === module) {
     cert: fs.readFileSync(path.join(BASE_DIR, '.certs/cert.pem'))
   };
 
-  https.createServer(sslOptions, handleRequest).listen(httpsPort, '0.0.0.0', () => {
+  https.createServer(sslOptions, requestListener).listen(httpsPort, '0.0.0.0', () => {
     console.log(`[*] SAIRH HTTPS Server active on https://localhost:${httpsPort}`);
   });
 
@@ -2307,5 +3294,12 @@ module.exports = {
   verifySessionCookie,
   buildSessionCookieHeader,
   buildClearSessionCookieHeader,
-  getSafeReturnUrl
+  getSafeReturnUrl,
+  sanitizeInput,
+  splitPhoneNumber,
+  normalizeAndValidatePhone,
+  validateLinkedInUrl,
+  getDbPool,
+  getLiveSpeakersDataset,
+  computeInitials
 };

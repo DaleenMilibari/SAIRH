@@ -108,6 +108,58 @@ def seed_default_accounts():
 
 seed_default_accounts()
 
+LETTERS_ONLY_REGEX = re.compile(r'^[a-zA-Z\u0600-\u06FF\s]+$')
+SAFE_EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.!#$%&\'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$')
+LINKEDIN_REGEX = re.compile(r'^https?://([a-zA-Z0-9-]+\.)?linkedin\.com/(in|company|pub|school)/[a-zA-Z0-9_/%-]+(?:\?[a-zA-Z0-9_=&%-]+)?$', re.IGNORECASE)
+
+def validate_letters_only(val, min_len=0, max_len=150):
+    if not val:
+        return min_len == 0
+    trimmed = str(val).strip()
+    if min_len > 0 and len(trimmed) < min_len:
+        return False
+    if max_len > 0 and len(trimmed) > max_len:
+        return False
+    return bool(LETTERS_ONLY_REGEX.match(trimmed))
+
+def sanitize_letters_only(val, max_len=150):
+    if not val:
+        return ''
+    cleaned = re.sub(r'[^a-zA-Z\u0600-\u06FF\s]', '', str(val))
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    return cleaned[:max_len] if max_len > 0 else cleaned
+
+def validate_email_address(email):
+    if not email:
+        return False
+    clean = str(email).strip()
+    if len(clean) < 5 or len(clean) > 100:
+        return False
+    if any(c in clean for c in '<>"\'\\\r\n\0;'):
+        return False
+    return bool(SAFE_EMAIL_REGEX.match(clean))
+
+def validate_linkedin_url(url):
+    if not url:
+        return True, ''
+    clean = str(url).strip()
+    if not clean:
+        return True, ''
+    if re.search(r'^(javascript|data|vbscript|file|about|blob):', clean, re.IGNORECASE) or any(c in clean for c in '<>"\';(){}[\\]'):
+        return False, ''
+    if not re.match(r'^https?://', clean, re.IGNORECASE):
+        if re.match(r'^(?:www\.)?linkedin\.com', clean, re.IGNORECASE) or clean.lower().startswith('in/'):
+            clean = 'https://' + ('linkedin.com/' + clean if clean.lower().startswith('in/') else clean)
+        elif '/' not in clean and '.' not in clean:
+            clean = 'https://linkedin.com/in/' + clean
+        else:
+            clean = 'https://' + clean
+    if len(clean) > 300:
+        return False, ''
+    if not LINKEDIN_REGEX.match(clean):
+        return False, ''
+    return True, clean
+
 
 COMMON_PASSWORDS = {
     'password', 'password1', 'password12', 'password123', 'password1234', 'passw0rd', 'p@ssw0rd',
@@ -589,6 +641,25 @@ def fetch_speakers_from_database(params):
         pass
     except Exception as e:
         return None, None, f"pyodbc connection error to {host}:{port}: {e}"
+
+    # 3. Try Node.js mssql bridge
+    try:
+        import subprocess
+        node_script = f"""
+        const sql = require('./node_modules/mssql');
+        const cfg = {{ user: '{user}', password: '{pwd}', server: '{host}', port: {port}, database: '{db}', options: {{ trustServerCertificate: true, encrypt: false, connectTimeout: 4000 }} }};
+        new sql.ConnectionPool(cfg).connect().then(p => p.request().query('SELECT * FROM dbo.vw_SummitSpeakers ORDER BY Sorting ASC, SpeakerID ASC')).then(r => {{
+            console.log(JSON.stringify(r.recordset));
+            process.exit(0);
+        }}).catch(e => {{ console.error(e.message); process.exit(1); }});
+        """
+        proc = subprocess.run(['node', '-e', node_script], cwd=BASE_DIR, capture_output=True, text=True, timeout=5)
+        if proc.returncode == 0 and proc.stdout.strip():
+            rows = json.loads(proc.stdout)
+            if rows:
+                return rows, f"SQL Server database '{db}' via Node mssql", None
+    except Exception:
+        pass
 
     return None, None, "Neither 'pymssql' nor 'pyodbc' is installed in Python."
 
@@ -1422,31 +1493,87 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                 post_data = parse_qs(post_body)
                 payload = {k: v[0] for k, v in post_data.items()}
 
-            full_name = (payload.get('FullName') or payload.get('fullName') or payload.get('TxtEditFullName') or '').strip()[:100]
-            mobile = (payload.get('MobileNo') or payload.get('mobile') or payload.get('TxtEditMobile') or '').strip()[:25]
-            org = (payload.get('Organization') or payload.get('organization') or payload.get('TxtEditOrg') or '').strip()[:200]
-            job_title = (payload.get('JobTitle') or payload.get('jobTitle') or payload.get('TxtEditJobTitle') or '').strip()[:150]
-            specialty = (payload.get('Specialty') or payload.get('specialty') or payload.get('TxtEditSpecialty') or '').strip()[:150]
-            linkedin = (payload.get('LinkedInUrl') or payload.get('linkedIn') or payload.get('TxtEditLinkedIn') or '').strip()[:300]
+            raw_name = (payload.get('FullName') or payload.get('fullName') or payload.get('TxtEditFullName') or '').strip()
+            raw_mobile = (payload.get('MobileNo') or payload.get('mobile') or payload.get('TxtEditMobile') or '').strip()
+            raw_org = (payload.get('Organization') or payload.get('organization') or payload.get('TxtEditOrg') or '').strip()
+            raw_job_title = (payload.get('JobTitle') or payload.get('jobTitle') or payload.get('TxtEditJobTitle') or '').strip()
+            raw_specialty = (payload.get('Specialty') or payload.get('specialty') or payload.get('TxtEditSpecialty') or '').strip()
+            raw_linkedin = (payload.get('LinkedInUrl') or payload.get('linkedIn') or payload.get('TxtEditLinkedIn') or '').strip()
 
-            if full_name and len(full_name) < 3:
-                self.send_response(400)
-                self.send_header('Content-Type', 'application/json; charset=utf-8')
-                res = json.dumps({'error': 'Please enter your full name (at least 3 characters).'}).encode('utf-8')
-                self.send_header('Content-Length', str(len(res)))
-                self.end_headers()
-                self.wfile.write(res)
-                return
+            if raw_name:
+                if len(raw_name) < 2:
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    res = json.dumps({'error': 'Please enter your full name (at least 2 characters).'}).encode('utf-8')
+                    self.send_header('Content-Length', str(len(res)))
+                    self.end_headers()
+                    self.wfile.write(res)
+                    return
+                if not validate_letters_only(raw_name, 2, 100):
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    res = json.dumps({'error': 'Full name must contain letters only (uppercase and lowercase).'}).encode('utf-8')
+                    self.send_header('Content-Length', str(len(res)))
+                    self.end_headers()
+                    self.wfile.write(res)
+                    return
+                current_user['fullName'] = sanitize_letters_only(raw_name, 100)
 
-            if full_name: current_user['fullName'] = full_name
-            if mobile is not None: current_user['mobile'] = mobile
-            if org is not None: current_user['organization'] = org
-            if job_title is not None: current_user['jobTitle'] = job_title
-            if specialty is not None: current_user['specialty'] = specialty
-            if linkedin is not None:
-                if linkedin and not (linkedin.startswith('http://') or linkedin.startswith('https://')):
-                    linkedin = 'https://' + linkedin
-                current_user['linkedIn'] = linkedin
+            if raw_org:
+                if not validate_letters_only(raw_org, 1, 150):
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    res = json.dumps({'error': 'Organization must contain letters only (uppercase and lowercase).'}).encode('utf-8')
+                    self.send_header('Content-Length', str(len(res)))
+                    self.end_headers()
+                    self.wfile.write(res)
+                    return
+                current_user['organization'] = sanitize_letters_only(raw_org, 150)
+            elif payload.get('Organization') is not None or payload.get('organization') is not None or payload.get('TxtEditOrg') is not None:
+                current_user['organization'] = ''
+
+            if raw_job_title:
+                if not validate_letters_only(raw_job_title, 1, 100):
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    res = json.dumps({'error': 'Position / Job title must contain letters only (uppercase and lowercase).'}).encode('utf-8')
+                    self.send_header('Content-Length', str(len(res)))
+                    self.end_headers()
+                    self.wfile.write(res)
+                    return
+                current_user['jobTitle'] = sanitize_letters_only(raw_job_title, 100)
+            elif payload.get('JobTitle') is not None or payload.get('jobTitle') is not None or payload.get('TxtEditJobTitle') is not None:
+                current_user['jobTitle'] = ''
+
+            if raw_specialty:
+                if not validate_letters_only(raw_specialty, 1, 100):
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    res = json.dumps({'error': 'Field / Specialty must contain letters only (uppercase and lowercase).'}).encode('utf-8')
+                    self.send_header('Content-Length', str(len(res)))
+                    self.end_headers()
+                    self.wfile.write(res)
+                    return
+                current_user['specialty'] = sanitize_letters_only(raw_specialty, 100)
+            elif payload.get('Specialty') is not None or payload.get('specialty') is not None or payload.get('TxtEditSpecialty') is not None:
+                current_user['specialty'] = ''
+
+            if raw_linkedin:
+                is_valid_link, norm_linkedin = validate_linkedin_url(raw_linkedin)
+                if not is_valid_link:
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    res = json.dumps({'error': 'Please enter a valid LinkedIn URL.'}).encode('utf-8')
+                    self.send_header('Content-Length', str(len(res)))
+                    self.end_headers()
+                    self.wfile.write(res)
+                    return
+                current_user['linkedIn'] = norm_linkedin
+            elif payload.get('LinkedInUrl') is not None or payload.get('linkedIn') is not None or payload.get('TxtEditLinkedIn') is not None:
+                current_user['linkedIn'] = ''
+
+            if raw_mobile is not None and (payload.get('MobileNo') is not None or payload.get('mobile') is not None or payload.get('TxtEditMobile') is not None):
+                current_user['mobile'] = raw_mobile[:25]
 
             DEV_USERS[current_user['email'].lower()] = current_user
             DEV_USERS[current_user['email']] = current_user
@@ -1474,19 +1601,32 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
 
         # Registration POST
         if page in ['register', 'register.aspx']:
-            full_name = form.get('TxtFullName', '').strip()
-            email = form.get('TxtEmail', '').strip().lower()
-            mobile = form.get('TxtMobile', '').strip()
-            organization = form.get('TxtOrganization', '').strip()
-            job_title = form.get('TxtJobTitle', '').strip()
-            password = form.get('TxtPassword', '')
-            password_again = form.get('TxtPasswordAgain', '')
+            raw_full_name = form.get('TxtFullName', '').strip()
+            full_name = sanitize_letters_only(raw_full_name, 100)
+            email = form.get('TxtEmail', '').strip().lower()[:100]
+            mobile = form.get('TxtMobile', '').strip()[:25]
+            raw_org = form.get('TxtOrganization', '').strip()
+            organization = sanitize_letters_only(raw_org, 150)
+            raw_job_title = form.get('TxtJobTitle', '').strip()
+            job_title = sanitize_letters_only(raw_job_title, 100)
+            password = form.get('TxtPassword', '')[:128]
+            password_again = form.get('TxtPasswordAgain', '')[:128]
 
             validation_errors = []
-            if not full_name or len(full_name) < 3:
-                validation_errors.append('يرجى إدخال الاسم الكامل (3 أحرف على الأقل).' if is_arabic else 'Please enter your full name (at least 3 characters).')
-            if not email or not re.match(r'^[^\s@]+@[^\s@]+\.[^\s@]+$', email):
+            if not raw_full_name or len(raw_full_name) < 2:
+                validation_errors.append('يرجى إدخال الاسم الكامل (حرفين على الأقل).' if is_arabic else 'Please enter your full name (at least 2 characters).')
+            elif not validate_letters_only(raw_full_name, 2, 100):
+                validation_errors.append('يجب أن يحتوي الاسم الكامل على أحرف فقط (كبيرة وصغيرة).' if is_arabic else 'Full name must contain letters only (uppercase and lowercase).')
+
+            if not validate_email_address(email):
                 validation_errors.append('يرجى إدخال بريد إلكتروني صالح.' if is_arabic else 'Please enter a valid email address.')
+
+            if raw_org and not validate_letters_only(raw_org, 1, 150):
+                validation_errors.append('يجب أن يحتوي اسم جهة العمل / المنظمة على أحرف فقط (كبيرة وصغيرة).' if is_arabic else 'Organization must contain letters only (uppercase and lowercase).')
+
+            if raw_job_title and not validate_letters_only(raw_job_title, 1, 100):
+                validation_errors.append('يجب أن يحتوي المسمى الوظيفي / التخصص على أحرف فقط (كبيرة وصغيرة).' if is_arabic else 'Position / Field must contain letters only (uppercase and lowercase).')
+
             if email in DEV_USERS:
                 validation_errors.append('هذا البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول أو استعادة كلمة المرور.' if is_arabic else 'This email is already registered. Please sign in or reset your password.')
 
@@ -1679,6 +1819,10 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
             error = None
             if not email or not password:
                 error = 'يرجى إدخال البريد الإلكتروني وكلمة المرور.' if is_arabic else 'Please enter both your email address and password.'
+            elif not validate_email_address(email):
+                error = 'يرجى إدخال بريد إلكتروني صالح.' if is_arabic else 'Please enter a valid email address.'
+            elif any(c in password for c in '\0') or len(password) > 256:
+                error = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.' if is_arabic else 'Incorrect email or password.'
             else:
                 user = DEV_USERS.get(email)
                 if user and user.get('passwordHash'):
@@ -1741,31 +1885,15 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
             if 'BtnPudateProfile' in form or 'TxtEditFullName' in form or 'TxtEditOrg' in form:
                 is_ajax = self.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in self.headers.get('Accept', '')
 
-                name = form.get('TxtEditFullName', '').strip()[:100]
-                mobile = form.get('TxtEditMobile', '').strip()[:25]
-                org = form.get('TxtEditOrg', '').strip()[:200]
-                job_title = form.get('TxtEditJobTitle', '').strip()[:150]
-                specialty = form.get('TxtEditSpecialty', '').strip()[:150]
-                linkedin = form.get('TxtEditLinkedIn', '').strip()[:300]
+                raw_name = form.get('TxtEditFullName', '').strip()
+                raw_mobile = form.get('TxtEditMobile', '').strip()
+                raw_org = form.get('TxtEditOrg', '').strip()
+                raw_job = form.get('TxtEditJobTitle', '').strip()
+                raw_specialty = form.get('TxtEditSpecialty', '').strip()
+                raw_linkedin = form.get('TxtEditLinkedIn', '').strip()
 
-                # Normalize Arabic Indic digits in mobile
-                if mobile:
-                    clean_mobile = ""
-                    for ch in mobile:
-                        if '\u0660' <= ch <= '\u0669':
-                            clean_mobile += str(ord(ch) - ord('\u0660'))
-                        elif '\u06F0' <= ch <= '\u06F9':
-                            clean_mobile += str(ord(ch) - ord('\u06F0'))
-                        elif ch in '0123456789+ -()':
-                            clean_mobile += ch
-                    mobile = clean_mobile.strip()
-
-                # Normalize LinkedIn URL
-                if linkedin and not (linkedin.startswith('http://') or linkedin.startswith('https://')):
-                    linkedin = 'https://' + linkedin
-
-                if len(name) < 3:
-                    err_msg = 'يرجى إدخال اسم كامل صحيح (3 أحرف على الأقل).' if is_arabic else 'Please enter a valid full name (at least 3 characters).'
+                if not raw_name or len(raw_name) < 2:
+                    err_msg = 'يرجى إدخال اسم كامل صحيح (حرفين على الأقل).' if is_arabic else 'Please enter a valid full name (at least 2 characters).'
                     if is_ajax:
                         self.send_response(400)
                         self.send_header('Content-Type', 'application/json; charset=utf-8')
@@ -1782,6 +1910,121 @@ class SairhRequestHandler(SimpleHTTPRequestHandler):
                     self.end_headers()
                     self.wfile.write(encoded)
                     return
+
+                if not validate_letters_only(raw_name, 2, 100):
+                    err_msg = 'يجب أن يحتوي الاسم الكامل على أحرف فقط (كبيرة وصغيرة).' if is_arabic else 'Full name must contain letters only (uppercase and lowercase).'
+                    if is_ajax:
+                        self.send_response(400)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        res_bytes = json.dumps({'success': False, 'error': err_msg}).encode('utf-8')
+                        self.send_header('Content-Length', str(len(res_bytes)))
+                        self.end_headers()
+                        self.wfile.write(res_bytes)
+                        return
+                    html = parse_aspx(os.path.join(BASE_DIR, template), self.path, user=current_user, active_tab='profile', profile_error_alert=err_msg, form_data=form)
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    encoded = html.encode('utf-8')
+                    self.send_header('Content-Length', str(len(encoded)))
+                    self.end_headers()
+                    self.wfile.write(encoded)
+                    return
+
+                if raw_org and not validate_letters_only(raw_org, 1, 150):
+                    err_msg = 'يجب أن يحتوي اسم جهة العمل / المنظمة على أحرف فقط (كبيرة وصغيرة).' if is_arabic else 'Organization must contain letters only (uppercase and lowercase).'
+                    if is_ajax:
+                        self.send_response(400)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        res_bytes = json.dumps({'success': False, 'error': err_msg}).encode('utf-8')
+                        self.send_header('Content-Length', str(len(res_bytes)))
+                        self.end_headers()
+                        self.wfile.write(res_bytes)
+                        return
+                    html = parse_aspx(os.path.join(BASE_DIR, template), self.path, user=current_user, active_tab='profile', profile_error_alert=err_msg, form_data=form)
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    encoded = html.encode('utf-8')
+                    self.send_header('Content-Length', str(len(encoded)))
+                    self.end_headers()
+                    self.wfile.write(encoded)
+                    return
+
+                if raw_job and not validate_letters_only(raw_job, 1, 100):
+                    err_msg = 'يجب أن يحتوي المسمى الوظيفي على أحرف فقط (كبيرة وصغيرة).' if is_arabic else 'Position must contain letters only (uppercase and lowercase).'
+                    if is_ajax:
+                        self.send_response(400)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        res_bytes = json.dumps({'success': False, 'error': err_msg}).encode('utf-8')
+                        self.send_header('Content-Length', str(len(res_bytes)))
+                        self.end_headers()
+                        self.wfile.write(res_bytes)
+                        return
+                    html = parse_aspx(os.path.join(BASE_DIR, template), self.path, user=current_user, active_tab='profile', profile_error_alert=err_msg, form_data=form)
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    encoded = html.encode('utf-8')
+                    self.send_header('Content-Length', str(len(encoded)))
+                    self.end_headers()
+                    self.wfile.write(encoded)
+                    return
+
+                if raw_specialty and not validate_letters_only(raw_specialty, 1, 100):
+                    err_msg = 'يجب أن يحتوي مجال التخصص على أحرف فقط (كبيرة وصغيرة).' if is_arabic else 'Field must contain letters only (uppercase and lowercase).'
+                    if is_ajax:
+                        self.send_response(400)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        res_bytes = json.dumps({'success': False, 'error': err_msg}).encode('utf-8')
+                        self.send_header('Content-Length', str(len(res_bytes)))
+                        self.end_headers()
+                        self.wfile.write(res_bytes)
+                        return
+                    html = parse_aspx(os.path.join(BASE_DIR, template), self.path, user=current_user, active_tab='profile', profile_error_alert=err_msg, form_data=form)
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    encoded = html.encode('utf-8')
+                    self.send_header('Content-Length', str(len(encoded)))
+                    self.end_headers()
+                    self.wfile.write(encoded)
+                    return
+
+                is_valid_link, norm_linkedin = validate_linkedin_url(raw_linkedin)
+                if not is_valid_link:
+                    err_msg = 'يرجى إدخال رابط لينكد إن صالح (مثال: https://linkedin.com/in/username).' if is_arabic else 'Please enter a valid LinkedIn URL (e.g. https://linkedin.com/in/username).'
+                    if is_ajax:
+                        self.send_response(400)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        res_bytes = json.dumps({'success': False, 'error': err_msg}).encode('utf-8')
+                        self.send_header('Content-Length', str(len(res_bytes)))
+                        self.end_headers()
+                        self.wfile.write(res_bytes)
+                        return
+                    html = parse_aspx(os.path.join(BASE_DIR, template), self.path, user=current_user, active_tab='profile', profile_error_alert=err_msg, form_data=form)
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    encoded = html.encode('utf-8')
+                    self.send_header('Content-Length', str(len(encoded)))
+                    self.end_headers()
+                    self.wfile.write(encoded)
+                    return
+
+                # Normalize Arabic Indic digits in mobile
+                mobile = raw_mobile[:25]
+                if mobile:
+                    clean_mobile = ""
+                    for ch in mobile:
+                        if '\u0660' <= ch <= '\u0669':
+                            clean_mobile += str(ord(ch) - ord('\u0660'))
+                        elif '\u06F0' <= ch <= '\u06F9':
+                            clean_mobile += str(ord(ch) - ord('\u06F0'))
+                        elif ch in '0123456789+ -()':
+                            clean_mobile += ch
+                    mobile = clean_mobile.strip()
+
+                name = sanitize_letters_only(raw_name, 100)
+                org = sanitize_letters_only(raw_org, 150)
+                job_title = sanitize_letters_only(raw_job, 100)
+                specialty = sanitize_letters_only(raw_specialty, 100)
+                linkedin = norm_linkedin
 
                 current_user['fullName'] = name
                 current_user['mobile'] = mobile

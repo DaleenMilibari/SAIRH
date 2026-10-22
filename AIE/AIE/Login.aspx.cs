@@ -29,6 +29,19 @@ namespace AIE
                 return;
             }
 
+            string emailErr = AuthService.ValidateEmail(email);
+            if (emailErr != null)
+            {
+                ShowError(AuthMessages.Get(emailErr, false));
+                return;
+            }
+
+            if (password.Length > AuthService.MaxPasswordLength || password.Contains('\0'))
+            {
+                ShowError(AuthMessages.Get("InvalidCredentials", false));
+                return;
+            }
+
             try
             {
                 bool rememberMe = ChkRememberMe != null && ChkRememberMe.Checked;

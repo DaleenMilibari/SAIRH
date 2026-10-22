@@ -32,7 +32,7 @@ namespace AIE
                     linkSponsors.Attributes["class"] += " active";
                 else if (currentPage.Contains("contactus"))
                     linkContactUs.Attributes["class"] += " active";
-                else
+                else if (currentPage.EndsWith("/default.aspx") || currentPage.EndsWith("/default") || currentPage == "/" || currentPage.EndsWith("/"))
                     linkHome.Attributes["class"] += " active";
             }
         }

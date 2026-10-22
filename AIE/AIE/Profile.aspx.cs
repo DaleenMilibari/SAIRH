@@ -128,7 +128,8 @@ namespace AIE
             }
 
             string name = AuthService.NormalizeName(TxtEditFullName.Text);
-            string mobile = AuthService.NormalizeMobile(TxtEditMobile.Text);
+            string countryCode = Request.Form["DdlEditCountryCode"] ?? "+966";
+            string mobile = AuthService.NormalizeMobile(countryCode, TxtEditMobile.Text);
 
             string nameErr = AuthService.ValidateFullName(name);
             if (nameErr != null)
@@ -148,6 +149,34 @@ namespace AIE
             string jobTitle = (TxtEditJobTitle?.Text ?? string.Empty).Trim();
             string specialty = (TxtEditSpecialty?.Text ?? string.Empty).Trim();
             string linkedIn = (TxtEditLinkedIn?.Text ?? string.Empty).Trim();
+
+            string orgErr = AuthService.ValidateOrganization(org);
+            if (orgErr != null)
+            {
+                ShowProfileAlert(AuthMessages.Get(orgErr, false), false);
+                return;
+            }
+
+            string jobErr = AuthService.ValidatePosition(jobTitle);
+            if (jobErr != null)
+            {
+                ShowProfileAlert(AuthMessages.Get(jobErr, false), false);
+                return;
+            }
+
+            string specErr = AuthService.ValidateField(specialty);
+            if (specErr != null)
+            {
+                ShowProfileAlert(AuthMessages.Get(specErr, false), false);
+                return;
+            }
+
+            string linkedInErr = AuthService.ValidateLinkedIn(linkedIn);
+            if (linkedInErr != null)
+            {
+                ShowProfileAlert(AuthMessages.Get(linkedInErr, false), false);
+                return;
+            }
 
             if (!string.IsNullOrEmpty(linkedIn) && !linkedIn.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !linkedIn.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             {

@@ -21,19 +21,20 @@ namespace AIE
         {
             string fullName = AuthService.NormalizeName(TxtFullName.Text);
             string email = AuthService.NormalizeEmail(TxtEmail.Text);
-            string mobile = AuthService.NormalizeMobile(TxtMobile.Text);
+            string countryCode = Request.Form["DdlCountryCode"] ?? "+966";
+            string mobile = AuthService.NormalizeMobile(countryCode, TxtMobile.Text);
+            string organization = (TxtOrganization?.Text ?? string.Empty).Trim();
+            string jobTitle = (TxtJobTitle?.Text ?? string.Empty).Trim();
             string password = TxtPassword.Text ?? string.Empty;
             string passwordAgain = TxtPasswordAgain.Text ?? string.Empty;
 
-            List<string> errors = AuthService.ValidateRegistration(fullName, email, mobile, password, passwordAgain);
+            List<string> errors = AuthService.ValidateRegistration(
+                fullName, email, mobile, password, passwordAgain, organization, jobTitle);
             if (errors.Count > 0)
             {
                 ShowError(AuthMessages.RenderHtml(errors, false));
                 return;
             }
-
-            string organization = (TxtOrganization?.Text ?? string.Empty).Trim();
-            string jobTitle = (TxtJobTitle?.Text ?? string.Empty).Trim();
 
             try
             {
