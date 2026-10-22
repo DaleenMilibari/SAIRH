@@ -25,3 +25,18 @@ appsettings.*.local.json
 __pycache__/
 *.py[cod]
 *$py.class
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln.docuser
+
+# Log files
+*.log
+logs/
+
+# Package manager artifacts 
+node_modules/
