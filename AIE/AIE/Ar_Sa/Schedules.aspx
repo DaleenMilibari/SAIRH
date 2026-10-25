@@ -181,7 +181,7 @@
                     <div class="expo-meta-icon"><i class="bi bi-calendar3"></i></div>
                     <div>
                         <div class="text-white font-weight-bold">تواريخ القمة</div>
-                        <div class="text-secondary small">24 – 26 نوفمبر 2026 • 09:00 - 18:00</div>
+                        <div class="text-secondary small">12 – 13 ديسمبر 2026 • 09:00 - 18:00</div>
                     </div>
                 </div>
                 <div class="expo-meta-item">

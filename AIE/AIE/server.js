@@ -448,8 +448,8 @@ const BOOTH_VISITS_LOG = [];
 let SUMMIT_SETTINGS = {
   titleEn: "Saudi AI in Radiology & Healthcare Summit 2026",
   titleAr: "ملتقى الذكاء الاصطناعي في الأشعة والرعاية الصحية 2026",
-  startDate: "2026-11-18",
-  endDate: "2026-11-19",
+  startDate: "2026-12-12",
+  endDate: "2026-12-13",
   venueEn: "Crowne Plaza RDC Hotel & Convention, Riyadh",
   venueAr: "فندق كراون بلازا آر دي سي ومركز المؤتمرات، الرياض"
 };

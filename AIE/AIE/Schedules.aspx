@@ -175,7 +175,7 @@
                     <div class="expo-meta-icon"><i class="bi bi-calendar3"></i></div>
                     <div>
                         <div class="text-white font-weight-bold">Summit Dates</div>
-                        <div class="text-secondary small">Nov 24 – 26, 2026 • 09:00 - 18:00</div>
+                        <div class="text-secondary small">12 – 13 December 2026 • 09:00 - 18:00</div>
                     </div>
                 </div>
                 <div class="expo-meta-item">

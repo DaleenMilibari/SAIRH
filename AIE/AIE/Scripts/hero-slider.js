@@ -1,13 +1,13 @@
 /**
  * SAIRH - Summit Hero Carousel & Countdown System
  * Handles the 3-slide unified hero carousel with autoplay,
- * interaction-aware pausing, and live countdown to 13 December 2026 09:00 AM AST.
+ * interaction-aware pausing, and live countdown to 12 December 2026 09:00 AM AST.
  */
 (function ($) {
     'use strict';
 
-    // Target Date: 13 December 2026 09:00:00 AST (UTC+3 => 06:00:00 UTC)
-    var SUMMIT_TARGET_UTC = Date.UTC(2026, 11, 13, 6, 0, 0);
+    // Target Date: 12 December 2026 09:00:00 AST (UTC+3 => 06:00:00 UTC)
+    var SUMMIT_TARGET_UTC = Date.UTC(2026, 11, 12, 6, 0, 0);
     var AUTOPLAY_INTERVAL = 6000; // 6 seconds per slide
     var autoplayTimer = null;
     var isInteracting = false;

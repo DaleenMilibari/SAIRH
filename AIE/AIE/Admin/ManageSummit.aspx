@@ -70,11 +70,11 @@
                         </div>
                         <div class="admin-form-group">
                             <label>Start Date</label>
-                            <input type="date" id="txtStartDate" class="admin-form-input" value="2026-11-18" />
+                            <input type="date" id="txtStartDate" class="admin-form-input" value="2026-12-12" />
                         </div>
                         <div class="admin-form-group">
                             <label>End Date</label>
-                            <input type="date" id="txtEndDate" class="admin-form-input" value="2026-11-19" />
+                            <input type="date" id="txtEndDate" class="admin-form-input" value="2026-12-13" />
                         </div>
                         <div class="admin-form-group">
                             <label>Venue (English)</label>

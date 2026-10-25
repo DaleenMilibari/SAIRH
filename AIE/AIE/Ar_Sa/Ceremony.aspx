@@ -122,10 +122,10 @@
             <!-- Day Selection Tabs -->
             <div class="agenda-day-tabs">
                 <button type="button" class="agenda-day-btn active" onclick="selectDay('day1', this)">
-                    <i class="bi bi-calendar2-check ml-1"></i> اليوم الأول – الذكاء الاصطناعي والتميز السريري وأسس الابتكار
+                    <i class="bi bi-calendar2-check ml-1"></i> اليوم الأول (12 ديسمبر) – الذكاء الاصطناعي والتميز السريري وأسس الابتكار
                 </button>
                 <button type="button" class="agenda-day-btn" onclick="selectDay('day2', this)">
-                    <i class="bi bi-calendar2-check ml-1"></i> اليوم الثاني – تطوير الأشعة وأنظمة الذكاء الاصطناعي والتميز البحثي
+                    <i class="bi bi-calendar2-check ml-1"></i> اليوم الثاني (13 ديسمبر) – تطوير الأشعة وأنظمة الذكاء الاصطناعي والتميز البحثي
                 </button>
             </div>
 

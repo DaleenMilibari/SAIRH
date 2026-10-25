@@ -113,10 +113,10 @@
             <!-- Day Selection Tabs -->
             <div class="agenda-day-tabs">
                 <button type="button" class="agenda-day-btn active" onclick="selectDay('day1', this)">
-                    <i class="bi bi-calendar2-check mr-1"></i> Day 1 – AI, Clinical Excellence &amp; Innovation
+                    <i class="bi bi-calendar2-check mr-1"></i> Day 1 (12 Dec) – AI, Clinical Excellence &amp; Innovation
                 </button>
                 <button type="button" class="agenda-day-btn" onclick="selectDay('day2', this)">
-                    <i class="bi bi-calendar2-check mr-1"></i> Day 2 – Advancing Radiology &amp; AI Systems
+                    <i class="bi bi-calendar2-check mr-1"></i> Day 2 (13 Dec) – Advancing Radiology &amp; AI Systems
                 </button>
             </div>
 
